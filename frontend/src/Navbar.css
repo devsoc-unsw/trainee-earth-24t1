@@ -1,0 +1,51 @@
+/* Colours: Text: White, 
+ *          Background: #A7C7E7, 
+ *          Primary:  #87AE73 , 
+ *          Secondary #CAD6E9,
+ *          Accent: #9ECCE6
+ *          */
+
+:root {
+    --clr-light: White;
+    --clr-dark: #1A1A1E;
+    --clr-primary: #C1E1C1;
+    --clr-secondary: #CAD6E9;
+    --clr-accent: #9ECCE6;
+    --clr-button: #FFED88;
+    
+    --background: #A7C7E7;
+    --foreground: var(--clr-light);
+}
+
+/* navbar */
+
+.logo {
+    color: var(--foreground);
+    font-size: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-gif {
+    height: 4.5rem;
+    padding-right: 0.5rem;
+}
+
+.navbar a {
+    color: var(--foreground);
+    font-size: 35px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 35px;
+    transition: .3s;
+}
+
+.logo:hover, .navbar a:hover {
+    color: var(--clr-primary);
+}
