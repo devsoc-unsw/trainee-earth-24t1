@@ -2,5 +2,9 @@
 	"dependencies": {
 		"express": "^4.19.2",
 		"openai": "^4.32.1"
+	},
+	"devDependencies": {
+		"ts-node": "^10.9.2",
+		"typescript": "^5.4.3"
 	}
 }
