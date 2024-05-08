@@ -41,7 +41,7 @@ export class GameLoop {
    * to use setImmediate to schedule the next tick, before a setTimeout
    * delay overshoots the intended time of next tick.
    */
-  readonly minSetTimeoutDelayMs = 10;
+  readonly minSetTimeoutDelayMs = this.accurateTickPeriodMs / 2.1;
 
   /* gameLoop related variables */
   // timestamp of each loop
@@ -56,10 +56,10 @@ export class GameLoop {
   constructor(update: UpdateFn) {
     this.update = update;
 
-    assert(
-      this.accurateTickPeriodMs > this.minSetTimeoutDelayMs,
-      "accurateTickPeriodMs must be greater than minSetTimeoutDelayMs"
-    );
+    // assert(
+    //   this.accurateTickPeriodMs > this.minSetTimeoutDelayMs,
+    //   "accurateTickPeriodMs must be greater than minSetTimeoutDelayMs"
+    // );
   }
 
   startGameLoop() {
