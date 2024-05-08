@@ -34,18 +34,35 @@ const server = app.listen(EXPRESS_PORT, () => {
 
 const wss = new WebSocketServer({ server: server });
 
+const handleWSRequest = (message: any, ws: WebSocket) => {
+  switch (message.type) {
+    case 'ping':
+      ws.send(JSON.stringify({ res: 'pong' }));
+      break;
+    default:
+      ws.send(JSON.stringify({ err: 'unknown type' }));
+  }
+};
+
 wss.on('connection', (ws: WebSocket) => {
   console.log('New WS connection opened');
 
   ws.on('error', console.error);
 
   ws.on('message', (msg) => {
-    ws.send('got your msg ' + msg);
+    try {
+      const message = JSON.parse(msg);
+      handleWSRequest(message, ws);
+    } catch (e) {
+      ws.send(
+        JSON.stringify({
+          err: `invalid message; please ensure it's in the format { "type": "ping" }. don't forget - json only supports double quotes`,
+        })
+      );
+    }
   });
 
   ws.on('close', () => {
     console.log('WS connection closed');
   });
 });
-
-console.log(wss);
