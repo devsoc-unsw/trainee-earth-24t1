@@ -1,5 +1,6 @@
 import express from 'express';
 import type { PlayerMap, Coordinates, Cell } from './types/simulationTypes.ts';
+import { run as runDB } from './db.js';
 const app = express();
 const port = 3000;
 
@@ -21,6 +22,8 @@ app.get('/map', (req, res) => {
   // map.cells.set({ x: 0, y: 1 }, originCell);
   res.send(map);
 });
+
+runDB().catch(console.dir);
 
 app.listen(port, () => {
   console.log(`Earth app listening on port ${port}`);

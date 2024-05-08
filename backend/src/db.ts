@@ -1,0 +1,22 @@
+import { MongoClient, ServerApiVersion } from 'mongodb';
+
+const mongoURI: string = process.env.MONGODB_CONNECTION_STR;
+console.log(mongoURI);
+
+const client = new MongoClient(mongoURI, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
+
+export async function run() {
+  try {
+    await client.connect();
+    await client.db('admin').command({ ping: 1 });
+    console.log('Connected to MongoDB');
+  } finally {
+    await client.close();
+  }
+}
