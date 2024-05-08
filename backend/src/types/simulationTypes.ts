@@ -57,3 +57,7 @@ export interface Villager extends Object {
   items: EnvironmentObjectId[];
   interactingWith: VillagerId | EnvironmentObjectId | null;
 }
+
+export type WebSocketRequest = {
+  type: any;
+};
