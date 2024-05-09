@@ -10,6 +10,10 @@ const app = express();
 const port = 3000;
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY,});
 
+// Preset list of items to generate
+const cosmeticList = ["Wooden Bench", "Flower Bush", "Stone Fountain", "Park Swing", "Wooden Arbor", "Garden Gazebo", "Tree Planter", "Street Vendor Stall", "Picnic Table", "Bird Feeder", "Wishing Well", "Herbal Garden", "Decorative floor Lantern", "Village Square Statue", "Public Library Booth", "Floral Archway", "Potted Plant Display", "Butterfly Garden", "Water Mill", "Wooden Footbridge"];
+const resourceList = ["Lumber mill","Iron mine","Wheat farm","fishery","Chicken farm","brewery"];
+
 app.listen(port, () => {
   console.log(`Earth app listening on port ${port}`);
 });
@@ -59,27 +63,14 @@ app.get('/gen/resource', async (req, res) => {
 
 // Picks a random street furniture
 async function generateCosmeticObject() {
-  const completion = await openai.chat.completions.create({
-    messages: [{ role: "user", content: "Create a list of 20 possible street furniture for my simulation game with a village theme. Do not have duplicate items that are very similar, for example, signpost and streetlamp would be the same thing. Half the items on the list must be flora related such as flower bushes. In the output, print them out with item names only, with space as a delimiter." }],
-    model: "gpt-4-turbo-preview",
-  });
-  const furnitures = completion.choices[0].message.content.split(' ');
-
-  const furniture = furnitures[randomInt(0, furnitures.length - 1)];
+  const furniture = cosmeticList[randomInt(0, cosmeticList.length - 1)];
   const prompt = `Created a pixelated image with a standard isometric perspective of a ${furniture}, for my simulation game with a village theme. The item is placed against a plain white background.The item must be within the image's borders.`;
   return generateImage(prompt);
 }
 
 // Pick a random resource building
 async function generateResourceObject() {
-  const completion = await openai.chat.completions.create({
-    messages: [{ role: "user", content: "Create a list of 20 possible resource production buildings for my simulation game with a village theme. In the output, print them out with item names only, with space as a delimiter. Make item names with two words in snake case." }],
-    model: "gpt-4-turbo-preview",
-  });
-  const resources = completion.choices[0].message.content.split(' ');
-  console.log(resources)
-  
-  const resource = resources[randomInt(0, resources.length - 1)];
+  const resource = resourceList[randomInt(0, resourceList.length - 1)];
   const prompt = `Created a pixelated image with a standard isometric perspective of a ${resource}, for my simulation game with a village theme. The item is placed against a plain white background. The item must be within the constraints of the image borders.`;
   return generateImage(prompt);
 }
