@@ -27,9 +27,7 @@ app.get('/', (req, res) => {
 app.get('/gen/cosmetic', async (req, res) => {
   try {
     const data = await generateCosmeticObject();
-    const imageURL = data.data[0].url;
-    console.log(data.data[0].revised_prompt)
-    removeImageBG(imageURL)
+    const imageURL = data;
     res.send(`<html><body><img src="${imageURL}" /></body></html>`);
   } catch (err) {
     console.log(err);
@@ -41,8 +39,7 @@ app.get('/gen/cosmetic', async (req, res) => {
 app.get('/gen/house', async (req, res) => {
   try {
     const data = await generateHouseObject();
-    const imageURL = data.data[0].url;
-    console.log(data.data[0].revised_prompt)
+    const imageURL = data;
     res.send(`<html><body><img src="${imageURL}" /></body></html>`);
   } catch (err) {
     console.log(err);
@@ -54,8 +51,7 @@ app.get('/gen/house', async (req, res) => {
 app.get('/gen/resource', async (req, res) => {
   try {
     const data = await generateResourceObject();
-    const imageURL = data.data[0].url;
-    console.log(data.data[0].revised_prompt)
+    const imageURL = data;
     res.send(`<html><body><img src="${imageURL}" /></body></html>`);
   } catch (err) {
     console.log(err);
@@ -96,17 +92,20 @@ async function generateImage(prompt) {
     n: 1,
     size: "1024x1024",
   });
-
-  return data;
+  console.log(data.data[0].revised_prompt)
+  const url = data.data[0].url
+  await removeImageBG(url)
+  const cleanURL = await imgToURL();
+  return cleanURL;
 }
 
 // Remove bg
-function removeImageBG(url) {
+async function removeImageBG(url) {
   const formData = new FormData();
   formData.append('size', 'auto');
   formData.append('image_url', url);
   
-  axios({
+  const response = await axios({
     method: 'post',
     url: 'https://api.remove.bg/v1.0/removebg',
     data: formData,
@@ -119,24 +118,24 @@ function removeImageBG(url) {
   })
   .then((response) => {
     if(response.status != 200) return console.error('Error:', response.status, response.statusText);
-    // console.log(response.data)
     fs.writeFileSync("nobg.png", response.data);
+    console.log('removed background done')
   })
   .catch((error) => {
       return console.error('Request failed:', error);
   });
 }
 
-function imgToURL() {
+async function imgToURL() {
   const data = new FormData();
   data.append('image', fs.createReadStream('nobg.png'));
   data.append('type', 'image');
   data.append('title', 'Simple upload');
   data.append('description', 'This is a simple image upload in Imgur');
 
-  var config = {
+  const config = {
     method: 'post',
-  maxBodyLength: Infinity,
+    maxBodyLength: Infinity,
     url: 'https://api.imgur.com/3/image',
     headers: { 
       'Authorization': 'Client-ID ' + process.env.IMGUR_KEY, 
@@ -145,11 +144,6 @@ function imgToURL() {
     data : data
   };
 
-  axios(config)
-  .then((response) => {
-    return response.data.data.link
-  })
-  .catch((error) => {
-    console.log(error)
-  });
+  const response = await axios(config);
+  return response.data.data.link
 }
