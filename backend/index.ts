@@ -94,8 +94,8 @@ async function generateImage(prompt) {
   });
   console.log(data.data[0].revised_prompt)
   const url = data.data[0].url
-  await removeImageBG(url)
-  const cleanURL = await imgToURL();
+  const buffer = await removeImageBG(url)
+  const cleanURL = await imgToURL(buffer);
   return cleanURL;
 }
 
@@ -116,20 +116,15 @@ async function removeImageBG(url) {
     },
     encoding: null
   })
-  .then((response) => {
-    if(response.status != 200) return console.error('Error:', response.status, response.statusText);
-    fs.writeFileSync("nobg.png", response.data);
-    console.log('removed background done')
-  })
-  .catch((error) => {
-      return console.error('Request failed:', error);
-  });
+
+  if(response.status != 200) return console.error('Error:', response.status, response.statusText);
+  return response.data
 }
 
-async function imgToURL() {
+async function imgToURL(buffer) {
   const data = new FormData();
-  data.append('image', fs.createReadStream('nobg.png'));
-  data.append('type', 'image');
+  data.append('image', buffer, 'image.png');
+  data.append('type', 'file');
   data.append('title', 'Simple upload');
   data.append('description', 'This is a simple image upload in Imgur');
 
