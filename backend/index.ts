@@ -29,6 +29,7 @@ app.get('/gen/cosmetic', async (req, res) => {
     const data = await generateCosmeticObject();
     const imageURL = data.data[0].url;
     console.log(data.data[0].revised_prompt)
+    removeImageBG(imageURL)
     res.send(`<html><body><img src="${imageURL}" /></body></html>`);
   } catch (err) {
     console.log(err);
@@ -118,9 +119,37 @@ function removeImageBG(url) {
   })
   .then((response) => {
     if(response.status != 200) return console.error('Error:', response.status, response.statusText);
-    fs.writeFileSync("anothaone.png", response.data);
+    // console.log(response.data)
+    fs.writeFileSync("nobg.png", response.data);
   })
   .catch((error) => {
       return console.error('Request failed:', error);
+  });
+}
+
+function imgToURL() {
+  const data = new FormData();
+  data.append('image', fs.createReadStream('nobg.png'));
+  data.append('type', 'image');
+  data.append('title', 'Simple upload');
+  data.append('description', 'This is a simple image upload in Imgur');
+
+  var config = {
+    method: 'post',
+  maxBodyLength: Infinity,
+    url: 'https://api.imgur.com/3/image',
+    headers: { 
+      'Authorization': 'Client-ID ' + process.env.IMGUR_KEY, 
+      ...data.getHeaders()
+    },
+    data : data
+  };
+
+  axios(config)
+  .then((response) => {
+    return response.data.data.link
+  })
+  .catch((error) => {
+    console.log(error)
   });
 }
