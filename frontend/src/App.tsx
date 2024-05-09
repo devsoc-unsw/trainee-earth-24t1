@@ -12,7 +12,7 @@ import {
 
 export default function App() {
   return (
-    <body>
+    <div>
       <header className="header">
         <Navbar />
       </header>
@@ -33,6 +33,6 @@ export default function App() {
           </CardFooter>
         </Card>{" "}
       </div>
-    </body>
+    </div>
   );
 }
