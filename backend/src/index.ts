@@ -3,6 +3,8 @@ import type { PlayerMap, Coordinates, Cell } from "./types/simulationTypes.ts";
 import { run as runDB } from "db.ts";
 import { WebSocketServer, WebSocket } from "ws";
 import { handleWSRequest } from "wsHandler.ts";
+import { GameLoop } from "./gameloopFramework.js";
+import { simulationStep } from "./simulationServer.js";
 
 const EXPRESS_PORT = 3000;
 
@@ -95,3 +97,6 @@ wss.on("connection", (ws: WebSocket) => {
     console.log("WS connection closed");
   });
 });
+
+const myGameLoop = new GameLoop(simulationStep);
+myGameLoop.startGameLoop();
