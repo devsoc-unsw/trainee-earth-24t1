@@ -36,11 +36,13 @@ export const handleWSRequest = (request: WebSocketRequest, ws: WebSocket) => {
    */
   switch (request.type) {
     case ClientRequestType.PING:
+      console.log(`Handle wsreq as PING`);
       if (assertWSReqType<PingWSReq>(request, isPingWSReq)) {
         ws.send(JSON.stringify({ res: "PONG" }));
       }
       break;
     case ClientRequestType.PLAYER_VISIT:
+      console.log(`Handle wsreq as PLAYER_VISIT`);
       if (assertWSReqType<PlayerVisitWSReq>(request, isPlayerVisitWSReq)) {
         const playerId = request.playerId;
         ws.send(JSON.stringify({ res: `Welcome back ${playerId}` }));

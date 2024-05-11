@@ -44,24 +44,43 @@ export function assertWSReqType<T extends WebSocketRequest>(
     request;
     return true;
   } else {
-    throw {
-      name: "BadlyFormattedWSTypeError",
-      message: `Expected request to satify typeguard ${WSReqTypeGuard.name}. Value of request: ${request}`,
-    };
+    throw new BadlyFormattedWSTypeError(
+      `Object is verified to be a valid WebSocketRequst object, but did not satify typeguard ${WSReqTypeGuard.name}. Either change the typeguard or get client to provide an object that satifies the typeguard. Value of request: ${request}`
+    );
   }
 }
 
-export class InvalidWSRequestTypeError extends CustomError {
-  public constructor(
-    message: string = `Invalid WebSocketRequest object; does not align with format { "type": "PING" } with a valid RequestType enum value for the type. Don't forget - json only supports double quotes`
-  ) {
+export class WSTypeError extends CustomError {
+  // A user-friendly error message to send back to the client
+  errMsgForClient: string;
+  public constructor(message: string, errMsgForClient: string) {
     super(message);
+    this.errMsgForClient = errMsgForClient;
   }
 }
-export class InvalidWSRequestSubTypeError extends CustomError {
+
+export class InvalidWSRequestTypeError extends WSTypeError {
   public constructor(
-    message: string = `Invalid WebSocketRequest subtype object. Does not have a valid RequestType enum value for the type or does not align with one of the WebSocketRequest subtypes in src/types/wsTypes.ts`
+    message: string = `Invalid WebSocketRequest object; does not align with format { "type": "PING" } with a valid RequestType enum value for the type Get client to provide a valid object.`,
+    errMsgForClient: string = `Invalid WebSocketRequest object; please align with format { "type": "PING" } with a valid RequestType enum value for the type. Don't forget - json only supports double quotes`
   ) {
-    super(message);
+    super(message, errMsgForClient);
+  }
+}
+export class InvalidWSRequestSubTypeError extends WSTypeError {
+  public constructor(
+    message: string = `Invalid WebSocketRequest type value. Does not have a valid ClientRequestType. Either add new ClientRequestType or get client to use an existing one. See ClientRequestType in rc/types/wsTypes.ts.`,
+    errMsgForClient: string = `Invalid WebSocketRequest type value. Please use a valid type such as "PING" or "PLAYER_VISIT". Don't forget - json only supports double quotes.`
+  ) {
+    super(message, errMsgForClient);
+  }
+}
+
+export class BadlyFormattedWSTypeError extends WSTypeError {
+  public constructor(
+    message?: string,
+    errMsgForClient: string = `Badly formatted WebSocketRequest subtype object. Please provide an object that aligns with one of the WebSocketRequest subtypes in src/types/wsTypes.ts`
+  ) {
+    super(message, errMsgForClient);
   }
 }
