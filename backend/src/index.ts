@@ -1,8 +1,8 @@
-import express from 'express';
-import type { PlayerMap, Coordinates, Cell } from './types/simulationTypes.ts';
-import { run as runDB } from './db.js';
-import { WebSocketServer, WebSocket } from 'ws';
-import { handleWSRequest } from './wsHandler.js';
+import express from "express";
+import type { PlayerMap, Coordinates, Cell } from "./types/simulationTypes.ts";
+import { run as runDB } from "db.ts";
+import { WebSocketServer, WebSocket } from "ws";
+import { handleWSRequest } from "wsHandler.ts";
 
 const EXPRESS_PORT = 3000;
 
@@ -14,19 +14,19 @@ const app = express();
 /**
  * This is how a GET request is structured in Express.
  */
-app.get('/', (req, res) => {
-  res.send('haiii guys');
+app.get("/", (req, res) => {
+  res.send("haiii guys");
 });
 
 /**
  * This will retrieve the map from the database.
  * Right now, it just generates a placeholder map.
  */
-app.get('/map', (req, res) => {
+app.get("/map", (req, res) => {
   const map: PlayerMap = { cells: new Map<Coordinates, Cell>() };
   const origin: Coordinates = { x: 0, y: 0 };
   const originCell: Cell = {
-    owner: 'N/A',
+    owner: "N/A",
     object: null,
   };
   map.cells.set(origin, originCell);
@@ -53,23 +53,23 @@ const wss = new WebSocketServer({ server: server });
 /**
  * Handle a new client connecting to the WebSocket server.
  */
-wss.on('connection', (ws: WebSocket) => {
-  console.log('New WS connection opened');
+wss.on("connection", (ws: WebSocket) => {
+  console.log("New WS connection opened");
 
-  ws.on('error', console.error);
+  ws.on("error", console.error);
 
   /**
    * Executes when a message is received from the client.
    */
-  ws.on('message', (msg) => {
+  ws.on("message", (msg) => {
     try {
-      const message = JSON.parse(msg);
+      const message = JSON.parse(msg.toString("utf-8"));
       // handleWSRequest takes care of replying to the client
       // in wsHandler.ts
       handleWSRequest(message, ws);
     } catch (e) {
       let errorMessage = e.message;
-      if (e.name === 'SyntaxError') {
+      if (e.name === "TypeError") {
         // tidies up the error message to explain more clearly why
         // a message may have failed because the JSON couldn't parse
         errorMessage = `invalid message; please ensure it's in the format { "type": "ping" }. don't forget - json only supports double quotes`;
@@ -91,7 +91,7 @@ wss.on('connection', (ws: WebSocket) => {
   /**
    * Executes when a client closes.
    */
-  ws.on('close', () => {
-    console.log('WS connection closed');
+  ws.on("close", () => {
+    console.log("WS connection closed");
   });
 });
