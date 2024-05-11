@@ -1,4 +1,5 @@
 import assert from "assert";
+import { CustomError } from "utils/customError.ts";
 
 export enum ClientRequestType {
   PING = "PING",
@@ -50,29 +51,17 @@ export function assertWSReqType<T extends WebSocketRequest>(
   }
 }
 
-export class InvalidWSRequestTypeError extends Error {
-  name: string;
-
-  constructor(message?: string) {
+export class InvalidWSRequestTypeError extends CustomError {
+  public constructor(
+    message: string = `Invalid WebSocketRequest object; does not align with format { "type": "PING" } with a valid RequestType enum value for the type. Don't forget - json only supports double quotes`
+  ) {
     super(message);
-    // set error name as constructor name, make it not enumerable to keep native Error behavior
-    // see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new.target#new.target_in_constructors
-    // see https://github.com/adriengibrat/ts-custom-error/issues/30
-    Object.defineProperty(this, "name", {
-      value: new.target.name,
-      enumerable: false,
-      configurable: true,
-    });
-    // fix the extended error prototype chain
-    // because typescript __extends implementation can't
-    // see https://github.com/Microsoft/TypeScript-wiki/blob/master/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work
-    const setPrototypeOf: Function = (Object as any).setPrototypeOf;
-    setPrototypeOf
-      ? setPrototypeOf(this, new.target.prototype)
-      : ((this as any).__proto__ = new.target.prototype);
-
-    // try to remove contructor from stack trace
-    const captureStackTrace: Function = (Error as any).captureStackTrace;
-    captureStackTrace && captureStackTrace(this, new.target.constructor);
+  }
+}
+export class InvalidWSRequestSubTypeError extends CustomError {
+  public constructor(
+    message: string = `Invalid WebSocketRequest subtype object. Does not have a valid RequestType enum value for the type or does not align with one of the WebSocketRequest subtypes in src/types/wsTypes.ts`
+  ) {
+    super(message);
   }
 }

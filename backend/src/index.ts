@@ -68,11 +68,11 @@ wss.on("connection", (ws: WebSocket) => {
       // in wsHandler.ts
       handleWSRequest(message, ws);
     } catch (e) {
-      let errorMessage = e.message;
-      if (e.name === "TypeError") {
+      let clientErrorMsg = e.message;
+      if (e.name === "InvalidWSRequestTypeError") {
         // tidies up the error message to explain more clearly why
         // a message may have failed because the JSON couldn't parse
-        errorMessage = `invalid message; please ensure it's in the format { "type": "ping" }. don't forget - json only supports double quotes`;
+        clientErrorMsg = `invalid message; please ensure it's in the format { "type": "PING" }. don't forget - json only supports double quotes`;
       } else {
         console.log(e.name);
       }
@@ -81,7 +81,7 @@ wss.on("connection", (ws: WebSocket) => {
         JSON.stringify({
           err: {
             name: e.name,
-            message: errorMessage,
+            message: clientErrorMsg,
           },
         })
       );

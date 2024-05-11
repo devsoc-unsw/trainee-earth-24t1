@@ -2,6 +2,7 @@ import { WebSocket } from "ws";
 import {
   isWebSocketRequest,
   InvalidWSRequestTypeError,
+  InvalidWSRequestSubTypeError,
   WebSocketRequest,
   isPingWSReq,
   isPlayerVisitWSReq,
@@ -26,10 +27,7 @@ export const handleWSRequest = (request: WebSocketRequest, ws: WebSocket) => {
    * Subject to change - consult WebSocketRequest type.
    */
   if (!isWebSocketRequest(request)) {
-    throw {
-      name: "TypeError",
-      message: `Invalid WebSocketRequest object; please ensure it's in the format { "type": "PING" } with a valid RequestType enum value for the type. Don't forget - json only supports double quotes`,
-    };
+    throw new InvalidWSRequestTypeError();
   }
 
   /**
@@ -50,8 +48,6 @@ export const handleWSRequest = (request: WebSocketRequest, ws: WebSocket) => {
       break;
     // ADD NEW WEBSOCKET REQUEST TYPES HERE
     default:
-      throw new InvalidWSRequestTypeError(
-        `Invalid WebSocketRequest subtype. Please make sure your request object has a valid RequestType enum value for the type and aligns with one of the WebSocketRequest subtypes in src/types/wsTypes.ts`
-      );
+      throw new InvalidWSRequestSubTypeError();
   }
 };
