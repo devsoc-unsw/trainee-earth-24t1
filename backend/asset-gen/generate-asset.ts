@@ -27,7 +27,7 @@ class Asset {
   }
 }
 
-enum AssetType {
+export enum AssetType {
   COSMETIC_ENVIRONMENT_OBJ,
   RESOURCE_ENVIRONMENT_OBJ,
   HOUSE,
