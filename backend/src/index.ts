@@ -5,12 +5,6 @@ import { WebSocketServer, WebSocket } from "ws";
 import { handleWSRequest } from "src/wsHandler.ts";
 import { GameLoop } from "./gameloopFramework.js";
 import { simulationStep } from "./simulationServer.js";
-import {
-  generateCosmeticObject,
-  generateHouseObject,
-  generateVillagerObject,
-  generateResourceObject,
-} from "asset-gen/generate-image.ts";
 import { AssetType, generateAsset } from "asset-gen/generate-asset.ts";
 
 const EXPRESS_PORT = 3000;
@@ -54,7 +48,7 @@ const server = app.listen(EXPRESS_PORT, () => {
 });
 
 // Get cosmetic image
-app.get("/gen/cosmetic", async (req, res) => {
+app.get("/gen/cosmetic-environ", async (req, res) => {
   try {
     const asset = await generateAsset(AssetType.COSMETIC_ENVIRONMENT_OBJ);
     res.send(
@@ -83,19 +77,6 @@ app.get("/gen/house", async (req, res) => {
 app.get("/gen/villager", async (req, res) => {
   try {
     const asset = await generateAsset(AssetType.VILLAGER);
-    res.send(
-      `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
-    );
-  } catch (err) {
-    console.log(err);
-    res.status(500).send(err);
-  }
-});
-
-// Get resource building image
-app.get("/gen/resource", async (req, res) => {
-  try {
-    const asset = await generateAsset(AssetType.COSMETIC_ENVIRONMENT_OBJ);
     res.send(
       `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
     );
