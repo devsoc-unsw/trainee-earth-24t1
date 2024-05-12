@@ -47,7 +47,7 @@ const server = app.listen(EXPRESS_PORT, () => {
   console.log(`Earth app listening on port ${EXPRESS_PORT}`);
 });
 
-// Get cosmetic image
+// Create a new cosmetic environemnt object asset
 app.get("/gen/cosmetic-environ", async (req, res) => {
   try {
     const asset = await generateAsset(AssetType.COSMETIC_ENVIRONMENT_OBJ);
@@ -60,7 +60,20 @@ app.get("/gen/cosmetic-environ", async (req, res) => {
   }
 });
 
-// Get house image
+// Create a new resource environemnt object asset
+app.get("/gen/resource-environ", async (req, res) => {
+  try {
+    const asset = await generateAsset(AssetType.RESOURCE_ENVIRONMENT_OBJ);
+    res.send(
+      `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
+    );
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err);
+  }
+});
+
+// Create a new house asset
 app.get("/gen/house", async (req, res) => {
   try {
     const asset = await generateAsset(AssetType.HOUSE);
@@ -73,7 +86,7 @@ app.get("/gen/house", async (req, res) => {
   }
 });
 
-// Get villager image
+// Create a new villager asset
 app.get("/gen/villager", async (req, res) => {
   try {
     const asset = await generateAsset(AssetType.VILLAGER);
