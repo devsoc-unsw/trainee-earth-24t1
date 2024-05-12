@@ -1,4 +1,3 @@
-import assert from "assert";
 import { CustomError } from "src/utils/customError.ts";
 
 export enum ClientRequestType {

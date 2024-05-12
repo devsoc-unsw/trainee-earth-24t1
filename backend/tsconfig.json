@@ -13,6 +13,6 @@
       "asset-gen/*": ["./asset-gen/*"]
     }
   },
-  "include": ["src/**/*", "asset-gen"],
+  "include": ["src/**/*", "asset-gen/**/*"],
   "lib": ["ES2022", "ES2022.error"],
 }

@@ -5,7 +5,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { handleWSRequest } from "src/wsHandler.ts";
 import { GameLoop } from "./gameloopFramework.js";
 import { simulationStep } from "./simulationServer.js";
-import { AssetType, generateAsset } from "asset-gen/generate-asset.ts";
+import { generateAsset, AssetType } from "asset-gen/generate-asset.ts";
 
 const EXPRESS_PORT = 3000;
 
