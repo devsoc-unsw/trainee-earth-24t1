@@ -1,204 +1,107 @@
-const dotenv = require('dotenv');
-const axios = require('axios');
-const FormData = require('form-data');
-const fs = require('fs');
-const sharp = require('sharp');
+import {
+  generateCosmeticObject,
+  generateHouseObject,
+  generateVillagerObject,
+  generateResourceObject,
+} from "./asset-gen/generate-image";
+
+const dotenv = require("dotenv");
+const axios = require("axios");
+const FormData = require("form-data");
+const fs = require("fs");
+const sharp = require("sharp");
 dotenv.config();
 
-const  express  = require('express');
-const { OpenAI } = require('openai');
+const express = require("express");
+const { OpenAI } = require("openai");
 
 const app = express();
 const port = 3000;
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY,});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Preset list of items to generate
-const cosmeticList = ["Wooden Bench", "Flower Bush", "Stone Fountain", "Park Swing", "Wooden Arbor", "Garden Gazebo", "Apple Tree", "Street Vendor Stall", "Picnic Table", "Bird Feeder", "Wishing Well", "Herbal bed", "Decorative floor Lantern", "Village Square Statue", "Public Library Booth", "Floral Archway", "Potted Plant", "Floral bush with butterflies", "Water Mill"];
-const resourceList = ["Lumber mill", "Iron mine", "Wheat farm", "fishery", "Chicken farm", "brewery"];
+const cosmeticList = [
+  "Wooden Bench",
+  "Flower Bush",
+  "Stone Fountain",
+  "Park Swing",
+  "Wooden Arbor",
+  "Garden Gazebo",
+  "Apple Tree",
+  "Street Vendor Stall",
+  "Picnic Table",
+  "Bird Feeder",
+  "Wishing Well",
+  "Herbal bed",
+  "Decorative floor Lantern",
+  "Village Square Statue",
+  "Public Library Booth",
+  "Floral Archway",
+  "Potted Plant",
+  "Floral bush with butterflies",
+  "Water Mill",
+];
+const resourceList = [
+  "Lumber mill",
+  "Iron mine",
+  "Wheat farm",
+  "fishery",
+  "Chicken farm",
+  "brewery",
+];
 
 app.listen(port, () => {
   console.log(`Earth app listening on port ${port}`);
 });
 
-app.get('/', (req, res) => {
-  res.send('haiii guys');
+app.get("/", (req, res) => {
+  res.send("haiii guys");
 });
 
 // Get cosmetic image
-app.get('/gen/cosmetic', async (req, res) => {
+app.get("/gen/cosmetic", async (req, res) => {
   try {
     const data = await generateCosmeticObject();
     const imageURL = data;
     res.send(`<html><body><img src="${imageURL}" /></body></html>`);
   } catch (err) {
     console.log(err);
-    res.status(500).send(err)
+    res.status(500).send(err);
   }
-})
+});
 
 // Get house image
-app.get('/gen/house', async (req, res) => {
+app.get("/gen/house", async (req, res) => {
   try {
     const data = await generateHouseObject();
     const imageURL = data;
     res.send(`<html><body><img src="${imageURL}" /></body></html>`);
   } catch (err) {
     console.log(err);
-    res.status(500).send(err)
+    res.status(500).send(err);
   }
-})
+});
 
 // Get villager image
-app.get('/gen/villager', async (req, res) => {
+app.get("/gen/villager", async (req, res) => {
   try {
     const data = await generateVillagerObject();
     const imageURL = data;
     res.send(`<html><body><img src="${imageURL}" /></body></html>`);
   } catch (err) {
     console.log(err);
-    res.status(500).send(err)
+    res.status(500).send(err);
   }
-})
+});
 
 // Get resource building image
-app.get('/gen/resource', async (req, res) => {
+app.get("/gen/resource", async (req, res) => {
   try {
     const data = await generateResourceObject();
     const imageURL = data;
     res.send(`<html><body><img src="${imageURL}" /></body></html>`);
   } catch (err) {
     console.log(err);
-    res.status(500).send(err)
+    res.status(500).send(err);
   }
-})
-
-// Picks a random street furniture
-async function generateCosmeticObject() {
-  const furniture = cosmeticList[randomInt(0, cosmeticList.length - 1)];
-  const prompt = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Created a simple pixelated image with a standard isometric perspective of a singular ${furniture}, for my simulation game with a village theme. Ensure that the lighting appears to come from the west side, casting appropriate shadows. The item is placed against a plain white background.The item must be within the image's borders whilst being as large as possible.`;
-  return generateImage(prompt);
-}
-
-// Pick a random resource building
-async function generateResourceObject() {
-  const resource = resourceList[randomInt(0, resourceList.length - 1)];
-  const prompt = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Created a simple pixelated image with a standard isometric perspective of a singular ${resource}, for my simulation game with a village theme. Ensure that the lighting appears to come from the west side, casting appropriate shadows. The item is placed against a plain white background. The item must be within the constraints of the image borders whilst being as large as possible.`;
-  return generateImage(prompt);
-}
-
-// Picks a random number between min and max
-function randomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
-
-// Get house
-async function generateHouseObject() {
-  const prompt = "I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Create a simple pixelated image with a standard isometric view showing a large, singular square house with warm lighting. Ensure that the lighting appears to come from the west side, casting appropriate shadows. It should be encapsulated in a village core theme that showcases the house's charming characteristics - a thatched roof, timber frames with some greenery. The entire house must be contained within the image's borders, allowing for an unobstructed view of the dwelling. Let the house against a plain white background, highlighting the house's charming attributes and maintaining a straightforward composition. The item must be within the constraints of the image borders whilst being as large as possible.";
-  return generateImage(prompt);
-}
-
-async function generateVillagerObject() {
-  const prompt = "I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Created a simple pixelated image with a standard isometric perspective of a pixelated cute villager in a detailed pixel art style. Put the villager against a plain white background with no additional items.";
-  return generateImage(prompt);
-}
-
-// Create image based on prompt
-async function generateImage(prompt) {
-  // const data = await openai.images.generate({
-  //   model: "dall-e-3",
-  //   prompt: prompt,
-  //   n: 1,
-  //   size: "1024x1024",
-  // });
-  // console.log(data.data[0].revised_prompt)
-  // const url = data.data[0].url
-  // const buffer = await removeImageBG(url)
-  const croppedBuffer = await cropImage()
-  const cleanURL = await imgToURL(croppedBuffer);
-  console.log(cleanURL)
-  return null;
-}
-
-// Remove bg
-async function removeImageBG(url) {
-  const formData = new FormData();
-  formData.append('size', 'auto');
-  formData.append('image_url', url);
-  
-  try {
-    const response = await axios({
-      method: 'post',
-      url: 'https://api.remove.bg/v1.0/removebg',
-      data: formData,
-      responseType: 'arraybuffer',
-      headers: {
-        ...formData.getHeaders(),
-        'X-Api-Key': process.env.REMOVEBG_KEY,
-      },
-      encoding: null
-    })
-  
-    if(response.status != 200) return console.error('Error:', response.status, response.statusText);
-    return response.data
-  } catch (err) {
-    console.log(err.message);
-    throw err;
-  }
-}
-
-async function imgToURL(buffer) {
-  const data = new FormData();
-  data.append('image', buffer, 'image.png');
-  data.append('type', 'file');
-  data.append('title', 'Simple upload');
-  data.append('description', 'This is a simple image upload in Imgur');
-
-  const config = {
-    method: 'post',
-    maxBodyLength: Infinity,
-    url: 'https://api.imgur.com/3/image',
-    headers: { 
-      'Authorization': 'Client-ID ' + process.env.IMGUR_KEY, 
-      ...data.getHeaders()
-    },
-    data : data
-  };
-
-  const response = await axios(config).then(() => {
-    console.log('thinking')
-  }).catch((err) => {
-    console.log(err.response)
-  });
-  return response.data.data.link
-}
-
-async function cropImage() {
-  // Removes additional space after background removal
-  try {
-    const data = await sharp("before.png").extractChannel('alpha')
-                                          .trim()
-                                          .toBuffer({ resolveWithObject: true });
-
-    const { width, height, trimOffsetLeft, trimOffsetTop } = data.info;
-
-    const newbuffer = await sharp("before.png")
-      .extract({
-        left: trimOffsetLeft * -1,
-        top: trimOffsetTop * -1,
-        width: width,
-        height: height
-      })
-      .toBuffer();
-      return newbuffer;
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-async function test() {
-  const buffer = await cropImage();
-  const url = await imgToURL(buffer);
-  console.log(url)
-}
-
-// test()
+});
