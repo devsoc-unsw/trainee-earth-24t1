@@ -1,12 +1,12 @@
 import axios from "axios";
-import { cropImage, removeImageBGViaData } from "./edit-image";
+import { cropImage, removeImageBGViaData } from "asset-gen/edit-image.ts";
 import {
   generateCosmeticObject,
   generateResourceObject,
   generateHouseObject,
   generateVillagerObject,
-} from "./generate-image";
-import { storeImage } from "./store-image";
+} from "asset-gen/generate-image.ts";
+import { storeImage } from "asset-gen/store-image.ts";
 import OpenAI from "openai";
 
 class Asset {
