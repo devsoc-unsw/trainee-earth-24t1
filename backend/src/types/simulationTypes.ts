@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb';
+
 export type Coordinates = {
   x: number;
   y: number;
@@ -47,7 +49,7 @@ type UnownedCell = {
   owner: null;
 };
 
-type VillagerId = string;
+type VillagerId = ObjectId;
 
 export interface Villager extends VillagerRequest {
   _id: VillagerId;

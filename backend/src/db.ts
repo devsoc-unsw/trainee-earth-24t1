@@ -1,4 +1,4 @@
-import { Db, MongoClient, ServerApiVersion } from 'mongodb';
+import { Db, MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
 import { User } from './types/databaseTypes.js';
 import {
   Cell,
@@ -58,7 +58,7 @@ const generateMap = (): PlayerMap => {
   const map: PlayerMap = { cells: new Map<Coordinates, Cell>() };
   const origin: Coordinates = { x: 0, y: 0 };
   const originCell: Cell = {
-    owner: 'N/A',
+    owner: undefined,
     object: null,
   };
   map.cells.set(origin, originCell);
@@ -86,6 +86,18 @@ export async function addVillager(
     villager['_id'] = res.insertedId;
     villager['interactingWith'] = [];
 
+    return villager as Villager;
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export async function getVillager(id: ObjectId): Promise<Villager> {
+  try {
+    const villagers = db.collection('villagers');
+    const villager = await villagers.findOne({
+      _id: id,
+    });
     return villager as Villager;
   } catch (e) {
     console.error(e);
