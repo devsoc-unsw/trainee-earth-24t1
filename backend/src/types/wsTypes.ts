@@ -1,9 +1,11 @@
-import assert from "assert";
-import { CustomError } from "utils/customError.ts";
+import assert from 'assert';
+import { CustomError } from 'utils/customError.ts';
+import { Villager, isVillager } from './simulationTypes.ts';
 
 export enum ClientRequestType {
-  PING = "PING",
-  PLAYER_VISIT = "PLAYER_VISIT",
+  PING = 'PING',
+  PLAYER_VISIT = 'PLAYER_VISIT',
+  GENERATE_REWARD = 'GENERATE_REWARD',
 }
 
 export interface WebSocketRequest {
@@ -17,6 +19,11 @@ export interface PingWSReq extends WebSocketRequest {
 export interface PlayerVisitWSReq extends WebSocketRequest {
   type: ClientRequestType.PLAYER_VISIT;
   playerId: string | null;
+}
+
+export interface GenerateRewardWSReq extends WebSocketRequest {
+  type: ClientRequestType.GENERATE_REWARD;
+  villager: Villager;
 }
 
 export function isWebSocketRequest(obj: Object): obj is WebSocketRequest {
@@ -33,6 +40,16 @@ export function isPlayerVisitWSReq(
   return (
     obj.type === ClientRequestType.PLAYER_VISIT &&
     (obj as PlayerVisitWSReq).playerId !== undefined
+  );
+}
+
+export function isGenerateRewardWSReq(
+  obj: WebSocketRequest
+): obj is GenerateRewardWSReq {
+  return (
+    obj.type === ClientRequestType.GENERATE_REWARD &&
+    (obj as GenerateRewardWSReq).villager !== undefined &&
+    isVillager((obj as GenerateRewardWSReq).villager)
   );
 }
 

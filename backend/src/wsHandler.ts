@@ -1,4 +1,4 @@
-import { WebSocket } from "ws";
+import { WebSocket } from 'ws';
 import {
   isWebSocketRequest,
   InvalidWSRequestTypeError,
@@ -10,7 +10,9 @@ import {
   assertWSReqType,
   PingWSReq,
   PlayerVisitWSReq,
-} from "types/wsTypes.ts";
+  GenerateRewardWSReq,
+  isGenerateRewardWSReq,
+} from 'types/wsTypes.ts';
 
 /**
  * Handles a WebSocket request by parsing the request and performing the appropriate action.
@@ -38,7 +40,7 @@ export const handleWSRequest = (request: WebSocketRequest, ws: WebSocket) => {
     case ClientRequestType.PING:
       console.log(`Handle wsreq as PING`);
       if (assertWSReqType<PingWSReq>(request, isPingWSReq)) {
-        ws.send(JSON.stringify({ res: "PONG" }));
+        ws.send(JSON.stringify({ res: 'PONG' }));
       }
       break;
     case ClientRequestType.PLAYER_VISIT:
@@ -46,6 +48,28 @@ export const handleWSRequest = (request: WebSocketRequest, ws: WebSocket) => {
       if (assertWSReqType<PlayerVisitWSReq>(request, isPlayerVisitWSReq)) {
         const playerId = request.playerId;
         ws.send(JSON.stringify({ res: `Welcome back ${playerId}` }));
+      }
+      break;
+    case ClientRequestType.GENERATE_REWARD:
+      console.log(`Handle wsreq as GENERATE_REWARD`);
+      if (
+        assertWSReqType<GenerateRewardWSReq>(request, isGenerateRewardWSReq)
+      ) {
+        // TODO: complete this stub
+        // Has user generated an asset recently?
+        // If yes, send NULL
+        // If no, continue
+        //
+        // Determine which items the villager can create based on their
+        // items, wealth, and pick one (or perhaps prompt the user to pick one?)
+        //
+        // depends on AI Image generation
+        // image = generateAndProcessAsset(prompt)
+        //
+        // Is there a corresponding WebSocket client(s) for the villager?
+        // If yes, send it to them
+        // If no, add to user's unseenNewAssets[]
+        ws.send(JSON.stringify({ res: `TODO` }));
       }
       break;
     // ADD NEW WEBSOCKET REQUEST TYPES HERE
