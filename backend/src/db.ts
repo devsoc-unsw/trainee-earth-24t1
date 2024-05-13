@@ -75,7 +75,7 @@ const generateMap = (): PlayerMap => {
  */
 export async function addVillager(
   villager: VillagerRequest
-): Promise<Villager> {
+): Promise<Villager | null> {
   try {
     // TODO: Should villagers store interactingWith on the server?
     //       Right now, they do not. Something to think about.
@@ -83,24 +83,47 @@ export async function addVillager(
     const res = await villagers.insertOne(villager);
     console.log(`New villager inserted with id: ${res.insertedId}`);
 
-    villager['_id'] = res.insertedId;
-    villager['interactingWith'] = [];
+    const newVillager: any = {
+      ...villager,
+      _id: res.insertedId,
+      interactingWith: [],
+    };
 
-    // TODO: add proper validation step here rather than using `as`
-    return villager as Villager;
+    return isVillager(newVillager) ? newVillager : null;
   } catch (e) {
     console.error(e);
   }
 }
 
-export async function getVillager(id: ObjectId): Promise<Villager> {
+function isVillager(obj: any): obj is Villager {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    '_id' in obj &&
+    obj._id instanceof ObjectId &&
+    'interactingWith' in obj &&
+    (obj.interactingWith instanceof ObjectId || obj.interactingWith === null) &&
+    'friends' in obj &&
+    Array.isArray(obj.friends) &&
+    obj.friends.every((friend) => friend instanceof ObjectId) &&
+    'enemies' in obj &&
+    Array.isArray(obj.enemies) &&
+    obj.enemies.every((enemy) => enemy instanceof ObjectId) &&
+    'wealth' in obj &&
+    typeof obj.wealth === 'number' &&
+    'items' in obj &&
+    Array.isArray(obj.items) &&
+    obj.items.every((item) => item instanceof ObjectId)
+  );
+}
+
+export async function getVillager(id: ObjectId): Promise<Villager | null> {
   try {
     const villagers = db.collection('villagers');
     const villager = await villagers.findOne({
       _id: id,
     });
-    // TODO: add proper validation step here rather than using `as`
-    return villager as Villager;
+    return isVillager(villager) ? villager : null;
   } catch (e) {
     console.error(e);
   }
