@@ -62,3 +62,25 @@ export interface VillagerRequest extends Object {
   wealth: number;
   items: EnvironmentObjectId[];
 }
+
+export function isVillager(obj: any): obj is Villager {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    '_id' in obj &&
+    obj._id instanceof ObjectId &&
+    'interactingWith' in obj &&
+    (obj.interactingWith instanceof ObjectId || obj.interactingWith === null) &&
+    'friends' in obj &&
+    Array.isArray(obj.friends) &&
+    obj.friends.every((friend) => friend instanceof ObjectId) &&
+    'enemies' in obj &&
+    Array.isArray(obj.enemies) &&
+    obj.enemies.every((enemy) => enemy instanceof ObjectId) &&
+    'wealth' in obj &&
+    typeof obj.wealth === 'number' &&
+    'items' in obj &&
+    Array.isArray(obj.items) &&
+    obj.items.every((item) => item instanceof ObjectId)
+  );
+}
