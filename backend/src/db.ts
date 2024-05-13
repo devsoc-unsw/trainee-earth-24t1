@@ -86,6 +86,7 @@ export async function addVillager(
     villager['_id'] = res.insertedId;
     villager['interactingWith'] = [];
 
+    // TODO: add proper validation step here rather than using `as`
     return villager as Villager;
   } catch (e) {
     console.error(e);
@@ -98,6 +99,7 @@ export async function getVillager(id: ObjectId): Promise<Villager> {
     const villager = await villagers.findOne({
       _id: id,
     });
+    // TODO: add proper validation step here rather than using `as`
     return villager as Villager;
   } catch (e) {
     console.error(e);
