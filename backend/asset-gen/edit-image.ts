@@ -1,6 +1,8 @@
 import axios from "axios";
 import FormData from "form-data";
 import sharp from "sharp";
+import dotenv from "dotenv";
+dotenv.config();
 
 // Remove bg given image data
 export async function removeImageBGViaData(
