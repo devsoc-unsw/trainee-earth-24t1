@@ -87,7 +87,7 @@ export async function addVillager(
     const newVillager: any = {
       ...villager,
       _id: res.insertedId,
-      interactingWith: [],
+      interactingWith: null,
     };
 
     return isVillager(newVillager) ? newVillager : null;
