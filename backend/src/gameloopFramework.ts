@@ -24,7 +24,7 @@ export class GameLoop {
    * Length of a tick in milliseconds. The denominator is your desired framerate.
    * e.g. 1000 / 20 = 20 fps,  1000 / 60 = 60 fps
    */
-  readonly frameLengthMs = 1000 / 4;
+  readonly frameLengthMs = 1000 / 1;
 
   /**
    * Period of time right before the next frame is intended to begin,
@@ -33,7 +33,7 @@ export class GameLoop {
    * setTimeout schedules the next tick within a 16-32ms error margin.
    * https://timetocode.tumblr.com/post/71512510386/
    */
-  readonly accurateTickPeriodMs = 16;
+  readonly accurateTickPeriodMs = 32;
 
   /**
    * Minimum delay in milliseconds for setTimeout. Must be smaller than

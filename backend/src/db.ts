@@ -3,7 +3,6 @@ import { User } from './types/databaseTypes.js';
 import { Cell, Coordinates, PlayerMap } from './types/simulationTypes.js';
 
 const mongoURI: string = process.env.MONGODB_CONNECTION_STR;
-console.log(mongoURI);
 
 const client = new MongoClient(mongoURI, {
   serverApi: {
