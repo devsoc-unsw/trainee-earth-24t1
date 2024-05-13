@@ -49,11 +49,14 @@ type UnownedCell = {
 
 type VillagerId = string;
 
-export interface Villager extends Object {
-  id: VillagerId;
+export interface Villager extends VillagerRequest {
+  _id: VillagerId;
+  interactingWith: VillagerId | EnvironmentObjectId | null;
+}
+
+export interface VillagerRequest extends Object {
   friends: VillagerId[];
   enemies: VillagerId[];
   wealth: number;
   items: EnvironmentObjectId[];
-  interactingWith: VillagerId | EnvironmentObjectId | null;
 }

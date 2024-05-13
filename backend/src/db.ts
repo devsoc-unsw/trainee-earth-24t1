@@ -1,6 +1,12 @@
 import { Db, MongoClient, ServerApiVersion } from 'mongodb';
 import { User } from './types/databaseTypes.js';
-import { Cell, Coordinates, PlayerMap } from './types/simulationTypes.js';
+import {
+  Cell,
+  Coordinates,
+  PlayerMap,
+  VillagerRequest,
+  Villager,
+} from './types/simulationTypes.js';
 
 const mongoURI: string = process.env.MONGODB_CONNECTION_STR;
 
@@ -58,3 +64,30 @@ const generateMap = (): PlayerMap => {
   map.cells.set(origin, originCell);
   return map;
 };
+
+/**
+ * Adds a new villager to the database.
+ * Note that this method does not itself create a VillagerRequest object.
+ *
+ * @param {VillagerRequest} villager - The villager object to be added, sans an ID
+ *                                     or interactingWith field.
+ * @return {Promise<Villager>} The newly added villager with updated fields.
+ */
+export async function addVillager(
+  villager: VillagerRequest
+): Promise<Villager> {
+  try {
+    // TODO: Should villagers store interactingWith on the server?
+    //       Right now, they do not. Something to think about.
+    const villagers = db.collection('villagers');
+    const res = await villagers.insertOne(villager);
+    console.log(`New villager inserted with id: ${res.insertedId}`);
+
+    villager['_id'] = res.insertedId;
+    villager['interactingWith'] = [];
+
+    return villager as Villager;
+  } catch (e) {
+    console.error(e);
+  }
+}
