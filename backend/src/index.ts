@@ -33,7 +33,7 @@ app.get("/map", (req, res) => {
   const map: PlayerMap = { cells: new Map<Coordinates, Cell>() };
   const origin: Coordinates = { x: 0, y: 0 };
   const originCell: Cell = {
-    owner: "N/A",
+    owner: undefined,
     object: null,
   };
   map.cells.set(origin, originCell);
