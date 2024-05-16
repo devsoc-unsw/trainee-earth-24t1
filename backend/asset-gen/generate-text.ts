@@ -12,10 +12,10 @@ export async function generateText(
       messages,
       model: "gpt-4o",
     });
-    console.log(`Generated text: ${completion.choices[0].message.content}`);
+    console.log(`Generated text: ${completion.choices[0].message.content}\n`);
     return completion.choices[0];
   } catch (err) {
-    console.error("Failed to generate text");
+    console.error("Failed to generate text\n");
     console.error(err);
     return null;
   }

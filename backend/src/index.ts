@@ -106,7 +106,9 @@ app.get("/gen/villager", async (req, res) => {
 app.get("/gen/house/v2", async (req, res) => {
   try {
     const asset = await generateHouse();
-    res.send(`<html><body><img src="${asset.originalImgUrl}" /></body></html>`);
+    res.send(
+      `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
+    );
   } catch (err) {
     console.error(err);
     res.status(500).send(err);
