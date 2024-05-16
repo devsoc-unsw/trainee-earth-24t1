@@ -5,9 +5,11 @@ import {
   generateResourceObject,
   generateHouseObject,
   generateVillagerObject,
+  generateHouseObjectCustom,
 } from "asset-gen/generate-image.ts";
 import { storeImage } from "asset-gen/store-image.ts";
 import OpenAI from "openai";
+import { generateText } from "./generate-text.ts";
 
 class Asset {
   private readonly _id: string;
@@ -112,6 +114,23 @@ export async function generateAsset(
 
   newAsset.processedImgUrl = processImgUrl;
   console.log(`Final image: ${processImgUrl}`);
+
+  return newAsset;
+}
+
+export async function generateHouse(): Promise<Asset | null> {
+  const generatedImage = await generateHouseObjectCustom();
+
+  if (generatedImage == null || generatedImage.url == null) {
+    console.error("Failed to generate image");
+    return null;
+  }
+
+  const newAsset = new Asset(
+    generatedImage.url,
+    generatedImage.revised_prompt ?? "",
+    generatedImage.url.split(".").pop() ?? "png"
+  );
 
   return newAsset;
 }

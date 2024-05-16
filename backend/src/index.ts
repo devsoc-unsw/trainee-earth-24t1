@@ -5,7 +5,11 @@ import { WebSocketServer, WebSocket } from "ws";
 import { handleWSRequest } from "src/wsHandler.ts";
 import { GameLoop } from "./gameloopFramework.js";
 import { simulationStep } from "./simulationServer.js";
-import { generateAsset, AssetType } from "asset-gen/generate-asset.ts";
+import {
+  generateAsset,
+  AssetType,
+  generateHouse,
+} from "asset-gen/generate-asset.ts";
 
 const EXPRESS_PORT = 3000;
 
@@ -55,7 +59,7 @@ app.get("/gen/cosmetic-environ", async (req, res) => {
       `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
     );
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).send(err);
   }
 });
@@ -68,7 +72,7 @@ app.get("/gen/resource-environ", async (req, res) => {
       `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
     );
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).send(err);
   }
 });
@@ -81,7 +85,7 @@ app.get("/gen/house", async (req, res) => {
       `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
     );
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).send(err);
   }
 });
@@ -94,7 +98,17 @@ app.get("/gen/villager", async (req, res) => {
       `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
     );
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    res.status(500).send(err);
+  }
+});
+
+app.get("/gen/house/v2", async (req, res) => {
+  try {
+    const asset = await generateHouse();
+    res.send(`<html><body><img src="${asset.originalImgUrl}" /></body></html>`);
+  } catch (err) {
+    console.error(err);
     res.status(500).send(err);
   }
 });
@@ -155,4 +169,4 @@ wss.on("connection", (ws: WebSocket) => {
 });
 
 const myGameLoop = new GameLoop(simulationStep);
-myGameLoop.startGameLoop();
+// myGameLoop.startGameLoop();
