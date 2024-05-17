@@ -1,5 +1,5 @@
 import axios from "axios";
-import { cropImage, removeImageBGViaData } from "asset-gen/edit-image.ts";
+import { cutImage, cropImage, removeImageBGViaData, removeImageBGViaURL } from "asset-gen/edit-image.ts";
 import {
   generateCosmeticObject,
   generateResourceObject,
@@ -99,6 +99,13 @@ export async function generateAsset(
     console.error("Failed to crop image");
     return null;
   }
+
+  imageData = await cutImage(imageData);
+  if (imageData == null) {
+    console.error('Failed to cut image');
+    return null;
+  } 
+  console.log('Finished cutting image')
 
   const processImgUrl = await storeImage(
     imageData,
