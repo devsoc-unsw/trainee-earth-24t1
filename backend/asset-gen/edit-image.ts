@@ -150,7 +150,9 @@ export async function cutImage(
     const adjacent = width - length;
     const opposite = adjacent * Math.tan((60 * Math.PI) / 180);
     const m = adjacent/opposite;
+    const b = (height - length) + height;
 
+    // i know its fat just trust the process
     const editedImage = await sharp(imageData)
       .ensureAlpha()
       .raw()
@@ -158,18 +160,20 @@ export async function cutImage(
       .then( async ({ data, info }) => {
         const { width, height, channels } = info;
         console.log(width, height)
+        console.log(data.length, "length of data buffer")
         let currIndex = 0;
-        for (let y = 0; y < height/2; y++) {
+        for (let y = 0; y < height; y++) {
           // y = mx + length ; 
           for (let x = 0; x < width; x++) {
-            // const threshold = m*x + length;
+            const threshold = m*x + length;
+            const threshold2 = -1*m*x + b;
             // Pixel falls under the line
-            // if (y > threshold) {
+            if (y > threshold || y > threshold2) {
               data[currIndex] = 0;
               data[currIndex + 1] = 0;
               data[currIndex + 2] = 0;
               data[currIndex + 3] = 0;
-            // }
+            }
             currIndex += 4;
           }
         }
