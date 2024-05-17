@@ -2,6 +2,8 @@ import axios from "axios";
 import FormData from "form-data";
 import { ButtonGroup } from "semantic-ui-react";
 import sharp from "sharp";
+import fs from "node:fs";
+import { Readable } from "node:stream";
 
 // Remove bg given image data
 export async function removeImageBGViaData(
@@ -28,23 +30,25 @@ export async function removeImageBGViaData(
     });
 
     if (response.status != 200) {
-      throw Error(
+      console.error(
         `Error from request to removebg: ${response.status}; ${response.statusText}`
       );
+      return null;
     }
     return response.data;
   } catch (err) {
-    throw err;
+    console.error(err);
+    return null;
   }
 }
 
 // Remove bg given URL of image
 export async function removeImageBGViaURL(
-  url: URL
+  imageUrl: URL
 ): Promise<ArrayBuffer | null> {
   const formData = new FormData();
   formData.append("size", "auto");
-  formData.append("image_url", url.toString());
+  formData.append("image_url", imageUrl.toString());
 
   try {
     const response = await axios({
@@ -60,13 +64,46 @@ export async function removeImageBGViaURL(
     });
 
     if (response.status != 200) {
-      throw Error(
+      console.error(
         `Error from request to removebg: ${response.status}; ${response.statusText}`
       );
+      return null;
     }
     return response.data;
   } catch (err) {
-    throw err;
+    console.error(err);
+    return null;
+  }
+}
+
+export async function removeBackgroundStabilityAIViaFilename(
+  imageFilepath: string
+): Promise<Buffer | null> {
+  const formData = {
+    // image: Readable.from(imageData.toString()),
+    image: fs.createReadStream(imageFilepath),
+    output_format: "png",
+  };
+
+  const response = await axios.postForm(
+    `https://api.stability.ai/v2beta/stable-image/edit/remove-background`,
+    axios.toFormData(formData, new FormData()),
+    {
+      validateStatus: undefined,
+      responseType: "arraybuffer",
+      headers: {
+        Authorization: `Bearer ${process.env.STABILITYAI_API_KEY}`,
+        Accept: "image/*",
+      },
+    }
+  );
+
+  if (response.status === 200) {
+    // fs.writeFileSync("./husky.png", Buffer.from(response.data));
+    return response.data;
+  } else {
+    console.error(`${response.status}: ${response.data.toString()}`);
+    return null;
   }
 }
 
