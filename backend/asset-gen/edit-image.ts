@@ -4,8 +4,17 @@ import sharp from "sharp";
 import fs from "node:fs";
 import { Readable } from "node:stream";
 
-// Remove bg given image data
-export async function removeImageBGViaData(
+/**
+ * @deprecated Use removeBackgroundStableDiffusion instead
+ *
+ * Remove bg given image data
+ *
+ * @param imageData
+ * @param name
+ * @param type
+ * @returns
+ */
+async function removeImageBGViaData(
   imageData: ArrayBuffer,
   name: string,
   type: string
@@ -40,10 +49,15 @@ export async function removeImageBGViaData(
   }
 }
 
-// Remove bg given URL of image
-export async function removeImageBGViaURL(
-  imageUrl: URL
-): Promise<ArrayBuffer | null> {
+/**
+ * @deprecated Use removeBackgroundStableDiffusion instead
+ *
+ * Remove bg given URL of image
+ *
+ * @param imageUrl
+ * @returns
+ */
+async function removeImageBGViaURL(imageUrl: URL): Promise<ArrayBuffer | null> {
   const formData = new FormData();
   formData.append("size", "auto");
   formData.append("image_url", imageUrl.toString());
@@ -74,18 +88,18 @@ export async function removeImageBGViaURL(
   }
 }
 
-export async function removeBackgroundStabilityAIViaFilename(
-  imageFilepath: string
+export async function removeBackgroundStableDiffusion(
+  imageData: ArrayBuffer
 ): Promise<Buffer | null> {
-  const formData = {
-    // image: Readable.from(imageData.toString()),
-    image: fs.createReadStream(imageFilepath),
-    output_format: "png",
-  };
+  const formData = new FormData();
+  formData.append("image", Buffer.from(imageData), {
+    filename: "image.png", // request doenst work without this, idk
+  });
+  formData.append("output_format", "png");
 
   const response = await axios.postForm(
     `https://api.stability.ai/v2beta/stable-image/edit/remove-background`,
-    axios.toFormData(formData, new FormData()),
+    formData,
     {
       validateStatus: undefined,
       responseType: "arraybuffer",

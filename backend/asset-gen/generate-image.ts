@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { generateText } from "./generate-text.ts";
+import { isImageFileTypeType } from "src/utils/imageFileTypes.ts";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -35,14 +36,14 @@ const resourceList = [
 ];
 
 // Picks a random street furniture
-export async function generateCosmeticObject(): Promise<OpenAI.Images.Image | null> {
+export async function generateCosmeticObjectImage(): Promise<OpenAI.Images.Image | null> {
   const furniture = cosmeticList[randomInt(0, cosmeticList.length - 1)];
   const prompt = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Created a simple pixelated image with a standard isometric perspective of a singular ${furniture}, for my simulation game with a village theme. Ensure that the lighting appears to come from the west side, casting appropriate shadows. The item is placed against a plain white background.The item must be within the image's borders whilst being as large as possible.`;
   return generateImage(prompt);
 }
 
 // Pick a random resource building
-export async function generateResourceObject(): Promise<OpenAI.Images.Image | null> {
+export async function generateResourceObjectImage(): Promise<OpenAI.Images.Image | null> {
   const resource = resourceList[randomInt(0, resourceList.length - 1)];
   const prompt = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Created a simple pixelated image with a standard isometric perspective of a singular ${resource}, for my simulation game with a village theme. Ensure that the lighting appears to come from the west side, casting appropriate shadows. The item is placed against a plain white background. The item must be within the constraints of the image borders whilst being as large as possible.`;
   return generateImage(prompt);
@@ -54,19 +55,19 @@ function randomInt(min, max) {
 }
 
 // Get house
-export async function generateHouseObject(): Promise<OpenAI.Images.Image | null> {
+export async function generateHouseObjectImage(): Promise<OpenAI.Images.Image | null> {
   const prompt =
     "I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Create a simple pixelated image with a standard isometric view showing a large, singular square house with warm lighting. Ensure that the lighting appears to come from the west side, casting appropriate shadows. It should be encapsulated in a village core theme that showcases the house's charming characteristics - a thatched roof, timber frames with some greenery. The entire house must be contained within the image's borders, allowing for an unobstructed view of the dwelling. Let the house against a plain white background, highlighting the house's charming attributes and maintaining a straightforward composition. The item must be within the constraints of the image borders whilst being as large as possible.";
   return generateImage(prompt);
 }
 
-export async function generateVillagerObject(): Promise<OpenAI.Images.Image | null> {
+export async function generateVillagerObjectImage(): Promise<OpenAI.Images.Image | null> {
   const prompt =
     "I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Created a simple pixelated image with a standard isometric perspective of a pixelated cute villager in a detailed pixel art style. Put the villager against a plain white background with no additional items.";
   return generateImage(prompt);
 }
 
-export async function generateHouseObjectCustom(): Promise<OpenAI.Images.Image | null> {
+export async function generateHouseObjectImageV2(): Promise<OpenAI.Images.Image | null> {
   const textGenerationMessages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> =
     [
       {
@@ -98,6 +99,7 @@ export async function generateHouseObjectCustom(): Promise<OpenAI.Images.Image |
 async function generateImage(
   prompt: string
 ): Promise<OpenAI.Images.Image | null> {
+  let generatedImage: OpenAI.Images.Image | null = null;
   try {
     const res = await openai.images.generate({
       model: "dall-e-3",
@@ -106,9 +108,8 @@ async function generateImage(
       size: "1024x1024",
       quality: "hd",
     });
-    console.log(`Revised prompt by dalle3: ${res.data[0].revised_prompt}`);
-    console.log(`Generated image from dalle3: ${res.data[0].url}\n`);
-    return res.data[0];
+
+    generatedImage = res.data[0];
   } catch (err) {
     if (err.response) {
       console.error(err.response.status);
@@ -116,6 +117,46 @@ async function generateImage(
     } else {
       console.error(err.message);
     }
+    return null;
+  }
+
+  if (generatedImage == null || generatedImage.url == null) {
+    console.error("Failed to generate image by dalle3");
+    return null;
+  } else {
+    console.log(`Revised prompt by dalle3: ${generatedImage.revised_prompt}`);
+    console.log(`Generated image from dalle3: ${generatedImage.url}\n`);
+  }
+
+  // Regular expression to match the file extension from the url that looks like this:
+  // https://oaidalleapiprodscus.blob.core.windows.net/private/org-yM7OegJ0kpzT66ADsxqPVBwY/user-Z38ClRU3N9yfopoEhF3V4Ep2/img-yKdFK5DiOSw1SRaqrNZaov8H.png?st=2024-05-16T18%3A10%3A07Z&se=2024-05-16T20%3A10%3A07Z&sp=r&sv=2021-08-06&sr=b&rscd=inline&rsct=image/png&skoid=6aaadede-4fb3-4698-a8f6-684d7786b067&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2024-05-16T08%3A09%3A27Z&ske=2024-05-17T08%3A09%3A27Z&sks=b&skv=2021-08-06&sig=PstFL6kjp775uGvzbkpxV4eirF0r7v/YX4BzXUJ3tsA%3D
+  // Name: img-yKdFK5DiOSw1SRaqrNZaov8H
+  // Extension: png
+  const regex = /\/([^\/\.]+)\.(jpg|jpeg|png|gif|bmp|webp)(?=\?|$)/i;
+
+  // Extract the file extension
+  const match = generatedImage.url.match(regex);
+  if (match) {
+    if (match.length < 3) {
+      console.error("Invalid match length");
+      return null;
+    }
+    const filename = match[1];
+    const extension = match[2];
+    if (!isImageFileTypeType(extension)) {
+      console.error(
+        `Invalid file extension extracted from OpenAI image url: ${extension}`
+      );
+      return null;
+    }
+    console.log(
+      `OpenAI image file name: ${filename}, file extension: ${extension}`
+    );
+    return { ...generatedImage, fileName: filename, fileType: extension };
+  } else {
+    console.error(
+      "Could not find file name and/or file extension in the OpenAI image URL"
+    );
     return null;
   }
 }
