@@ -59,7 +59,7 @@ export async function generateAsset(
       generatedImage = await generateResourceObject();
       break;
     case AssetType.HOUSE:
-      generatedImage = await generateHouseObject();
+      generatedImage = await generateHouseObjectCustom();
       break;
     case AssetType.VILLAGER:
       generatedImage = await generateVillagerObject();
@@ -96,13 +96,16 @@ export async function generateAsset(
     return null;
   }
 
-  imageData = await removeImageBGViaData(
-    imageData,
-    newAsset.name,
-    newAsset.type
+  fs.writeFileSync(
+    `./asset-gen/assets/${newAsset.getFilename()}`,
+    Buffer.from(imageData)
+  );
+
+  imageData = await removeBackgroundStabilityAIViaFilename(
+    `./asset-gen/assets/${newAsset.getFilename()}`
   );
   if (imageData == null) {
-    console.error("Failed to remove background from image");
+    console.error("Failed to remove background from image using stability AI");
     return null;
   }
 
@@ -209,6 +212,12 @@ export async function generateHouse(): Promise<Asset | null> {
     console.error("Failed to crop image");
     return null;
   }
+
+  imageData = await cutImage(imageData);
+  if (imageData == null) {
+    console.error('Failed to cut image');
+    return null;
+  } 
 
   const processImgUrl = await storeImage(
     imageData,

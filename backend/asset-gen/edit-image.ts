@@ -145,7 +145,6 @@ export async function cutImage(
     const height = metadata.height;
 
     const length = await getNonAlphaPixel(imageData, width, height);
-    console.log(`the pixel found is ${length}`)
 
     const adjacent = width - length;
     const opposite = adjacent * Math.tan((60 * Math.PI) / 180);
@@ -159,8 +158,7 @@ export async function cutImage(
       .toBuffer({ resolveWithObject: true })
       .then( async ({ data, info }) => {
         const { width, height, channels } = info;
-        console.log(width, height)
-        console.log(data.length, "length of data buffer")
+
         let currIndex = 0;
         for (let y = 0; y < height; y++) {
           // y = mx + length ; 
@@ -177,6 +175,7 @@ export async function cutImage(
             currIndex += 4;
           }
         }
+        // remove if imgur working
         await sharp(data, { raw: { width, height, channels } })
           .toFormat('png')
           .toFile('cut.png')
