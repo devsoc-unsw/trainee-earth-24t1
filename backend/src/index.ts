@@ -8,7 +8,7 @@ import { simulationStep } from "./simulationServer.js";
 import {
   generateAsset,
   AssetType,
-  generateHouse,
+  generateHouseAssetV2,
 } from "asset-gen/generate-asset.ts";
 
 const EXPRESS_PORT = 3000;
@@ -56,7 +56,9 @@ app.get("/gen/cosmetic-environ", async (req, res) => {
   try {
     const asset = await generateAsset(AssetType.COSMETIC_ENVIRONMENT_OBJ);
     res.send(
-      `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
+      `<html><body><img src="${
+        asset.getRemoteImages().at(-1).url
+      }" /></body></html>`
     );
   } catch (err) {
     console.error(err);
@@ -69,7 +71,9 @@ app.get("/gen/resource-environ", async (req, res) => {
   try {
     const asset = await generateAsset(AssetType.RESOURCE_ENVIRONMENT_OBJ);
     res.send(
-      `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
+      `<html><body><img src="${
+        asset.getRemoteImages().at(-1).url
+      }" /></body></html>`
     );
   } catch (err) {
     console.error(err);
@@ -82,7 +86,9 @@ app.get("/gen/house", async (req, res) => {
   try {
     const asset = await generateAsset(AssetType.HOUSE);
     res.send(
-      `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
+      `<html><body><img src="${
+        asset.getRemoteImages().at(-1).url
+      }" /></body></html>`
     );
   } catch (err) {
     console.error(err);
@@ -95,7 +101,9 @@ app.get("/gen/villager", async (req, res) => {
   try {
     const asset = await generateAsset(AssetType.VILLAGER);
     res.send(
-      `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
+      `<html><body><img src="${
+        asset.getRemoteImages().at(-1).url
+      }" /></body></html>`
     );
   } catch (err) {
     console.error(err);
@@ -105,9 +113,11 @@ app.get("/gen/villager", async (req, res) => {
 
 app.get("/gen/house/v2", async (req, res) => {
   try {
-    const asset = await generateHouse();
+    const asset = await generateHouseAssetV2();
     res.send(
-      `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
+      `<html><body><img src="${
+        asset.getRemoteImages().at(-1).url
+      }" /></body></html>`
     );
   } catch (err) {
     console.error(err);

@@ -5,8 +5,17 @@ import sharp from "sharp";
 import fs from "node:fs";
 import { Readable } from "node:stream";
 
-// Remove bg given image data
-export async function removeImageBGViaData(
+/**
+ * @deprecated Use removeBackgroundStableDiffusion instead
+ *
+ * Remove bg given image data
+ *
+ * @param imageData
+ * @param name
+ * @param type
+ * @returns
+ */
+async function removeImageBGViaData(
   imageData: ArrayBuffer,
   name: string,
   type: string
@@ -42,10 +51,15 @@ export async function removeImageBGViaData(
   }
 }
 
-// Remove bg given URL of image
-export async function removeImageBGViaURL(
-  imageUrl: URL
-): Promise<ArrayBuffer | null> {
+/**
+ * @deprecated Use removeBackgroundStableDiffusion instead
+ *
+ * Remove bg given URL of image
+ *
+ * @param imageUrl
+ * @returns
+ */
+async function removeImageBGViaURL(imageUrl: URL): Promise<ArrayBuffer | null> {
   const formData = new FormData();
   formData.append("size", "auto");
   formData.append("image_url", imageUrl.toString());
@@ -76,18 +90,18 @@ export async function removeImageBGViaURL(
   }
 }
 
-export async function removeBackgroundStabilityAIViaFilename(
-  imageFilepath: string
+export async function removeBackgroundStableDiffusion(
+  imageData: ArrayBuffer
 ): Promise<Buffer | null> {
-  const formData = {
-    // image: Readable.from(imageData.toString()),
-    image: fs.createReadStream(imageFilepath),
-    output_format: "png",
-  };
+  const formData = new FormData();
+  formData.append("image", Buffer.from(imageData), {
+    filename: "image.png", // request doenst work without this, idk
+  });
+  formData.append("output_format", "png");
 
   const response = await axios.postForm(
     `https://api.stability.ai/v2beta/stable-image/edit/remove-background`,
-    axios.toFormData(formData, new FormData()),
+    formData,
     {
       validateStatus: undefined,
       responseType: "arraybuffer",
@@ -144,8 +158,8 @@ export async function cutImage(
     const width = metadata.width;
     const height = metadata.height;
 
-    const length = await getNonAlphaPixel(imageData, width, height);
-
+    const length = await getNonAlphaPixel(imageData, 0, height);
+    
     const adjacent = width - length;
     const opposite = adjacent * Math.tan((60 * Math.PI) / 180);
     const m = adjacent/opposite;
@@ -163,23 +177,23 @@ export async function cutImage(
         for (let y = 0; y < height; y++) {
           // y = mx + length ; 
           for (let x = 0; x < width; x++) {
+            // NOTE: threshold is left and threshold2 is right
             const threshold = m*x + length;
             const threshold2 = -1*m*x + b;
             // Pixel falls under the line
-            if (y > threshold || y > threshold2) {
+            if (y > threshold2 || y > threshold) {
               data[currIndex] = 0;
-              data[currIndex + 1] = 0;
+              data[currIndex + 1] = 255;
               data[currIndex + 2] = 0;
-              data[currIndex + 3] = 0;
+              // data[currIndex + 3] = 0;
             }
             currIndex += 4;
           }
         }
-        // remove if imgur working
-        await sharp(data, { raw: { width, height, channels } })
-          .toFormat('png')
-          .toFile('cut.png')
-        return await sharp(data, { raw: { width, height, channels } }).toBuffer();
+
+        const buffer = (await sharp(data, { raw: { width, height, channels } }).toFormat('png').toBuffer());
+        const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+        return arrayBuffer;
       })
 
     return editedImage;
@@ -198,7 +212,7 @@ export async function getNonAlphaPixel(
 
   for (let y = 0; y < height; y++) {
     const pixelBuffer = await sharp(imageData)
-      .extract({ left: 0, top: y, width: 1, height: 1 })
+      .extract({ left: width - 1, top: y, width: 1, height: 1 })
       .raw()
       .toBuffer();
 
@@ -207,8 +221,7 @@ export async function getNonAlphaPixel(
     const alphaValue = pixelBuffer[alphaIndex];
 
     if (alphaValue > 0 && y > length) {
-      length = y;
+      return y;
     }
   }
-  return length;
 }
