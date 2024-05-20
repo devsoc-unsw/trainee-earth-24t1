@@ -4,7 +4,6 @@ import {
   Cell,
   Coordinates,
   WorldMap,
-  IVillager,
   Villager,
   isVillager,
 } from "./types/simulationTypes.js";
@@ -114,12 +113,34 @@ export async function getVillager(id: ObjectId): Promise<Villager | null> {
 }
 
 export interface Serializable {
-  serialize: () => { [key: string]: any };
+  serialize(): JSONValue;
 }
+
+export type JSONPrimitive = string | number | boolean | null | undefined;
+
+export type JSONValue =
+  | JSONPrimitive
+  | JSONValue[]
+  | {
+      [key: string]: JSONValue;
+    };
+
+export type JSONCompatible<T> = unknown extends T
+  ? never
+  : {
+      [P in keyof T]: T[P] extends JSONValue
+        ? T[P]
+        : T[P] extends NotAssignableToJson
+        ? never
+        : JSONCompatible<T[P]>;
+    };
+
+type NotAssignableToJson = bigint | symbol | Function;
 
 /**
  * Don't use this interface. It's just for reference when making deserialize
  * functions for classes that you want to instantiate from serialized JSON.
+ * Make the method static.
  *
  * Example:
  * class MyClass {
@@ -131,5 +152,5 @@ export interface Serializable {
  * }
  */
 // export interface Deserializer {
-//   deserialize: (obj: { [key: string]: any }) => Object;
+//   deserialize: (obj: JSONValue) => Object;
 // }

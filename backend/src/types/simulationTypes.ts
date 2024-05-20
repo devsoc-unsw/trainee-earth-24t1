@@ -1,40 +1,32 @@
-import { ObjectId } from "mongodb";
 import { IWorldMapDocument } from "./databaseTypes.ts";
-import { Serializable } from "src/db.ts";
+import { JSONCompatible, Serializable } from "src/db.ts";
+import createId from "src/utils/createId.ts";
 
 export type Coordinates = {
   x: number;
   y: number;
 };
 
-export interface IWorldMapJSON {
-  cells: Cell[];
+export interface WorldMapJSON {
+  cells: CellJSON[];
 }
 
-export interface IWorldMap extends Serializable {
-  cells: Map<Coordinates, Cell>;
-}
-
-export class WorldMap implements IWorldMap {
-  private _cells: Map<Coordinates, Cell> = new Map();
+export class WorldMap implements Serializable {
+  private cells: Map<Coordinates, Cell> = new Map();
 
   constructor() {}
 
-  get cells(): Map<Coordinates, Cell> {
-    return this._cells;
-  }
-
   addCell(coordinates: Coordinates, cell: Cell): void {
-    this._cells.set(coordinates, cell);
+    this.cells.set(coordinates, cell);
   }
 
-  serialize(): IWorldMapJSON {
+  serialize(): JSONCompatible<WorldMapJSON> {
     return {
       cells: Object.values(this.cells).map((cell) => cell.serialize()),
     };
   }
 
-  static deserialize(obj: IWorldMapJSON): WorldMap {
+  static deserialize(obj: JSONCompatible<WorldMapJSON>): WorldMap {
     const map = new WorldMap();
     obj.cells.forEach((cell) => {
       map.addCell(cell.coordinates, Cell.deserialize(cell));
@@ -42,7 +34,6 @@ export class WorldMap implements IWorldMap {
     return map;
   }
 }
-
 // const map: WorldMap = {
 //   cells: {
 //     {x: 0, y: 0}: {
@@ -56,6 +47,22 @@ export class WorldMap implements IWorldMap {
 //   }
 // }
 
+type EnviroObjectJSON = {
+  _id: string;
+  name: string;
+};
+
+function isEnviroObjectJSON(obj: any): obj is EnviroObjectJSON {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "_id" in obj &&
+    typeof obj._id === "string" &&
+    "name" in obj &&
+    typeof obj.name === "string"
+  );
+}
+
 type EnviroObjectId = string; // uuid
 
 // Used for cells that are occupied by an environment object by do not directly
@@ -63,29 +70,41 @@ type EnviroObjectId = string; // uuid
 type EnviroObjectRef = EnviroObjectId;
 
 export class EnviroObject implements Serializable {
-  readonly _id: EnviroObjectId;
-  name: string;
-  asset: any;
+  private readonly _id: EnviroObjectId;
+  private name: string;
+  // TODO: store asset
+  // asset: any;
 
-  constructor() {}
+  constructor(name: string, _id: EnviroObjectId = createId()) {
+    this.name = name;
+  }
 
-  serialize() {
+  serialize(): JSONCompatible<EnviroObjectJSON> {
     return {
       _id: this._id,
       name: this.name,
-      asset: this.asset, // TODO: Serialize asset
     };
+  }
+
+  static deserialize(obj: JSONCompatible<EnviroObjectJSON>): EnviroObject {
+    return new this(obj.name, obj._id);
   }
 }
 
-export class Cell implements Serializable {
+export type CellJSON = {
   coordinates: Coordinates;
+  owner: VillagerId | null;
+  object: EnviroObjectJSON | EnviroObjectRef | null;
+};
+
+export class Cell implements Serializable {
+  private coordinates: Coordinates;
 
   /**
    * VillagerId if the cell is owned by a villager. null if the cell is
    * not owned by any villager.
    */
-  owner: VillagerId | null = null;
+  private owner: VillagerId | null = null;
 
   /**
    * 1. EnviroObject if the cell is occupied by an environment object and is the primary
@@ -94,12 +113,15 @@ export class Cell implements Serializable {
    *   not the primary cell responsible for storing the object's info.
    * 3. null if the cell is unoccupied (just plain grass)
    */
-  object: EnviroObject | EnviroObjectRef | null = null;
+  private object: EnviroObject | EnviroObjectRef | null = null;
 
-  constructor() {}
+  constructor(x: number, y: number) {
+    this.coordinates = { x, y };
+  }
 
-  serialize() {
+  serialize(): JSONCompatible<CellJSON> {
     return {
+      coordinates: this.coordinates,
       owner: this.owner,
       object:
         this.object instanceof EnviroObject
@@ -107,53 +129,18 @@ export class Cell implements Serializable {
           : this.object,
     };
   }
+
+  static deserialize(obj: JSONCompatible<CellJSON>): Cell {
+    const cell = new Cell(obj.coordinates.x, obj.coordinates.y);
+    cell.owner = obj.owner;
+    cell.object = isEnviroObjectJSON(obj.object)
+      ? EnviroObject.deserialize(obj.object)
+      : obj.object;
+    return cell;
+  }
 }
 
 type VillagerId = string;
-
-export interface IVillager {
-  readonly _id: VillagerId;
-  type: VillagerType;
-  friends: VillagerId[];
-  enemies: VillagerId[];
-  interactingWith: VillagerId | EnviroObjectId | null;
-  energy: number;
-  coins: number;
-  resources: Resources;
-  items: EnviroObjectId[];
-  cosmeticEnvironmentObjects: EnviroObjectId[];
-  characterAttributes: Attributes;
-
-  /**
-   * Multipliers against the basic energy gain from producing each kind of
-   * resource.
-   *
-   * Eg: If the basic energy cost of producing 1 unit of wheat is 10, and the
-   * this villager's resourceProductionEnergyCostMultipliers[ResourceType.wheat]
-   * is 1.5, then it costs 1.5 * 10 = 15 energy for this villager to produce 1
-   * unit of wheat.
-   *
-   * {
-   *  ResourceType.wheat: 1.5,
-   *  ResourceType.sugar: 1.2,
-   *  ResourceType.wood: 0.8,
-   * }
-   */
-  resourceProductionEnergyCostMultipliers: Map<ResourceType, number>;
-
-  /**
-   * Similar to resourceProductionEnergyCostMultipliers, but for resource
-   * consumption.
-   *
-   * {
-   *  ResourceType.wood: 0.8, * 30
-   *  ResourceType.wheat: 1.5, * 10
-   *  ResourceType.sugar: 1.2, * 5
-   *  ResourceType.steel: 0,
-   * }
-   */
-  resourceConsumptionEnergyGainMultipliers: Map<ResourceType, number>;
-}
 
 const VILLAGER_TYPES_ARRAY = [
   "farmer",
@@ -175,43 +162,52 @@ const VILLAGER_TYPES_ARRAY = [
 ] as const;
 type VillagerType = (typeof VILLAGER_TYPES_ARRAY)[number];
 
-export class Villager implements IVillager {
-  readonly _id: VillagerId;
-  type: VillagerType;
-  friends: VillagerId[];
-  enemies: VillagerId[];
-  interactingWith: VillagerId | EnviroObjectId | null;
-  energy: number;
-  coins: number;
-  resources: Resources;
-  items: EnviroObjectId[];
-  cosmeticEnvironmentObjects: EnviroObjectId[];
-  characterAttributes: Attributes;
+export class Villager {
+  private readonly _id: VillagerId;
+  private type: VillagerType;
+  private friends: VillagerId[];
+  private enemies: VillagerId[];
+  private interactingWith: VillagerId | EnviroObjectId | null = null;
+  private energy: number;
+  private coins: number;
+  private resources: Resources;
+  private items: EnviroObjectId[];
+  private cosmeticEnvironmentObjects: EnviroObjectId[];
+  private characterAttributes: Attributes;
 
-  resourceProductionEnergyCostMultipliers: Map<ResourceType, number>;
-  resourceConsumptionEnergyGainMultipliers: Map<ResourceType, number>;
+  /**
+   * Multipliers against the basic energy gain from producing each kind of
+   * resource.
+   *
+   * Eg: If the basic energy cost of producing 1 unit of wheat is 10, and the
+   * this villager's resourceProductionEnergyCostMultipliers[ResourceType.wheat]
+   * is 1.5, then it costs 1.5 * 10 = 15 energy for this villager to produce 1
+   * unit of wheat.
+   *
+   * {
+   *  ResourceType.wheat: 1.5,
+   *  ResourceType.sugar: 1.2,
+   *  ResourceType.wood: 0.8,
+   * }
+   */
+  private resourceProductionEnergyCostMultipliers: Map<ResourceType, number> =
+    new Map();
 
-  constructor({
-    _id,
-    interactingWith,
-    friends,
-    enemies,
-    coins,
-    resources,
-    items,
-    cosmeticEnvironmentObjects,
-    characterAttributes,
-  }: IVillager) {
-    this._id = _id;
-    this.interactingWith = interactingWith;
-    this.friends = friends;
-    this.enemies = enemies;
-    this.coins = coins;
-    this.resources = resources;
-    this.items = items;
-    this.cosmeticEnvironmentObjects = cosmeticEnvironmentObjects;
-    this.characterAttributes = characterAttributes;
-  }
+  /**
+   * Similar to resourceProductionEnergyCostMultipliers, but for resource
+   * consumption.
+   *
+   * {
+   *  ResourceType.wood: 0.8, * 30
+   *  ResourceType.wheat: 1.5, * 10
+   *  ResourceType.sugar: 1.2, * 5
+   *  ResourceType.steel: 0,
+   * }
+   */
+  private resourceConsumptionEnergyGainMultipliers: Map<ResourceType, number> =
+    new Map();
+
+  constructor() {}
 }
 
 const RESOURCE_ARRAY = [
@@ -420,26 +416,4 @@ export class ProductionPlant implements IProductionPlant {
     this.workerCapacity = workerCapacity;
     this.energyReserve = energyReserve;
   }
-}
-
-export function isVillager(obj: any): obj is IVillager {
-  return (
-    typeof obj === "object" &&
-    obj !== null &&
-    "_id" in obj &&
-    obj._id instanceof ObjectId &&
-    "interactingWith" in obj &&
-    (obj.interactingWith instanceof ObjectId || obj.interactingWith === null) &&
-    "friends" in obj &&
-    Array.isArray(obj.friends) &&
-    obj.friends.every((friend) => friend instanceof ObjectId) &&
-    "enemies" in obj &&
-    Array.isArray(obj.enemies) &&
-    obj.enemies.every((enemy) => enemy instanceof ObjectId) &&
-    "coins" in obj &&
-    typeof obj.coins === "number" &&
-    "items" in obj &&
-    Array.isArray(obj.items) &&
-    obj.items.every((item) => item instanceof ObjectId)
-  );
 }
