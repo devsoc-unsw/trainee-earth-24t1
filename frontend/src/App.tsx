@@ -1,38 +1,21 @@
 import "./App.css";
 import Navbar from "./Navbar";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./components/ui/card";
+import Timer from "./components/ui/timer";
+import { Calendar } from "./components/ui/calendar";
 
 export default function App() {
   return (
-    <body>
+    <div>
       <header className="header">
         <Navbar />
       </header>
-      <div className="content mx-auto w-full max-w-screen-xl">
-        <Button variant="outline">Button</Button>
-        <br />
-        <br />
-        <Card>
-          <CardHeader>
-            <CardTitle>Card Title</CardTitle>
-            <CardDescription>Card Description</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p>Card Content</p>
-          </CardContent>
-          <CardFooter>
-            <p>Card Footer</p>
-          </CardFooter>
-        </Card>{" "}
+      <div className="content flex-col mx-auto w-full max-w-screen-xl justify-center items-center">
+        {'widgets'}
+        <div className="flex justify-around w-100">
+          <Calendar />
+          <Timer />
+        </div>
       </div>
-    </body>
+    </div>
   );
 }
