@@ -6,6 +6,7 @@ import {
   // removeImageBGViaData,
   cutImage,
   // removeImageBGViaURL,
+  flopImage,
   removeBackgroundStableDiffusion,
 } from "asset-gen/edit-image.ts";
 import {
@@ -163,12 +164,30 @@ export async function generateAsset(
     return null;
   }
 
+  // Cut edges from both sides
   imageData = await cutImage(imageData);
   if (imageData == null) {
     console.error('Failed to cut image');
     return null;
   } 
-  console.log('Finished cutting image')
+
+  imageData = await flopImage(imageData);
+  if (imageData == null) {
+    console.error('Failed to flop image');
+    return null;
+  }
+
+  imageData = await cutImage(imageData);
+  if (imageData == null) {
+    console.error('Failed to cut image');
+    return null;
+  } 
+
+  imageData = await flopImage(imageData);
+  if (imageData == null) {
+    console.error('Failed to flop image');
+    return null;
+  }
 
   const croppedImgName = `edges-cropped.${newAsset.type}`;
   const croppedImgUrl = await storeImageIntoBunny(
