@@ -1,4 +1,4 @@
-import { JSONCompatible, JSONValue } from "src/db.ts";
+import { JSONCompatible, JSONObject, Serializable } from "src/db.ts";
 
 /**
  * Creates a new copied object and transforms the object's values using a
@@ -89,3 +89,77 @@ export function mapToObject<K extends string, T extends JSONCompatible<T>>(
 export type Entries<T> = {
   [K in keyof T]: [K, T[K]];
 }[keyof T][];
+
+/**
+ * Convert from map:
+ *  Map<MyTypeId extends string, MyType extends Serializable<MyTypeJSON>>
+ * to object:
+ *  { [typeId: string]: MyTypeJSON }
+ *
+ * Example:
+ * ```
+ * type CatId = string;
+ * interface CatJSON extends JSONObject {}
+ * class Cat implements Serializable<CatJSON> {}
+ *
+ * const map: Map<CatId, Cat> = new Map();
+ * map.set('cat1', new Cat());
+ * map.set('cat2', new Cat());
+ * const obj = serializeMapToJSON<CatId, Cat, CatJSON>(map);
+ * console.log(obj); // { cat1: {...}, cat2: {...} }
+ * ```
+ *
+ * Initially made to replace the following:
+ *
+ * ```typescript
+ * export class SimulationServerState {
+ *
+ *   // ...
+ *
+ *   serialize(): JSONCompatible<SimulationServerStateJSON> {
+ *   return {
+ *     // ...
+ *     villagers: Object.fromEntries<VillagerJSON>(
+ *       (
+ *         Object.entries(this.villagers) as Entries<
+ *           Record<VillagerId, Villager>
+ *         >
+ *       ).map(([k, v]) => [k, v.serialize()])
+ *     ),
+ *     attributes: Object.fromEntries<AttributeJSON>(
+ *       (
+ *         Object.entries(this.attributes) as Entries<
+ *           Record<AttributeId, Attribute>
+ *         >
+ *       ).map(([k, v]) => [k, v.serialize()])
+ *     ),
+ *     enviroObjects: Object.fromEntries<EnviroObjectJSON>(
+ *       (
+ *         Object.entries(this.enviroObjects) as Entries<
+ *           Record<EnviroObjectId, EnviroObject>
+ *         >
+ *       ).map(([k, v]) => [k, v.serialize()])
+ *     ),
+ *     resources: Object.fromEntries<ResourceJSON>(
+ *       (
+ *         Object.entries(this.resources) as Entries<
+ *           Record<ResourceId, Resource>
+ *         >
+ *       ).map(([k, v]) => [k, v.serialize()])
+ *     ),
+ *   };
+ * }
+ * ```
+ */
+export function serializeMapToJSON<
+  K extends string,
+  V extends Serializable<JSONType>,
+  JSONType extends JSONObject
+>(map: Map<K, V>): { [k: string]: JSONCompatible<JSONType> } {
+  return Object.fromEntries(
+    (Object.entries(map) as Entries<Record<K, V>>).map(([k, v]) => [
+      k,
+      v.serialize(),
+    ])
+  );
+}

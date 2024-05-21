@@ -2,19 +2,21 @@ import {
   transformObjectValues,
   mapToObject,
   Entries,
+  serializeMapToJSON,
 } from "src/utils/objectTyping.ts";
 import { IWorldMapDocument } from "./databaseTypes.ts";
-import { JSONCompatible, Serializable } from "src/db.ts";
+import { JSONCompatible, JSONObject, JSONValue, Serializable } from "src/db.ts";
 import createId from "src/utils/createId.ts";
 import { Asset, AssetJSON } from "asset-gen/generate-asset.ts";
 
-export type SimulationServerStateJSON = {
+export interface SimulationServerStateJSON extends JSONObject {
   _id: string;
   worldMap: WorldMapJSON;
   villagers: { [key: VillagerId]: VillagerJSON };
+  attributes: { [key: AttributeId]: AttributeJSON };
   enviroObjects: { [key: EnviroObjectId]: EnviroObjectJSON };
   resources: { [key: ResourceId]: ResourceJSON };
-};
+}
 
 export class SimulationServerState {
   private readonly _id: string;
@@ -22,6 +24,8 @@ export class SimulationServerState {
   private worldMap: WorldMap;
 
   private villagers: Map<VillagerId, Villager>;
+
+  private attributes: Map<AttributeId, Attribute>;
 
   /**
    * Includes houses, production objects, cosmetic objects, and any other
@@ -35,6 +39,7 @@ export class SimulationServerState {
     this._id = _id;
     this.worldMap = new WorldMap();
     this.villagers = new Map();
+    this.attributes = new Map();
     this.enviroObjects = new Map();
     this.resources = new Map();
   }
@@ -43,27 +48,10 @@ export class SimulationServerState {
     return {
       _id: this._id,
       worldMap: this.worldMap.serialize(),
-      villagers: Object.fromEntries<VillagerJSON>(
-        (
-          Object.entries(this.villagers) as Entries<
-            Record<VillagerId, Villager>
-          >
-        ).map(([k, v]) => [k, v.serialize()])
-      ),
-      enviroObjects: Object.fromEntries<EnviroObjectJSON>(
-        (
-          Object.entries(this.enviroObjects) as Entries<
-            Record<EnviroObjectId, EnviroObject>
-          >
-        ).map(([k, v]) => [k, v.serialize()])
-      ),
-      resources: Object.fromEntries<ResourceJSON>(
-        (
-          Object.entries(this.resources) as Entries<
-            Record<ResourceId, Resource>
-          >
-        ).map(([k, v]) => [k, v.serialize()])
-      ),
+      villagers: serializeMapToJSON(this.villagers),
+      attributes: serializeMapToJSON(this.attributes),
+      enviroObjects: serializeMapToJSON(this.enviroObjects),
+      resources: serializeMapToJSON(this.resources),
     };
   }
 
@@ -99,11 +87,11 @@ export type Coordinates = {
   y: number;
 };
 
-export interface WorldMapJSON {
+export interface WorldMapJSON extends JSONObject {
   cells: CellJSON[];
 }
 
-export class WorldMap implements Serializable {
+export class WorldMap implements Serializable<WorldMapJSON> {
   private cells: Map<Coordinates, Cell> = new Map();
 
   constructor() {}
@@ -139,13 +127,13 @@ export class WorldMap implements Serializable {
 //   }
 // }
 
-export type CellJSON = {
+export interface CellJSON extends JSONObject {
   coordinates: Coordinates;
   owner: VillagerId | null;
   object: EnviroObjectJSON | EnviroObjectRef | null;
-};
+}
 
-export class Cell implements Serializable {
+export class Cell implements Serializable<CellJSON> {
   private coordinates: Coordinates;
 
   /**
@@ -188,11 +176,11 @@ export class Cell implements Serializable {
   }
 }
 
-type EnviroObjectJSON = {
+interface EnviroObjectJSON extends JSONObject {
   _id: string;
   name: string;
   asset: AssetJSON | null;
-};
+}
 
 function isEnviroObjectJSON(obj: any): obj is EnviroObjectJSON {
   return (
@@ -211,7 +199,7 @@ type EnviroObjectId = string; // uuid
 // own the information about the object. Reference the object by its id.
 type EnviroObjectRef = EnviroObjectId;
 
-export class EnviroObject implements Serializable {
+export class EnviroObject implements Serializable<EnviroObjectJSON> {
   protected readonly _id: EnviroObjectId;
   protected name: string;
   asset: Asset | null;
@@ -244,12 +232,17 @@ export class EnviroObject implements Serializable {
 }
 
 export interface CosmeticObjectJSON extends EnviroObjectJSON {}
-export class CosmeticObject extends EnviroObject implements Serializable {}
+export class CosmeticObject
+  extends EnviroObject
+  implements Serializable<CosmeticObjectJSON> {}
 
 export interface HouseObjectJSON extends EnviroObjectJSON {
   owner: VillagerId | null;
 }
-export class HouseObject extends EnviroObject implements Serializable {
+export class HouseObject
+  extends EnviroObject
+  implements Serializable<HouseObjectJSON>
+{
   readonly owner: VillagerId | null = null;
 
   constructor(
@@ -301,7 +294,7 @@ const VILLAGER_TYPES_ARRAY = [
 ] as const;
 type VillagerType = (typeof VILLAGER_TYPES_ARRAY)[number];
 
-export type VillagerJSON = {
+export interface VillagerJSON extends JSONObject {
   _id: string;
   type: VillagerType;
   friends: VillagerId[];
@@ -310,15 +303,14 @@ export type VillagerJSON = {
   energy: number;
   coins: number;
   resources: ResourcesCount;
-  items: EnviroObjectId[];
   cosmeticEnvironmentObjects: EnviroObjectId[];
   resourceProductionEnergyCostMultipliers: { [resource: ResourceId]: number };
   resourceConsumptionEnergyGainMultipliers: { [resource: ResourceId]: number };
-  characterAttributes: { [key in AttributeType]: AttributeValueJSON };
+  characterAttributes: { [attribute: AttributeId]: AttributeValueJSON };
   houseObject: HouseObjectJSON | null;
-};
+}
 
-export class Villager implements Serializable {
+export class Villager implements Serializable<VillagerJSON> {
   private readonly _id: VillagerId;
   private type: VillagerType;
   private friends: VillagerId[];
@@ -327,7 +319,6 @@ export class Villager implements Serializable {
   private energy: number;
   private coins: number;
   private resources: ResourcesCount;
-  private items: EnviroObjectId[];
   private cosmeticEnvironmentObjects: EnviroObjectId[];
   private characterAttributes: AttributeValues;
 
@@ -380,7 +371,6 @@ export class Villager implements Serializable {
       energy: this.energy,
       coins: this.coins,
       resources: this.resources,
-      items: this.items,
       cosmeticEnvironmentObjects: this.cosmeticEnvironmentObjects,
       resourceProductionEnergyCostMultipliers: mapToObject(
         this.resourceProductionEnergyCostMultipliers
@@ -405,7 +395,6 @@ export class Villager implements Serializable {
     villager.energy = obj.energy;
     villager.coins = obj.coins;
     villager.resources = obj.resources;
-    villager.items = obj.items;
     villager.cosmeticEnvironmentObjects = obj.cosmeticEnvironmentObjects;
 
     const resourceProductionEnergyCostMultipliers = new Map();
@@ -441,20 +430,24 @@ export class Villager implements Serializable {
   }
 }
 
-const RESOURCES_ARRAY = [
-  "wheat",
-  "sugar",
-  "wood",
-  "steel",
-  "stone",
-  "iron",
-  "gold",
-  "diamond",
-  "coal",
-  "glass",
-  "fish",
-  "plough",
-] as const;
+/**
+ * We don't want to limit the kinds of resources to this fixed list, we also
+ * want to be able dynamically add new kinds of resources to the game as it runs.
+ */
+// const RESOURCES_ARRAY = [
+//   "wheat",
+//   "sugar",
+//   "wood",
+//   "steel",
+//   "stone",
+//   "iron",
+//   "gold",
+//   "diamond",
+//   "coal",
+//   "glass",
+//   "fish",
+//   "plough",
+// ] as const;
 
 // export type ResourceType = (typeof RESOURCES_ARRAY)[number];
 
@@ -473,15 +466,15 @@ type ResourcesCount = {
 
 type ResourceId = string;
 
-export type ResourceJSON = {
+export interface ResourceJSON extends JSONObject {
   _id: string;
   name: string;
   productionEnergyCostBasic: number;
   consumptionEnergyGainBasic: number;
   type: ResourceTypeType;
-};
+}
 
-class Resource implements Serializable {
+class Resource implements Serializable<ResourceJSON> {
   private readonly _id: ResourceId;
   private name: string;
 
@@ -538,56 +531,104 @@ class Resource implements Serializable {
   }
 }
 
-export type AttributeValueJSON = {
+export type AttributeId = string;
+
+/**
+ * We don't want to limit the kinds of attributes to this fixed list, we also
+ * want to be able dynamically add new kinds of attributes to the game as it runs.
+ */
+// const ATTRIBUTES_ARRAY = [
+//   // Ability to perform physically demanding tasks, such as in harvesting
+//   // resources.
+//   "strength",
+
+//   // How fast the character can travel across the map.
+//   "speed",
+
+//   // Ability to sustain physical activity over time.
+//   "stamina",
+
+//   // Ability to solve problems and think critically.
+//   "intelligence",
+
+//   // Ability to influence and persuade others, particularly in trades.
+//   "charisma",
+
+//   // Ability to identity profitable opportunities such as resources and
+//   // trades.
+//   "perception",
+
+//   // Ability to perform tasks that require precision and fine motor skills.
+//   "dexterity",
+
+//   // Ability to create items and objects.
+//   "crafting",
+
+//   // Ability to negotiate and make deals, particularly in trades.
+//   "negotiation",
+
+//   "luck",
+
+//   "adventurousness",
+// ] as const;
+
+// type AttributeType = (typeof ATTRIBUTES_ARRAY)[number];
+
+export interface AttributeJSON extends JSONObject {
+  _id: string;
+  name: string;
+}
+
+export class Attribute implements Serializable<AttributeJSON> {
+  private readonly _id: string;
+  private name: string;
+
+  constructor(name: string, _id: string = createId()) {
+    this.name = name;
+    this._id = _id;
+  }
+
+  serialize(): JSONCompatible<AttributeJSON> {
+    return {
+      _id: this._id,
+      name: this.name,
+    };
+  }
+
+  static deserialize(obj: JSONCompatible<AttributeJSON>): Attribute {
+    return new Attribute(obj.name, obj._id);
+  }
+}
+
+/**
+ * To represents a villager's attribute stats. A mapping from attributes to the
+ * value that the villager has for that attribute.
+ *
+ * Example:
+ * {
+ *    "strength": 10,
+ *    "speed": 5,
+ *    "stamina": 8,
+ *    "intelligence": 7,
+ * }
+ */
+type AttributeValues = {
+  [attribute: AttributeId]: AttributeValue;
+};
+
+export interface AttributeValueJSON extends JSONObject {
   _id: string;
   base: number;
   boosts: AttributeBoostJSON[];
-};
+}
 
-const ATTRIBUTES_ARRAY = [
-  // Ability to perform physically demanding tasks, such as in harvesting
-  // resources.
-  "strength",
-
-  // How fast the character can travel across the map.
-  "speed",
-
-  // Ability to sustain physical activity over time.
-  "stamina",
-
-  // Ability to solve problems and think critically.
-  "intelligence",
-
-  // Ability to influence and persuade others, particularly in trades.
-  "charisma",
-
-  // Ability to identity profitable opportunities such as resources and
-  // trades.
-  "perception",
-
-  // Ability to perform tasks that require precision and fine motor skills.
-  "dexterity",
-
-  // Ability to create items and objects.
-  "crafting",
-
-  // Ability to negotiate and make deals, particularly in trades.
-  "negotiation",
-
-  "luck",
-
-  "adventurousness",
-] as const;
-
-type AttributeType = (typeof ATTRIBUTES_ARRAY)[number];
-
-type AttributeValues = {
-  [key in AttributeType]: AttributeValue;
-};
-
-class AttributeValue implements Serializable {
+class AttributeValue implements Serializable<AttributeValueJSON> {
   private readonly _id: string;
+
+  // Base value for the attribute
   private base: number;
+
+  // List of boosts that modify the attribute value
   private boosts: AttributeBoost[] = [];
 
   constructor(base: number = 0, _id: string = createId()) {
@@ -623,13 +664,13 @@ class AttributeValue implements Serializable {
   }
 }
 
-export type AttributeBoostJSON = {
+export interface AttributeBoostJSON extends JSONObject {
   value: number;
   duration: number;
   expiration: number;
-};
+}
 
-class AttributeBoost implements Serializable {
+class AttributeBoost implements Serializable<AttributeBoostJSON> {
   private value: number;
   private duration: number;
   private expiration: number;
@@ -681,7 +722,10 @@ export interface ProductionObjectJSON extends EnviroObjectJSON {
   energyReserve: number;
 }
 
-export class ProductionObject extends EnviroObject implements Serializable {
+export class ProductionObject
+  extends EnviroObject
+  implements Serializable<ProductionObjectJSON>
+{
   /**
    * @param resourceProductionProportions Map of resources produced by the production
    * plant and their proportions. The proportions should sum to 1.
@@ -757,14 +801,14 @@ export class ProductionObject extends EnviroObject implements Serializable {
   }
 }
 
-export type SpecialItemJSON = {
+export interface SpecialItemJSON extends JSONObject {
   _id: string;
   name: string;
   description: string;
   asset: AssetJSON | null;
-};
+}
 
-export class SpecialItem implements Serializable {
+export class SpecialItem implements Serializable<SpecialItemJSON> {
   private readonly _id: string;
   private name: string;
   private description: string;
