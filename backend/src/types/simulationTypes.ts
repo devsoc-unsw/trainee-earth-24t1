@@ -7,7 +7,7 @@ import {
 import { IWorldMapDocument } from "./databaseTypes.ts";
 import { JSONCompatible, JSONObject, JSONValue, Serializable } from "src/db.ts";
 import createId from "src/utils/createId.ts";
-import { Asset, AssetJSON } from "asset-gen/generate-asset.ts";
+import { Asset, AssetId, AssetJSON } from "asset-gen/generate-asset.ts";
 
 export interface SimulationServerStateJSON extends JSONObject {
   _id: string;
@@ -179,7 +179,7 @@ export class Cell implements Serializable<CellJSON> {
 interface EnviroObjectJSON extends JSONObject {
   _id: string;
   name: string;
-  asset: AssetJSON | null;
+  asset: AssetId | null;
 }
 
 function isEnviroObjectJSON(obj: any): obj is EnviroObjectJSON {
@@ -202,12 +202,12 @@ type EnviroObjectRef = EnviroObjectId;
 export class EnviroObject implements Serializable<EnviroObjectJSON> {
   protected readonly _id: EnviroObjectId;
   protected name: string;
-  asset: Asset | null;
+  asset: AssetId | null;
 
   constructor(
     name: string,
     _id: EnviroObjectId = createId(),
-    asset: Asset | null = null
+    asset: AssetId | null = null
   ) {
     this.name = name;
     this._id = _id;
@@ -218,16 +218,12 @@ export class EnviroObject implements Serializable<EnviroObjectJSON> {
     return {
       _id: this._id,
       name: this.name,
-      asset: this.asset?.serialize() ?? null,
+      asset: this.asset,
     };
   }
 
   static deserialize(obj: JSONCompatible<EnviroObjectJSON>): EnviroObject {
-    return new this(
-      obj.name,
-      obj._id,
-      obj.asset ? Asset.deserialize(obj.asset) : null
-    );
+    return new this(obj.name, obj._id, obj.asset);
   }
 }
 
@@ -249,7 +245,7 @@ export class HouseObject
     name: string,
     owner: VillagerId | null = null,
     _id: EnviroObjectId = createId(),
-    asset: Asset | null = null
+    asset: AssetId | null = null
   ) {
     super(name, _id, asset);
     this.owner = owner;
@@ -263,12 +259,7 @@ export class HouseObject
   }
 
   static deserialize(obj: JSONCompatible<HouseObjectJSON>): HouseObject {
-    return new HouseObject(
-      obj.name,
-      obj.owner,
-      obj._id,
-      obj.asset ? Asset.deserialize(obj.asset) : null
-    );
+    return new HouseObject(obj.name, obj.owner, obj._id, obj.asset);
   }
 }
 
@@ -307,7 +298,7 @@ export interface VillagerJSON extends JSONObject {
   resourceProductionEnergyCostMultipliers: { [resource: ResourceId]: number };
   resourceConsumptionEnergyGainMultipliers: { [resource: ResourceId]: number };
   characterAttributes: { [attribute: AttributeId]: AttributeValueJSON };
-  houseObject: HouseObjectJSON | null;
+  houseObject: EnviroObjectId | null;
 }
 
 export class Villager implements Serializable<VillagerJSON> {
@@ -354,7 +345,7 @@ export class Villager implements Serializable<VillagerJSON> {
   private resourceConsumptionEnergyGainMultipliers: Map<ResourceId, number> =
     new Map();
 
-  private houseObject: HouseObject | null = null;
+  private houseObject: EnviroObjectId | null = null;
 
   constructor(type: VillagerType, _id: VillagerId = createId()) {
     this.type = type;
@@ -382,7 +373,7 @@ export class Villager implements Serializable<VillagerJSON> {
         this.characterAttributes,
         (attributeValue) => attributeValue.serialize()
       ),
-      houseObject: this.houseObject?.serialize() ?? null,
+      houseObject: this.houseObject,
     };
   }
 
@@ -397,35 +388,21 @@ export class Villager implements Serializable<VillagerJSON> {
     villager.resources = obj.resources;
     villager.cosmeticEnvironmentObjects = obj.cosmeticEnvironmentObjects;
 
-    const resourceProductionEnergyCostMultipliers = new Map();
-    (
-      Object.entries(obj.resourceProductionEnergyCostMultipliers) as Entries<
-        typeof obj.resourceProductionEnergyCostMultipliers
-      >
-    ).forEach(([k, v]) => {
-      resourceProductionEnergyCostMultipliers.set(k, v);
-    });
-    villager.resourceProductionEnergyCostMultipliers =
-      resourceProductionEnergyCostMultipliers;
+    villager.resourceProductionEnergyCostMultipliers = new Map(
+      Object.entries(obj.resourceProductionEnergyCostMultipliers)
+    );
 
-    const resourceConsumptionEnergyGainMultipliers = new Map();
-    (
-      Object.entries(obj.resourceConsumptionEnergyGainMultipliers) as Entries<
-        typeof obj.resourceConsumptionEnergyGainMultipliers
-      >
-    ).forEach(([k, v]) => {
-      resourceConsumptionEnergyGainMultipliers.set(k, v);
-    });
-    villager.resourceConsumptionEnergyGainMultipliers =
-      resourceConsumptionEnergyGainMultipliers;
+    villager.resourceConsumptionEnergyGainMultipliers = new Map(
+      Object.entries(obj.resourceConsumptionEnergyGainMultipliers)
+    );
 
     villager.characterAttributes = transformObjectValues(
       obj.characterAttributes,
       (attributeValue) => AttributeValue.deserialize(attributeValue)
     );
-    villager.houseObject = obj.houseObject
-      ? HouseObject.deserialize(obj.houseObject)
-      : null;
+
+    villager.houseObject = obj.houseObject;
+
     return villager;
   }
 }
@@ -762,7 +739,7 @@ export class ProductionObject
     workerCapacity: number,
     energyReserve: number = 0,
     _id: string = createId(),
-    asset: Asset | null = null
+    asset: AssetId | null = null
   ) {
     super(name, _id, asset);
     this.resourceProductionProportions = resourceProductionProportions;
@@ -782,21 +759,13 @@ export class ProductionObject
   }
 
   deserialize(obj: JSONCompatible<ProductionObjectJSON>): ProductionObject {
-    const resourceProductionProportions: Map<ResourceId, number> = new Map();
-    (
-      Object.entries(obj.resourceProductionProportions) as Entries<
-        typeof obj.resourceProductionProportions
-      >
-    ).forEach(([k, v]) => {
-      resourceProductionProportions.set(k, v);
-    });
     return new ProductionObject(
       obj.name,
-      resourceProductionProportions,
+      new Map(Object.entries(obj.resourceProductionProportions)),
       obj.workerCapacity,
       obj.energyReserve,
       obj._id,
-      obj.asset ? Asset.deserialize(obj.asset) : null
+      obj.asset
     );
   }
 }
