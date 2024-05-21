@@ -8,6 +8,92 @@ import { JSONCompatible, Serializable } from "src/db.ts";
 import createId from "src/utils/createId.ts";
 import { Asset, AssetJSON } from "asset-gen/generate-asset.ts";
 
+export type SimulationServerStateJSON = {
+  _id: string;
+  worldMap: WorldMapJSON;
+  villagers: { [key: VillagerId]: VillagerJSON };
+  enviroObjects: { [key: EnviroObjectId]: EnviroObjectJSON };
+  resources: { [key: ResourceId]: ResourceJSON };
+};
+
+export class SimulationServerState {
+  private readonly _id: string;
+
+  private worldMap: WorldMap;
+
+  private villagers: Map<VillagerId, Villager>;
+
+  /**
+   * Includes houses, production objects, cosmetic objects, and any other
+   * classes that extend EnviroObject.
+   */
+  private enviroObjects: Map<EnviroObjectId, EnviroObject>;
+
+  private resources: Map<ResourceId, Resource>;
+
+  constructor(_id: string = createId()) {
+    this._id = _id;
+    this.worldMap = new WorldMap();
+    this.villagers = new Map();
+    this.enviroObjects = new Map();
+    this.resources = new Map();
+  }
+
+  serialize(): JSONCompatible<SimulationServerStateJSON> {
+    return {
+      _id: this._id,
+      worldMap: this.worldMap.serialize(),
+      villagers: Object.fromEntries<VillagerJSON>(
+        (
+          Object.entries(this.villagers) as Entries<
+            Record<VillagerId, Villager>
+          >
+        ).map(([k, v]) => [k, v.serialize()])
+      ),
+      enviroObjects: Object.fromEntries<EnviroObjectJSON>(
+        (
+          Object.entries(this.enviroObjects) as Entries<
+            Record<EnviroObjectId, EnviroObject>
+          >
+        ).map(([k, v]) => [k, v.serialize()])
+      ),
+      resources: Object.fromEntries<ResourceJSON>(
+        (
+          Object.entries(this.resources) as Entries<
+            Record<ResourceId, Resource>
+          >
+        ).map(([k, v]) => [k, v.serialize()])
+      ),
+    };
+  }
+
+  static deserialize(
+    obj: JSONCompatible<SimulationServerStateJSON>
+  ): SimulationServerState {
+    const state = new SimulationServerState(obj._id);
+    state.worldMap = WorldMap.deserialize(obj.worldMap);
+    state.villagers = new Map(
+      Object.entries(obj.villagers).map(([k, v]) => [
+        k,
+        Villager.deserialize(v),
+      ])
+    );
+    state.enviroObjects = new Map(
+      Object.entries(obj.enviroObjects).map(([k, v]) => [
+        k,
+        EnviroObject.deserialize(v),
+      ])
+    );
+    state.resources = new Map(
+      Object.entries(obj.resources).map(([k, v]) => [
+        k,
+        Resource.deserialize(v),
+      ])
+    );
+    return state;
+  }
+}
+
 export type Coordinates = {
   x: number;
   y: number;
@@ -157,7 +243,41 @@ export class EnviroObject implements Serializable {
   }
 }
 
+export interface CosmeticObjectJSON extends EnviroObjectJSON {}
 export class CosmeticObject extends EnviroObject implements Serializable {}
+
+export interface HouseObjectJSON extends EnviroObjectJSON {
+  owner: VillagerId | null;
+}
+export class HouseObject extends EnviroObject implements Serializable {
+  readonly owner: VillagerId | null = null;
+
+  constructor(
+    name: string,
+    owner: VillagerId | null = null,
+    _id: EnviroObjectId = createId(),
+    asset: Asset | null = null
+  ) {
+    super(name, _id, asset);
+    this.owner = owner;
+  }
+
+  serialize(): JSONCompatible<HouseObjectJSON> {
+    return {
+      ...super.serialize(),
+      owner: this.owner,
+    };
+  }
+
+  static deserialize(obj: JSONCompatible<HouseObjectJSON>): HouseObject {
+    return new HouseObject(
+      obj.name,
+      obj.owner,
+      obj._id,
+      obj.asset ? Asset.deserialize(obj.asset) : null
+    );
+  }
+}
 
 type VillagerId = string;
 
@@ -192,9 +312,10 @@ export type VillagerJSON = {
   resources: ResourcesCount;
   items: EnviroObjectId[];
   cosmeticEnvironmentObjects: EnviroObjectId[];
-  resourceProductionEnergyCostMultipliers: { [key in ResourceType]: number };
-  resourceConsumptionEnergyGainMultipliers: { [key in ResourceType]: number };
+  resourceProductionEnergyCostMultipliers: { [resource: ResourceId]: number };
+  resourceConsumptionEnergyGainMultipliers: { [resource: ResourceId]: number };
   characterAttributes: { [key in AttributeType]: AttributeValueJSON };
+  houseObject: HouseObjectJSON | null;
 };
 
 export class Villager implements Serializable {
@@ -225,7 +346,7 @@ export class Villager implements Serializable {
    *  ResourceType.wood: 0.8,
    * }
    */
-  private resourceProductionEnergyCostMultipliers: Map<ResourceType, number> =
+  private resourceProductionEnergyCostMultipliers: Map<ResourceId, number> =
     new Map();
 
   /**
@@ -239,10 +360,15 @@ export class Villager implements Serializable {
    *  ResourceType.steel: 0,
    * }
    */
-  private resourceConsumptionEnergyGainMultipliers: Map<ResourceType, number> =
+  private resourceConsumptionEnergyGainMultipliers: Map<ResourceId, number> =
     new Map();
 
-  constructor() {}
+  private houseObject: HouseObject | null = null;
+
+  constructor(type: VillagerType, _id: VillagerId = createId()) {
+    this.type = type;
+    this._id = _id;
+  }
 
   serialize(): JSONCompatible<VillagerJSON> {
     return {
@@ -266,7 +392,52 @@ export class Villager implements Serializable {
         this.characterAttributes,
         (attributeValue) => attributeValue.serialize()
       ),
+      houseObject: this.houseObject?.serialize() ?? null,
     };
+  }
+
+  static deserialize(obj: JSONCompatible<VillagerJSON>): Villager {
+    const villager = new Villager(obj.type, obj._id);
+
+    villager.friends = obj.friends;
+    villager.enemies = obj.enemies;
+    villager.interactingWith = obj.interactingWith;
+    villager.energy = obj.energy;
+    villager.coins = obj.coins;
+    villager.resources = obj.resources;
+    villager.items = obj.items;
+    villager.cosmeticEnvironmentObjects = obj.cosmeticEnvironmentObjects;
+
+    const resourceProductionEnergyCostMultipliers = new Map();
+    (
+      Object.entries(obj.resourceProductionEnergyCostMultipliers) as Entries<
+        typeof obj.resourceProductionEnergyCostMultipliers
+      >
+    ).forEach(([k, v]) => {
+      resourceProductionEnergyCostMultipliers.set(k, v);
+    });
+    villager.resourceProductionEnergyCostMultipliers =
+      resourceProductionEnergyCostMultipliers;
+
+    const resourceConsumptionEnergyGainMultipliers = new Map();
+    (
+      Object.entries(obj.resourceConsumptionEnergyGainMultipliers) as Entries<
+        typeof obj.resourceConsumptionEnergyGainMultipliers
+      >
+    ).forEach(([k, v]) => {
+      resourceConsumptionEnergyGainMultipliers.set(k, v);
+    });
+    villager.resourceConsumptionEnergyGainMultipliers =
+      resourceConsumptionEnergyGainMultipliers;
+
+    villager.characterAttributes = transformObjectValues(
+      obj.characterAttributes,
+      (attributeValue) => AttributeValue.deserialize(attributeValue)
+    );
+    villager.houseObject = obj.houseObject
+      ? HouseObject.deserialize(obj.houseObject)
+      : null;
+    return villager;
   }
 }
 
@@ -285,7 +456,7 @@ const RESOURCES_ARRAY = [
   "plough",
 ] as const;
 
-export type ResourceType = (typeof RESOURCES_ARRAY)[number];
+// export type ResourceType = (typeof RESOURCES_ARRAY)[number];
 
 const RESOURCE_TYPES_ARRAY = [
   "edible",
@@ -297,8 +468,10 @@ const RESOURCE_TYPES_ARRAY = [
 export type ResourceTypeType = (typeof RESOURCE_TYPES_ARRAY)[number];
 
 type ResourcesCount = {
-  [key in ResourceType]: number;
+  [k: ResourceId]: number;
 };
+
+type ResourceId = string;
 
 export type ResourceJSON = {
   _id: string;
@@ -309,7 +482,7 @@ export type ResourceJSON = {
 };
 
 class Resource implements Serializable {
-  private readonly _id: string;
+  private readonly _id: ResourceId;
   private name: string;
 
   /**
@@ -502,13 +675,13 @@ class AttributeBoost implements Serializable {
   }
 }
 
-export interface ProductionPlantJSON extends EnviroObjectJSON {
-  resourceProductionProportions: { [key in ResourceType]: number };
+export interface ProductionObjectJSON extends EnviroObjectJSON {
+  resourceProductionProportions: { [resource: ResourceId]: number };
   workerCapacity: number;
   energyReserve: number;
 }
 
-export class ProductionPlant extends EnviroObject implements Serializable {
+export class ProductionObject extends EnviroObject implements Serializable {
   /**
    * @param resourceProductionProportions Map of resources produced by the production
    * plant and their proportions. The proportions should sum to 1.
@@ -519,7 +692,7 @@ export class ProductionPlant extends EnviroObject implements Serializable {
    *  ResourceType.molasses: 0.2,
    * }
    */
-  resourceProductionProportions: Map<ResourceType, number>;
+  resourceProductionProportions: Map<ResourceId, number>;
 
   /**
    * @param workerCapacity Maximum number of workers that can work at this
@@ -541,7 +714,7 @@ export class ProductionPlant extends EnviroObject implements Serializable {
 
   constructor(
     name: string,
-    resourceProductionProportions: Map<ResourceType, number>,
+    resourceProductionProportions: Map<ResourceId, number>,
     workerCapacity: number,
     energyReserve: number = 0,
     _id: string = createId(),
@@ -553,7 +726,7 @@ export class ProductionPlant extends EnviroObject implements Serializable {
     this.energyReserve = energyReserve;
   }
 
-  serialize(): JSONCompatible<ProductionPlantJSON> {
+  serialize(): JSONCompatible<ProductionObjectJSON> {
     return {
       ...super.serialize(),
       resourceProductionProportions: mapToObject(
@@ -564,8 +737,8 @@ export class ProductionPlant extends EnviroObject implements Serializable {
     };
   }
 
-  deserialize(obj: JSONCompatible<ProductionPlantJSON>): ProductionPlant {
-    const resourceProductionProportions: Map<ResourceType, number> = new Map();
+  deserialize(obj: JSONCompatible<ProductionObjectJSON>): ProductionObject {
+    const resourceProductionProportions: Map<ResourceId, number> = new Map();
     (
       Object.entries(obj.resourceProductionProportions) as Entries<
         typeof obj.resourceProductionProportions
@@ -573,7 +746,7 @@ export class ProductionPlant extends EnviroObject implements Serializable {
     ).forEach(([k, v]) => {
       resourceProductionProportions.set(k, v);
     });
-    return new ProductionPlant(
+    return new ProductionObject(
       obj.name,
       resourceProductionProportions,
       obj.workerCapacity,

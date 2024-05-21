@@ -3,9 +3,6 @@ import { JSONCompatible, JSONValue } from "src/db.ts";
 /**
  * Creates a new copied object and transforms the object's values using a
  * provided function.
- * @param obj
- * @param transformFn
- * @returns
  */
 export function transformObjectValues<T extends Record<string, any>, U>(
   obj: T,
@@ -45,9 +42,11 @@ function transformObjectValuesCustom<T extends JSONCompatible<T>, U>(
  * value type must be JSON compatible.
  *
  * Example:
+ * ```
  * const map = new Map<string, number>([['a', 1], ['b', 2]]);
  * const obj = mapToObject(map);
  * console.log(obj); // { a: 1, b: 2 }
+ * ```
  *
  * @param map An instance of Map, with constraints as described above.
  * @returns
@@ -80,9 +79,11 @@ export function mapToObject<K extends string, T extends JSONCompatible<T>>(
  * Otherwise turns into [string, any][]
  *
  * Example:
+ * ```
  * type KeyType = 'a' | 'b';
  * const obj: Record<KeyType, number> = { a: 1, b: 2 };
  * const entries = Object.entries(obj) as Entries<typeof obj>; // [KeyType, number][]
+ * ```
  *
  */
 export type Entries<T> = {
