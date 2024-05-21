@@ -1,24 +1,29 @@
-import { JSONCompatible, Serializable } from "src/db.ts";
+import { JSONCompatible, JSONObject, JSONValue, Serializable } from "src/db.ts";
 import createId from "src/utils/createId.ts";
 import { toIsoStringWithTimezone } from "src/utils/date.ts";
 
+/**
+ * Number of tiles that the asset occupies physically on the map.
+ */
 type Dimensions = {
   width: number; // x-axis
   height: number; // y-axis
 };
 
-export type AssetJSON = {
+export type AssetId = string;
+
+export interface AssetJSON extends JSONObject {
   id: string;
   name: string;
   date: string;
   description: string;
   type: string;
-  remoteImages: RemoteImage[];
+  remoteImages: RemoteImageJSON[];
   dimensions: Dimensions;
-};
+}
 
-export class Asset implements Serializable {
-  private readonly _id: string;
+export class Asset implements Serializable<AssetJSON> {
+  private readonly _id: AssetId;
   public name: string;
   public type: string;
   public description: string;
@@ -33,7 +38,7 @@ export class Asset implements Serializable {
     description: string,
     type: string,
     date: Date = new Date(),
-    id: string = createId(),
+    id: AssetId = createId(),
     remoteImages: RemoteImage[] = [],
     dimensions: Dimensions = { width: 0, height: 0 },
     name?: string
@@ -43,6 +48,7 @@ export class Asset implements Serializable {
     this.date = date;
     this._id = id;
     this.remoteImages = remoteImages;
+    this.dimensions = dimensions;
     this.name = name ?? this._id;
   }
 
@@ -65,7 +71,9 @@ export class Asset implements Serializable {
       date: toIsoStringWithTimezone(this.date),
       description: this.description,
       type: this.type,
-      remoteImages: this.remoteImages,
+      remoteImages: this.remoteImages.map((remoteImage) =>
+        remoteImage.serialize()
+      ),
       dimensions: this.dimensions,
     };
   }
@@ -76,13 +84,30 @@ export class Asset implements Serializable {
       obj.type,
       new Date(obj.date),
       obj.id,
-      obj.remoteImages,
+      obj.remoteImages.map((remoteImageObj) =>
+        RemoteImage.deserialize(remoteImageObj)
+      ),
       obj.dimensions,
       obj.name
     );
   }
 }
 
-class RemoteImage {
+interface RemoteImageJSON extends JSONObject {
+  name: string;
+  url: string;
+}
+class RemoteImage implements Serializable<RemoteImageJSON> {
   constructor(public name: string, public url: string) {}
+
+  serialize(): JSONCompatible<RemoteImageJSON> {
+    return {
+      name: this.name,
+      url: this.url,
+    };
+  }
+
+  static deserialize(obj: RemoteImageJSON): RemoteImage {
+    return new RemoteImage(obj.name, obj.url);
+  }
 }

@@ -9,7 +9,7 @@ import { JSONCompatible, JSONObject, JSONValue, Serializable } from "src/db.ts";
 import createId from "src/utils/createId.ts";
 import { Asset, AssetId, AssetJSON } from "asset-gen/generate-asset.ts";
 
-export interface SimulationServerStateJSON extends JSONObject {
+export interface SimulationStateJSON extends JSONObject {
   _id: string;
   worldMap: WorldMapJSON;
   villagers: { [key: VillagerId]: VillagerJSON };
@@ -18,7 +18,7 @@ export interface SimulationServerStateJSON extends JSONObject {
   resources: { [key: ResourceId]: ResourceJSON };
 }
 
-export class SimulationServerState {
+export class SimulationState {
   private readonly _id: string;
 
   private worldMap: WorldMap;
@@ -44,7 +44,7 @@ export class SimulationServerState {
     this.resources = new Map();
   }
 
-  serialize(): JSONCompatible<SimulationServerStateJSON> {
+  serialize(): JSONCompatible<SimulationStateJSON> {
     return {
       _id: this._id,
       worldMap: this.worldMap.serialize(),
@@ -56,9 +56,9 @@ export class SimulationServerState {
   }
 
   static deserialize(
-    obj: JSONCompatible<SimulationServerStateJSON>
-  ): SimulationServerState {
-    const state = new SimulationServerState(obj._id);
+    obj: JSONCompatible<SimulationStateJSON>
+  ): SimulationState {
+    const state = new SimulationState(obj._id);
     state.worldMap = WorldMap.deserialize(obj.worldMap);
     state.villagers = new Map(
       Object.entries(obj.villagers).map(([k, v]) => [

@@ -112,11 +112,11 @@ export type Entries<T> = {
  * Initially made to replace the following:
  *
  * ```typescript
- * export class SimulationServerState {
+ * export class SimulationState {
  *
  *   // ...
  *
- *   serialize(): JSONCompatible<SimulationServerStateJSON> {
+ *   serialize(): JSONCompatible<SimulationStateJSON> {
  *   return {
  *     // ...
  *     villagers: Object.fromEntries<VillagerJSON>(
