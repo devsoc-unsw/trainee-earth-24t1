@@ -3,6 +3,7 @@ import Navbar from "./Navbar";
 import Timer from "./components/ui/timer";
 import { Calendar } from "./components/ui/calendar";
 import Todo from "./components/ui/todo";
+import Github from "./components/ui/github";
 
 export default function App() {
   return (
@@ -17,6 +18,9 @@ export default function App() {
           <Timer />
           <div className="pt-5">
             <Todo />
+          </div>
+          <div className="pt-5">
+            <Github />
           </div>
         </div>
       </div>
