@@ -7,7 +7,31 @@ import {
   ResourceJSON,
   SimulationStateJSON,
   VillagerJSON,
+  WorldMapJSON,
 } from "src/types/simulationTypes.ts";
+
+const worldMap: WorldMapJSON = {
+  cells: [
+    {
+      coordinates: {
+        x: 0,
+        y: 0,
+      },
+      owner: "villager_1",
+      object: "house_object_1",
+    },
+    {
+      coordinates: {
+        x: 1,
+        y: 0,
+      },
+      owner: "villager_1",
+      object: "house_object_1",
+    },
+    // TODO: Fill in rest of the map, including cells occupied by the other
+    // EnviroObject
+  ],
+};
 
 const villager1: VillagerJSON = {
   _id: "villager_1",
@@ -58,17 +82,17 @@ const villager1: VillagerJSON = {
 
 const attribute1: AttributeJSON = {
   _id: "attribute_1",
-  name: "strength",
+  name: "Strength",
 };
 
 const attribute2: AttributeJSON = {
   _id: "attribute_2",
-  name: "speed",
+  name: "Speed",
 };
 
 const houseObject1: HouseObjectJSON = {
   _id: "house_object_1",
-  name: "villager_1_house",
+  name: "Villager 1's house",
   asset: "house_object_1_asset",
   owner: "villager_1",
 };
@@ -112,7 +136,7 @@ const resource2: ResourceJSON = {
 
 export const simulationState1: SimulationStateJSON = {
   _id: "simulation_server_state",
-  worldMap: { cells: [] },
+  worldMap: worldMap,
   villagers: {
     villager_1: villager1,
   },
@@ -134,7 +158,7 @@ export const simulationState1: SimulationStateJSON = {
 export const assets1: AssetJSON[] = [
   {
     id: "house_object_1_asset",
-    name: "villager_1_house",
+    name: "Villager 1 House asset",
     date: "2024-05-21T18:23:42.555+10:00",
     description:
       "A cute aesthetic standard isometric aerial view of a single large square villager's house. The villager's house is a charming fusion of medieval European timber-framed architecture and Japanese machiya townhouses. Its warm, honey-colored wooden beams crisscross over pristine white plaster walls, creating a tapestry of old-world charm. The steeply pitched roof is adorned with gently curving eaves, reminiscent of traditional Japanese craftsmanship, sheltering latticed windows that let golden sunlight spill into the cozy interiors..........",
