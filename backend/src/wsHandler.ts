@@ -10,7 +10,7 @@ import {
   assertWSReqType,
   PingWSReq,
   PlayerVisitWSReq,
-} from "types/wsTypes.ts";
+} from "src/types/wsTypes.ts";
 
 /**
  * Handles a WebSocket request by parsing the request and performing the appropriate action.
