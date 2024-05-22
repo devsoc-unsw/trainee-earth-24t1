@@ -2,13 +2,30 @@ import { Separator } from "./separator";
 import { useEffect, useState } from "react";
 import TaskForm from "./taskForm";
 import Task from "./task";
+import { useDraggable } from '@dnd-kit/core';
+import { IconDots } from '@tabler/icons-react';
 
 interface TaskType {
   name: string;
   done: boolean;
 }
 
-export default function Todo() {
+export default function TodoWidget({draggableId, x, y}: {draggableId: string, x: number, y: number}) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: draggableId,
+  });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+        left: `${x}px`,
+        top: `${y}px`,
+      }
+    : {
+        left: `${x}px`,
+        top: `${y}px`,
+    };
+
   const [tasks, setTasks] = useState<TaskType[]>([]);
 
   useEffect(() => {
@@ -49,7 +66,12 @@ export default function Todo() {
 
   return (
     <section>
-      <div className="bg-white rounded-xl h-70 w-60 flex-col justify-center content-center">
+      <div style={ style } ref={setNodeRef} className="absolute bg-white rounded-xl h-70 w-60 flex-col justify-center content-center">
+        <div className='flex-col items-center justify-center'>
+          <button {...listeners} {...attributes} className='flex justify-center items-center text-2xl w-full opacity-60'>
+            <IconDots />
+          </button>
+        </div>
         <div className="p-6 ">
           {"To-Dos"}
           <Separator className="my-4" />
