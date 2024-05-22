@@ -162,3 +162,53 @@ export function serializeMapToJSON<
   });
   return obj;
 }
+
+/**
+ * Inverse of serializeMapToJSON()
+ * 
+ * Made to replace this:
+ * ```typescript
+ * export class SimulationState {
+ *   // ...
+ *   static deserialize(obj: JSONCompatible<SimulationStateJSON>): SimulationState {
+ *     const state = new SimulationState(obj._id);
+ *     state.worldMap = WorldMap.deserialize(obj.worldMap);
+ *     state.villagers = new Map(
+ *       Object.entries(obj.villagers).map(([k, v]) => [
+ *         k,
+ *         Villager.deserialize(v),
+ *       ])
+ *     );
+ *     state.enviroObjects = new Map(
+ *       Object.entries(obj.enviroObjects).map(([k, v]) => [
+ *         k,
+ *         EnviroObject.deserialize(v),
+ *       ])
+ *     );
+ *     state.resources = new Map(
+ *       Object.entries(obj.resources).map(([k, v]) => [
+ *         k,
+ *         Resource.deserialize(v),
+ *       ])
+ *     );
+ *     return state;
+ *   }
+ * }
+
+ */
+export function deserializeJSONToMap<
+  K extends string,
+  V extends Serializable<JSONType>,
+  JSONType extends JSONObject
+>(
+  obj: { [k: string]: JSONCompatible<JSONType> },
+  deserializeFn: (json: JSONType) => V
+): Map<K, V> {
+  const map = new Map<K, V>();
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      map.set(key as K, deserializeFn(obj[key] as JSONType));
+    }
+  }
+  return map;
+}
