@@ -1,7 +1,6 @@
 import {
   transformObjectValues,
   mapToObject,
-  Entries,
   serializeMapToJSON,
 } from "src/utils/objectTyping.ts";
 import { IWorldMapDocument } from "./databaseTypes.ts";
@@ -42,6 +41,11 @@ export class SimulationState {
     this.attributes = new Map();
     this.enviroObjects = new Map();
     this.resources = new Map();
+  }
+
+  show() {
+    console.log("\n\n=== SimulationState: ===");
+    console.dir(this.serialize(), { depth: null });
   }
 
   serialize(): JSONCompatible<SimulationStateJSON> {
@@ -130,7 +134,7 @@ export class WorldMap implements Serializable<WorldMapJSON> {
 export interface CellJSON extends JSONObject {
   coordinates: Coordinates;
   owner: VillagerId | null;
-  object: EnviroObjectJSON | EnviroObjectRef | null;
+  object: EnviroObjectId | null;
 }
 
 export class Cell implements Serializable<CellJSON> {
@@ -143,13 +147,15 @@ export class Cell implements Serializable<CellJSON> {
   private owner: VillagerId | null = null;
 
   /**
-   * 1. EnviroObject if the cell is occupied by an environment object and is the primary
-   *   cell responsible for storing the object's info
-   * 2. EnviroObjectRef if the cell is occupied by an environment object but is
-   *   not the primary cell responsible for storing the object's info.
-   * 3. null if the cell is unoccupied (just plain grass)
+   * 1. EnviroObject if the cell is occupied by an environment object. Note
+   *    multiple cells can be occupied by the same object.
+   * 2. null if the cell is unoccupied (just plain grass)
+   *
+   * Deprecated case: EnviroObjectRef if the cell is occupied by an environment
+   *    object but is not the primary cell responsible for storing the object's
+   *    info.
    */
-  private object: EnviroObject | EnviroObjectRef | null = null;
+  private object: EnviroObjectId | null = null;
 
   constructor(x: number, y: number) {
     this.coordinates = { x, y };
@@ -159,19 +165,14 @@ export class Cell implements Serializable<CellJSON> {
     return {
       coordinates: this.coordinates,
       owner: this.owner,
-      object:
-        this.object instanceof EnviroObject
-          ? this.object.serialize()
-          : this.object,
+      object: this.object,
     };
   }
 
   static deserialize(obj: JSONCompatible<CellJSON>): Cell {
     const cell = new Cell(obj.coordinates.x, obj.coordinates.y);
     cell.owner = obj.owner;
-    cell.object = isEnviroObjectJSON(obj.object)
-      ? EnviroObject.deserialize(obj.object)
-      : obj.object;
+    cell.object = obj.object;
     return cell;
   }
 }
@@ -195,8 +196,13 @@ function isEnviroObjectJSON(obj: any): obj is EnviroObjectJSON {
 
 type EnviroObjectId = string; // uuid
 
-// Used for cells that are occupied by an environment object by do not directly
-// own the information about the object. Reference the object by its id.
+/**
+ * @deprecated User EnviroObjectId instead.
+ *
+ * Used for cells that are occupied by an environment object by do not directly
+ * own the information about the object. Reference the object by its id.
+ *
+ */
 type EnviroObjectRef = EnviroObjectId;
 
 export class EnviroObject implements Serializable<EnviroObjectJSON> {
@@ -610,6 +616,7 @@ class AttributeValue implements Serializable<AttributeValueJSON> {
 
   constructor(base: number = 0, _id: string = createId()) {
     this.base = base;
+    this._id = _id;
   }
 
   // Adds up base attribute value and all active (not yet expired) boosts

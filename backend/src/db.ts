@@ -5,7 +5,6 @@ import {
   Coordinates,
   WorldMap,
   Villager,
-  isVillager,
 } from "./types/simulationTypes.js";
 import createId from "./utils/createId.ts";
 
@@ -62,11 +61,8 @@ export async function getUserByEmail(email: string) {
 const generateMap = (): WorldMap => {
   const map: WorldMap = new WorldMap();
   const origin: Coordinates = { x: 0, y: 0 };
-  const originCell: Cell = {
-    owner: undefined,
-    object: null,
-  };
-  map.cells.set(origin, originCell);
+  const originCell = new Cell(origin.x, origin.y);
+  map.addCell(origin, originCell);
   return map;
 };
 
@@ -78,39 +74,39 @@ const generateMap = (): WorldMap => {
  *                                     or interactingWith field.
  * @return {Promise<Villager>} The newly added villager with updated fields.
  */
-export async function addVillager(
-  villager: IVillagerDocument
-): Promise<Villager | null> {
-  try {
-    // TODO: Should villagers store interactingWith on the server?
-    //       Right now, they do not. Something to think about.
-    const villagers = db.collection("villagers");
-    const res = await villagers.insertOne(villager);
-    console.log(`New villager inserted with id: ${res.insertedId}`);
+// export async function addVillager(
+//   villager: IVillagerDocument
+// ): Promise<Villager | null> {
+//   try {
+//     // TODO: Should villagers store interactingWith on the server?
+//     //       Right now, they do not. Something to think about.
+//     const villagers = db.collection("villagers");
+//     const res = await villagers.insertOne(villager);
+//     console.log(`New villager inserted with id: ${res.insertedId}`);
 
-    const newVillager: any = {
-      ...villager,
-      _id: res.insertedId,
-      interactingWith: null,
-    };
+//     const newVillager: any = {
+//       ...villager,
+//       _id: res.insertedId,
+//       interactingWith: null,
+//     };
 
-    return isVillager(newVillager) ? newVillager : null;
-  } catch (e) {
-    console.error(e);
-  }
-}
+//     return isVillager(newVillager) ? newVillager : null;
+//   } catch (e) {
+//     console.error(e);
+//   }
+// }
 
-export async function getVillager(id: ObjectId): Promise<Villager | null> {
-  try {
-    const villagers = db.collection("villagers");
-    const villager = await villagers.findOne({
-      _id: id,
-    });
-    return isVillager(villager) ? villager : null;
-  } catch (e) {
-    console.error(e);
-  }
-}
+// export async function getVillager(id: ObjectId): Promise<Villager | null> {
+//   try {
+//     const villagers = db.collection("villagers");
+//     const villager = await villagers.findOne({
+//       _id: id,
+//     });
+//     return isVillager(villager) ? villager : null;
+//   } catch (e) {
+//     console.error(e);
+//   }
+// }
 
 export interface Serializable<JSONType extends JSONObject> {
   serialize(): JSONCompatible<JSONType>;

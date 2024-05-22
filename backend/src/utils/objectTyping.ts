@@ -156,10 +156,9 @@ export function serializeMapToJSON<
   V extends Serializable<JSONType>,
   JSONType extends JSONObject
 >(map: Map<K, V>): { [k: string]: JSONCompatible<JSONType> } {
-  return Object.fromEntries(
-    (Object.entries(map) as Entries<Record<K, V>>).map(([k, v]) => [
-      k,
-      v.serialize(),
-    ])
-  );
+  const obj: { [k: string]: JSONCompatible<JSONType> } = Object.create(null);
+  map.forEach((value, key) => {
+    obj[key] = value.serialize();
+  });
+  return obj;
 }
