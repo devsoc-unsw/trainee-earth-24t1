@@ -10,6 +10,7 @@ interface TaskType {
 
 export default function Todo() {
   const [tasks, setTasks] = useState<TaskType[]>([]);
+
   useEffect(() => {
     if (tasks.length === 0) {
       return;
@@ -19,7 +20,7 @@ export default function Todo() {
 
   useEffect(() => {
     const jsonItems = localStorage.getItem('tasks');
-    let tasks: TaskType[] = []
+    let tasks: TaskType[] = [];
     if (jsonItems != null) {
       tasks = JSON.parse(jsonItems); 
     }
