@@ -13,14 +13,32 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 import { useState, useEffect } from 'react';
+import { useDraggable } from '@dnd-kit/core';
+import { IconDots } from '@tabler/icons-react';
 
-export default function Timer() {
+export default function TimerWidget({draggableId, x, y}: {draggableId: string, x: number, y: number}) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: draggableId,
+  });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+        left: `${x}px`,
+        top: `${y}px`,
+      }
+    : {
+        left: `${x}px`,
+        top: `${y}px`,
+    };
+
   const [focusMinutes, setFocusMinutes] = useState(45);
   function changeFocusMinutes(adjustment: number) {
     setFocusMinutes(focusMinutes + adjustment);
     setMode('focus');
     setSecondsLeft((focusMinutes + adjustment) * 60);
   }
+
   const [breakMinutes, setBreakMinutes] = useState(15);
   function changeBreakMinutes(adjustment: number) {
     setBreakMinutes(breakMinutes + adjustment);
@@ -80,8 +98,13 @@ export default function Timer() {
   const percentage = 100 - secondsLeft / totalSeconds * 100;
 
   return (
-    <section>
-      <div className="bg-white rounded-2xl h-70 w-60 flex-col justify-center content-center">
+    <section >
+      <div style={ style } ref={setNodeRef} className={`absolute bg-white rounded-2xl h-70 w-60 flex-col items-center justify-center content-center`}>
+        <div className='flex-col items-center justify-center'>
+          <button {...listeners} {...attributes} className='flex justify-center items-center text-2xl w-full opacity-60'>
+            <IconDots />
+          </button>
+        </div>
         <div className="m-4 ">
           {
             // 'percentage:' + percentage
