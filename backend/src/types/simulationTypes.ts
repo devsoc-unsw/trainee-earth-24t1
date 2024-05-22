@@ -2,6 +2,7 @@ import {
   transformObjectValues,
   mapToObject,
   serializeMapToJSON,
+  deserializeJSONToMap,
 } from "src/utils/objectTyping.ts";
 import { IWorldMapDocument } from "./databaseTypes.ts";
 import { JSONCompatible, JSONObject, JSONValue, Serializable } from "src/db.ts";
@@ -18,29 +19,36 @@ export interface SimulationStateJSON extends JSONObject {
 }
 
 export class SimulationState {
-  private readonly _id: string;
+  readonly _id: string;
 
-  private worldMap: WorldMap;
+  public readonly worldMap: WorldMap;
 
-  private villagers: Map<VillagerId, Villager>;
+  public readonly villagers: Map<VillagerId, Villager>;
 
-  private attributes: Map<AttributeId, Attribute>;
+  public readonly attributes: Map<AttributeId, Attribute>;
 
   /**
    * Includes houses, production objects, cosmetic objects, and any other
    * classes that extend EnviroObject.
    */
-  private enviroObjects: Map<EnviroObjectId, EnviroObject>;
+  public readonly enviroObjects: Map<EnviroObjectId, EnviroObject>;
 
-  private resources: Map<ResourceId, Resource>;
+  public readonly resources: Map<ResourceId, Resource>;
 
-  constructor(_id: string = createId()) {
+  constructor(
+    worldMap: WorldMap = new WorldMap(),
+    villagers = new Map(),
+    attributes = new Map(),
+    enviroObjects = new Map(),
+    resources = new Map(),
+    _id: string = createId()
+  ) {
     this._id = _id;
-    this.worldMap = new WorldMap();
-    this.villagers = new Map();
-    this.attributes = new Map();
-    this.enviroObjects = new Map();
-    this.resources = new Map();
+    this.worldMap = worldMap;
+    this.villagers = villagers;
+    this.attributes = attributes;
+    this.enviroObjects = enviroObjects;
+    this.resources = resources;
   }
 
   show() {
@@ -62,25 +70,13 @@ export class SimulationState {
   static deserialize(
     obj: JSONCompatible<SimulationStateJSON>
   ): SimulationState {
-    const state = new SimulationState(obj._id);
-    state.worldMap = WorldMap.deserialize(obj.worldMap);
-    state.villagers = new Map(
-      Object.entries(obj.villagers).map(([k, v]) => [
-        k,
-        Villager.deserialize(v),
-      ])
-    );
-    state.enviroObjects = new Map(
-      Object.entries(obj.enviroObjects).map(([k, v]) => [
-        k,
-        EnviroObject.deserialize(v),
-      ])
-    );
-    state.resources = new Map(
-      Object.entries(obj.resources).map(([k, v]) => [
-        k,
-        Resource.deserialize(v),
-      ])
+    const state = new SimulationState(
+      WorldMap.deserialize(obj.worldMap),
+      deserializeJSONToMap(obj.villagers, Villager.deserialize),
+      deserializeJSONToMap(obj.attributes, Attribute.deserialize),
+      deserializeJSONToMap(obj.enviroObjects, EnviroObject.deserialize),
+      deserializeJSONToMap(obj.resources, Resource.deserialize),
+      obj._id
     );
     return state;
   }
@@ -96,7 +92,7 @@ export interface WorldMapJSON extends JSONObject {
 }
 
 export class WorldMap implements Serializable<WorldMapJSON> {
-  private cells: Map<Coordinates, Cell> = new Map();
+  readonly cells: Map<Coordinates, Cell> = new Map();
 
   constructor() {}
 
@@ -138,13 +134,13 @@ export interface CellJSON extends JSONObject {
 }
 
 export class Cell implements Serializable<CellJSON> {
-  private coordinates: Coordinates;
+  public readonly coordinates: Coordinates;
 
   /**
    * VillagerId if the cell is owned by a villager. null if the cell is
    * not owned by any villager.
    */
-  private owner: VillagerId | null = null;
+  public owner: VillagerId | null = null;
 
   /**
    * 1. EnviroObject if the cell is occupied by an environment object. Note
@@ -155,7 +151,7 @@ export class Cell implements Serializable<CellJSON> {
    *    object but is not the primary cell responsible for storing the object's
    *    info.
    */
-  private object: EnviroObjectId | null = null;
+  public object: EnviroObjectId | null = null;
 
   constructor(x: number, y: number) {
     this.coordinates = { x, y };
@@ -194,7 +190,7 @@ function isEnviroObjectJSON(obj: any): obj is EnviroObjectJSON {
   );
 }
 
-type EnviroObjectId = string; // uuid
+export type EnviroObjectId = string; // uuid
 
 /**
  * @deprecated User EnviroObjectId instead.
@@ -207,8 +203,8 @@ type EnviroObjectRef = EnviroObjectId;
 
 export class EnviroObject implements Serializable<EnviroObjectJSON> {
   protected readonly _id: EnviroObjectId;
-  protected name: string;
-  asset: AssetId | null;
+  public readonly name: string;
+  public readonly asset: AssetId | null;
 
   constructor(
     name: string,
@@ -245,7 +241,7 @@ export class HouseObject
   extends EnviroObject
   implements Serializable<HouseObjectJSON>
 {
-  readonly owner: VillagerId | null = null;
+  public readonly owner: VillagerId | null = null;
 
   constructor(
     name: string,
@@ -271,7 +267,7 @@ export class HouseObject
 
 type VillagerId = string;
 
-const VILLAGER_TYPES_ARRAY = [
+export const VILLAGER_TYPES_ARRAY = [
   "farmer",
   "merchant",
   "lumberjack",
@@ -289,7 +285,7 @@ const VILLAGER_TYPES_ARRAY = [
   "alchemist",
   "potter",
 ] as const;
-type VillagerType = (typeof VILLAGER_TYPES_ARRAY)[number];
+export type VillagerType = (typeof VILLAGER_TYPES_ARRAY)[number];
 
 export interface VillagerJSON extends JSONObject {
   _id: string;
@@ -308,16 +304,16 @@ export interface VillagerJSON extends JSONObject {
 }
 
 export class Villager implements Serializable<VillagerJSON> {
-  private readonly _id: VillagerId;
-  private type: VillagerType;
-  private friends: VillagerId[];
-  private enemies: VillagerId[];
-  private interactingWith: VillagerId | EnviroObjectId | null = null;
-  private energy: number;
-  private coins: number;
-  private resources: ResourcesCount;
-  private cosmeticEnvironmentObjects: EnviroObjectId[];
-  private characterAttributes: AttributeValues;
+  public readonly _id: VillagerId;
+  public readonly type: VillagerType;
+  public friends: VillagerId[];
+  public enemies: VillagerId[];
+  public _interactingWith: VillagerId | EnviroObjectId | null = null;
+  public energy: number;
+  public coins: number;
+  resources: ResourcesCount;
+  public cosmeticEnvironmentObjects: EnviroObjectId[];
+  public characterAttributes: AttributeValues;
 
   /**
    * Multipliers against the basic energy gain from producing each kind of
@@ -334,7 +330,7 @@ export class Villager implements Serializable<VillagerJSON> {
    *  ResourceType.wood: 0.8,
    * }
    */
-  private resourceProductionEnergyCostMultipliers: Map<ResourceId, number> =
+  public resourceProductionEnergyCostMultipliers: Map<ResourceId, number> =
     new Map();
 
   /**
@@ -348,10 +344,10 @@ export class Villager implements Serializable<VillagerJSON> {
    *  ResourceType.steel: 0,
    * }
    */
-  private resourceConsumptionEnergyGainMultipliers: Map<ResourceId, number> =
+  public resourceConsumptionEnergyGainMultipliers: Map<ResourceId, number> =
     new Map();
 
-  private houseObject: EnviroObjectId | null = null;
+  public houseObject: EnviroObjectId | null = null;
 
   constructor(type: VillagerType, _id: VillagerId = createId()) {
     this.type = type;
@@ -364,7 +360,7 @@ export class Villager implements Serializable<VillagerJSON> {
       type: this.type,
       friends: this.friends,
       enemies: this.enemies,
-      interactingWith: this.interactingWith,
+      interactingWith: this._interactingWith,
       energy: this.energy,
       coins: this.coins,
       resources: this.resources,
@@ -388,7 +384,7 @@ export class Villager implements Serializable<VillagerJSON> {
 
     villager.friends = obj.friends;
     villager.enemies = obj.enemies;
-    villager.interactingWith = obj.interactingWith;
+    villager._interactingWith = obj.interactingWith;
     villager.energy = obj.energy;
     villager.coins = obj.coins;
     villager.resources = obj.resources;
@@ -414,25 +410,29 @@ export class Villager implements Serializable<VillagerJSON> {
 }
 
 /**
+ * @deprecated
  * We don't want to limit the kinds of resources to this fixed list, we also
  * want to be able dynamically add new kinds of resources to the game as it runs.
  */
-// const RESOURCES_ARRAY = [
-//   "wheat",
-//   "sugar",
-//   "wood",
-//   "steel",
-//   "stone",
-//   "iron",
-//   "gold",
-//   "diamond",
-//   "coal",
-//   "glass",
-//   "fish",
-//   "plough",
-// ] as const;
+const RESOURCES_ARRAY = [
+  "wheat",
+  "sugar",
+  "wood",
+  "steel",
+  "stone",
+  "iron",
+  "gold",
+  "diamond",
+  "coal",
+  "glass",
+  "fish",
+  "plough",
+] as const;
 
-// export type ResourceType = (typeof RESOURCES_ARRAY)[number];
+/**
+ * @deprecated Use ResourceId instead.
+ */
+type ResourceType = (typeof RESOURCES_ARRAY)[number];
 
 const RESOURCE_TYPES_ARRAY = [
   "edible",
@@ -444,10 +444,14 @@ const RESOURCE_TYPES_ARRAY = [
 export type ResourceTypeType = (typeof RESOURCE_TYPES_ARRAY)[number];
 
 type ResourcesCount = {
-  [k: ResourceId]: number;
+  [k: ResourceId]: {
+    total: number;
+    isSelling: number;
+    buyPrice: number;
+  };
 };
 
-type ResourceId = string;
+export type ResourceId = string;
 
 export interface ResourceJSON extends JSONObject {
   _id: string;
@@ -457,9 +461,9 @@ export interface ResourceJSON extends JSONObject {
   type: ResourceTypeType;
 }
 
-class Resource implements Serializable<ResourceJSON> {
-  private readonly _id: ResourceId;
-  private name: string;
+export class Resource implements Serializable<ResourceJSON> {
+  public readonly _id: ResourceId;
+  public readonly name: string;
 
   /**
    * Basic amount of energy required by a villager to produce 1 unit of this
@@ -467,7 +471,7 @@ class Resource implements Serializable<ResourceJSON> {
    * resourceProductionEnergyCostMultiplier for this resource to get the actual
    * energy cost.
    */
-  private productionEnergyCostBasic: number; // 10 energy per unit
+  public readonly productionEnergyCostBasic: number; // 10 energy per unit
 
   /**
    * Basic amount of energy gained by a villager when consuming 1 unit of this
@@ -475,21 +479,25 @@ class Resource implements Serializable<ResourceJSON> {
    * resourceConsumptionEnergyGainMultiplier for this resource to get the actual
    * energy gain.
    */
-  private consumptionEnergyGainBasic: number; // 10 energy per unit
+  public readonly consumptionEnergyGainBasic: number; // 10 energy per unit
 
-  private type: ResourceTypeType;
+  public readonly type: ResourceTypeType;
+
+  sellingPrice: number | string | boolean | Coordinates;
 
   constructor(
     name: string,
     productionEnergyCostBasic: number,
     consumptionEnergyGainBasic: number,
     type: ResourceTypeType,
+    sellingPrice: number | string | boolean | Coordinates,
     _id: string = createId()
   ) {
     this.name = name;
     this.productionEnergyCostBasic = productionEnergyCostBasic;
     this.consumptionEnergyGainBasic = consumptionEnergyGainBasic;
     this.type = type;
+    this.sellingPrice = sellingPrice;
     this._id = _id;
   }
 
@@ -517,45 +525,49 @@ class Resource implements Serializable<ResourceJSON> {
 export type AttributeId = string;
 
 /**
+ * @deprecated
  * We don't want to limit the kinds of attributes to this fixed list, we also
  * want to be able dynamically add new kinds of attributes to the game as it runs.
  */
-// const ATTRIBUTES_ARRAY = [
-//   // Ability to perform physically demanding tasks, such as in harvesting
-//   // resources.
-//   "strength",
+const ATTRIBUTES_ARRAY = [
+  // Ability to perform physically demanding tasks, such as in harvesting
+  // resources.
+  "strength",
 
-//   // How fast the character can travel across the map.
-//   "speed",
+  // How fast the character can travel across the map.
+  "speed",
 
-//   // Ability to sustain physical activity over time.
-//   "stamina",
+  // Ability to sustain physical activity over time.
+  "stamina",
 
-//   // Ability to solve problems and think critically.
-//   "intelligence",
+  // Ability to solve problems and think critically.
+  "intelligence",
 
-//   // Ability to influence and persuade others, particularly in trades.
-//   "charisma",
+  // Ability to influence and persuade others, particularly in trades.
+  "charisma",
 
-//   // Ability to identity profitable opportunities such as resources and
-//   // trades.
-//   "perception",
+  // Ability to identity profitable opportunities such as resources and
+  // trades.
+  "perception",
 
-//   // Ability to perform tasks that require precision and fine motor skills.
-//   "dexterity",
+  // Ability to perform tasks that require precision and fine motor skills.
+  "dexterity",
 
-//   // Ability to create items and objects.
-//   "crafting",
+  // Ability to create items and objects.
+  "crafting",
 
-//   // Ability to negotiate and make deals, particularly in trades.
-//   "negotiation",
+  // Ability to negotiate and make deals, particularly in trades.
+  "negotiation",
 
-//   "luck",
+  "luck",
 
-//   "adventurousness",
-// ] as const;
+  "adventurousness",
+] as const;
 
-// type AttributeType = (typeof ATTRIBUTES_ARRAY)[number];
+/**
+ * @deprecated Use AttributeId instead.
+ */
+type AttributeType = (typeof ATTRIBUTES_ARRAY)[number];
 
 export interface AttributeJSON extends JSONObject {
   _id: string;
@@ -563,8 +575,8 @@ export interface AttributeJSON extends JSONObject {
 }
 
 export class Attribute implements Serializable<AttributeJSON> {
-  private readonly _id: string;
-  private name: string;
+  public readonly _id: string;
+  public readonly name: string;
 
   constructor(name: string, _id: string = createId()) {
     this.name = name;
@@ -606,15 +618,15 @@ export interface AttributeValueJSON extends JSONObject {
 }
 
 class AttributeValue implements Serializable<AttributeValueJSON> {
-  private readonly _id: string;
+  public readonly _id: string;
 
   // Base value for the attribute
-  private base: number;
+  public readonly base: number;
 
   // List of boosts that modify the attribute value
-  private boosts: AttributeBoost[] = [];
+  public boosts: AttributeBoost[] = [];
 
-  constructor(base: number = 0, _id: string = createId()) {
+  constructor(base: number = 10, _id: string = createId()) {
     this.base = base;
     this._id = _id;
   }
@@ -655,9 +667,9 @@ export interface AttributeBoostJSON extends JSONObject {
 }
 
 class AttributeBoost implements Serializable<AttributeBoostJSON> {
-  private value: number;
-  private duration: number;
-  private expiration: number;
+  public readonly value: number;
+  public readonly duration: number;
+  public readonly expiration: number;
 
   /**
    *
@@ -720,13 +732,13 @@ export class ProductionObject
    *  ResourceType.molasses: 0.2,
    * }
    */
-  resourceProductionProportions: Map<ResourceId, number>;
+  public readonly resourceProductionProportions: Map<ResourceId, number>;
 
   /**
    * @param workerCapacity Maximum number of workers that can work at this
    * production plant at the same time.
    */
-  workerCapacity: number;
+  public readonly workerCapacity: number;
 
   /**
    * @param energyReserve Amount of energy stored in the production plant.
@@ -738,7 +750,7 @@ export class ProductionObject
    * 40 units of wheat and 60 units of sugar, given that the energy cost of
    * producing 1 unit of wheat is 12 and 1 unit of sugar is 18.
    */
-  energyReserve: number;
+  public readonly energyReserve: number;
 
   constructor(
     name: string,
@@ -785,10 +797,10 @@ export interface SpecialItemJSON extends JSONObject {
 }
 
 export class SpecialItem implements Serializable<SpecialItemJSON> {
-  private readonly _id: string;
-  private name: string;
-  private description: string;
-  asset: Asset | null;
+  public readonly _id: string;
+  public readonly name: string;
+  public readonly description: string;
+  public readonly asset: Asset | null;
 
   constructor(
     name: string,
