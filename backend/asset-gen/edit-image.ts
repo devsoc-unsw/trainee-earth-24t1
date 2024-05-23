@@ -163,7 +163,7 @@ export async function cutImage(
     const adjacent = width - length;
     const opposite = adjacent * Math.tan((60 * Math.PI) / 180);
     const m = adjacent/opposite;
-    const b = (height - length) + height;
+    const padding = 20;
 
     // i know its fat just trust the process
     const editedImage = await sharp(imageData)
@@ -177,15 +177,14 @@ export async function cutImage(
         for (let y = 0; y < height; y++) {
           // y = mx + length ; 
           for (let x = 0; x < width; x++) {
-            // NOTE: threshold is left and threshold2 is right
-            const threshold = m*x + length;
-            const threshold2 = -1*m*x + b;
+            // NOTE: threshold is left
+            const threshold = m*x + length - padding;
             // Pixel falls under the line
-            if (y > threshold2 || y > threshold) {
+            if (y > threshold) {
               data[currIndex] = 0;
-              data[currIndex + 1] = 255;
+              data[currIndex + 1] = 0;
               data[currIndex + 2] = 0;
-              // data[currIndex + 3] = 0;
+              data[currIndex + 3] = 0;
             }
             currIndex += 4;
           }
@@ -223,5 +222,22 @@ export async function getNonAlphaPixel(
     if (alphaValue > 0 && y > length) {
       return y;
     }
+  }
+}
+
+export async function flopImage(
+  imageData: ArrayBuffer
+): Promise<ArrayBuffer | null> {
+  try {
+    const editedImage = await sharp(imageData)
+    .flop()
+    .toFormat('png')
+    .toBuffer()
+
+    const arrayBuffer = editedImage.buffer.slice(editedImage.byteOffset, editedImage.byteOffset + editedImage.byteLength)
+    return arrayBuffer;
+  } catch (error) {
+    console.error(error);
+    return null;
   }
 }
