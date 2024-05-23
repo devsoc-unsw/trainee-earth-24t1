@@ -5,7 +5,11 @@ import { WebSocketServer, WebSocket } from "ws";
 import { handleWSRequest } from "src/wsHandler.ts";
 import { GameLoop } from "./gameloopFramework.js";
 import { simulationStep } from "./simulationServer.js";
-import { generateAsset, AssetType } from "asset-gen/generate-asset.ts";
+import {
+  generateAsset,
+  AssetType,
+  generateHouseAssetV2,
+} from "asset-gen/generate-asset.ts";
 
 const EXPRESS_PORT = 3000;
 
@@ -29,7 +33,7 @@ app.get("/map", (req, res) => {
   const map: PlayerMap = { cells: new Map<Coordinates, Cell>() };
   const origin: Coordinates = { x: 0, y: 0 };
   const originCell: Cell = {
-    owner: "N/A",
+    owner: undefined,
     object: null,
   };
   map.cells.set(origin, originCell);
@@ -52,10 +56,12 @@ app.get("/gen/cosmetic-environ", async (req, res) => {
   try {
     const asset = await generateAsset(AssetType.COSMETIC_ENVIRONMENT_OBJ);
     res.send(
-      `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
+      `<html><body><img src="${
+        asset.getRemoteImages().at(-1).url
+      }" /></body></html>`
     );
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).send(err);
   }
 });
@@ -65,10 +71,12 @@ app.get("/gen/resource-environ", async (req, res) => {
   try {
     const asset = await generateAsset(AssetType.RESOURCE_ENVIRONMENT_OBJ);
     res.send(
-      `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
+      `<html><body><img src="${
+        asset.getRemoteImages().at(-1).url
+      }" /></body></html>`
     );
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).send(err);
   }
 });
@@ -78,10 +86,12 @@ app.get("/gen/house", async (req, res) => {
   try {
     const asset = await generateAsset(AssetType.HOUSE);
     res.send(
-      `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
+      `<html><body><img src="${
+        asset.getRemoteImages().at(-1).url
+      }" /></body></html>`
     );
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).send(err);
   }
 });
@@ -91,10 +101,26 @@ app.get("/gen/villager", async (req, res) => {
   try {
     const asset = await generateAsset(AssetType.VILLAGER);
     res.send(
-      `<html><body><img src="${asset.processedImgUrl}" /></body></html>`
+      `<html><body><img src="${
+        asset.getRemoteImages().at(-1).url
+      }" /></body></html>`
     );
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    res.status(500).send(err);
+  }
+});
+
+app.get("/gen/house/v2", async (req, res) => {
+  try {
+    const asset = await generateHouseAssetV2();
+    res.send(
+      `<html><body><img src="${
+        asset.getRemoteImages().at(-1).url
+      }" /></body></html>`
+    );
+  } catch (err) {
+    console.error(err);
     res.status(500).send(err);
   }
 });
@@ -155,4 +181,4 @@ wss.on("connection", (ws: WebSocket) => {
 });
 
 const myGameLoop = new GameLoop(simulationStep);
-myGameLoop.startGameLoop();
+// myGameLoop.startGameLoop();

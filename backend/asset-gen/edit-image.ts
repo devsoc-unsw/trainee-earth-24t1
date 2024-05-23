@@ -1,11 +1,21 @@
 import axios from "axios";
 import FormData from "form-data";
+import { ButtonGroup } from "semantic-ui-react";
 import sharp from "sharp";
-import dotenv from "dotenv";
-dotenv.config();
+import fs from "node:fs";
+import { Readable } from "node:stream";
 
-// Remove bg given image data
-export async function removeImageBGViaData(
+/**
+ * @deprecated Use removeBackgroundStableDiffusion instead
+ *
+ * Remove bg given image data
+ *
+ * @param imageData
+ * @param name
+ * @param type
+ * @returns
+ */
+async function removeImageBGViaData(
   imageData: ArrayBuffer,
   name: string,
   type: string
@@ -13,6 +23,7 @@ export async function removeImageBGViaData(
   const formData = new FormData();
   formData.append("size", "auto");
   formData.append("image_file", imageData, `${name}.${type}`);
+  formData.append("crop", "true");
 
   try {
     const response = await axios({
@@ -28,23 +39,30 @@ export async function removeImageBGViaData(
     });
 
     if (response.status != 200) {
-      throw Error(
+      console.error(
         `Error from request to removebg: ${response.status}; ${response.statusText}`
       );
+      return null;
     }
     return response.data;
   } catch (err) {
-    throw err;
+    console.error(err);
+    return null;
   }
 }
 
-// Remove bg given URL of image
-export async function removeImageBGViaURL(
-  url: URL
-): Promise<ArrayBuffer | null> {
+/**
+ * @deprecated Use removeBackgroundStableDiffusion instead
+ *
+ * Remove bg given URL of image
+ *
+ * @param imageUrl
+ * @returns
+ */
+async function removeImageBGViaURL(imageUrl: URL): Promise<ArrayBuffer | null> {
   const formData = new FormData();
   formData.append("size", "auto");
-  formData.append("image_url", url.toString());
+  formData.append("image_url", imageUrl.toString());
 
   try {
     const response = await axios({
@@ -60,17 +78,51 @@ export async function removeImageBGViaURL(
     });
 
     if (response.status != 200) {
-      throw Error(
+      console.error(
         `Error from request to removebg: ${response.status}; ${response.statusText}`
       );
+      return null;
     }
     return response.data;
   } catch (err) {
-    throw err;
+    console.error(err);
+    return null;
+  }
+}
+
+export async function removeBackgroundStableDiffusion(
+  imageData: ArrayBuffer
+): Promise<Buffer | null> {
+  const formData = new FormData();
+  formData.append("image", Buffer.from(imageData), {
+    filename: "image.png", // request doenst work without this, idk
+  });
+  formData.append("output_format", "png");
+
+  const response = await axios.postForm(
+    `https://api.stability.ai/v2beta/stable-image/edit/remove-background`,
+    formData,
+    {
+      validateStatus: undefined,
+      responseType: "arraybuffer",
+      headers: {
+        Authorization: `Bearer ${process.env.STABILITYAI_API_KEY}`,
+        Accept: "image/*",
+      },
+    }
+  );
+
+  if (response.status === 200) {
+    // fs.writeFileSync("./husky.png", Buffer.from(response.data));
+    return response.data;
+  } else {
+    console.error(`${response.status}: ${response.data.toString()}`);
+    return null;
   }
 }
 
 // Removes additional space after background removal
+// Kinda redundant now
 export async function cropImage(
   imageData: ArrayBuffer
 ): Promise<ArrayBuffer | null> {
@@ -94,5 +146,82 @@ export async function cropImage(
   } catch (error) {
     console.error(error);
     return null;
+  }
+}
+
+export async function cutImage(
+  imageData: ArrayBuffer
+): Promise<ArrayBuffer | null> {
+  try {
+    const metadata = await sharp(imageData).metadata()
+
+    const width = metadata.width;
+    const height = metadata.height;
+
+    const length = await getNonAlphaPixel(imageData, width, height);
+    
+    const adjacent = width - length;
+    const opposite = adjacent * Math.tan((60 * Math.PI) / 180);
+    const m = adjacent/opposite;
+    const b = (height - length) + height;
+
+    // i know its fat just trust the process
+    const editedImage = await sharp(imageData)
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true })
+      .then( async ({ data, info }) => {
+        const { width, height, channels } = info;
+
+        let currIndex = 0;
+        for (let y = 0; y < height; y++) {
+          // y = mx + length ; 
+          for (let x = 0; x < width; x++) {
+            // NOTE: threshold is left and threshold2 is right
+            const threshold = m*x + length;
+            const threshold2 = -1*m*x + b;
+            // Pixel falls under the line
+            if (y > threshold2 || y > threshold) {
+              data[currIndex] = 0;
+              data[currIndex + 1] = 255;
+              data[currIndex + 2] = 0;
+              // data[currIndex + 3] = 0;
+            }
+            currIndex += 4;
+          }
+        }
+
+        const buffer = (await sharp(data, { raw: { width, height, channels } }).toFormat('png').toBuffer());
+        const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+        return arrayBuffer;
+      })
+
+    return editedImage;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function getNonAlphaPixel(
+  imageData: ArrayBuffer,
+  width: number,
+  height: number,
+): Promise<number | null> {
+  let length = 0;
+
+  for (let y = 0; y < height; y++) {
+    const pixelBuffer = await sharp(imageData)
+      .extract({ left: 0, top: y, width: 1, height: 1 })
+      .raw()
+      .toBuffer();
+
+    // Assuming RGBA format (4 channels)
+    const alphaIndex = 3;
+    const alphaValue = pixelBuffer[alphaIndex];
+
+    if (alphaValue > 0 && y > length) {
+      return y;
+    }
   }
 }

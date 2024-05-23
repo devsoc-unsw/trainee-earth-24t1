@@ -19,7 +19,7 @@
     "@types/ws": "^8.5.10",
     "ts-node": "^10.9.2",
     "tsx": "^4.7.2",
-    "typescript": "^5.4.4"
+    "typescript": "^5tc .4.4"
   },
   "scripts": {
     "dev": "tsx watch --env-file=.env ./src/index.ts"

@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb';
+
 export type Coordinates = {
   x: number;
   y: number;
@@ -47,13 +49,38 @@ type UnownedCell = {
   owner: null;
 };
 
-type VillagerId = string;
+type VillagerId = ObjectId;
 
-export interface Villager extends Object {
-  id: VillagerId;
+export interface Villager extends VillagerRequest {
+  _id: VillagerId;
+  interactingWith: VillagerId | EnvironmentObjectId | null;
+}
+
+export interface VillagerRequest extends Object {
   friends: VillagerId[];
   enemies: VillagerId[];
   wealth: number;
   items: EnvironmentObjectId[];
-  interactingWith: VillagerId | EnvironmentObjectId | null;
+}
+
+export function isVillager(obj: any): obj is Villager {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    '_id' in obj &&
+    obj._id instanceof ObjectId &&
+    'interactingWith' in obj &&
+    (obj.interactingWith instanceof ObjectId || obj.interactingWith === null) &&
+    'friends' in obj &&
+    Array.isArray(obj.friends) &&
+    obj.friends.every((friend) => friend instanceof ObjectId) &&
+    'enemies' in obj &&
+    Array.isArray(obj.enemies) &&
+    obj.enemies.every((enemy) => enemy instanceof ObjectId) &&
+    'wealth' in obj &&
+    typeof obj.wealth === 'number' &&
+    'items' in obj &&
+    Array.isArray(obj.items) &&
+    obj.items.every((item) => item instanceof ObjectId)
+  );
 }
