@@ -302,6 +302,24 @@ export async function generateHouseAssetV2(): Promise<Asset | null> {
     return null;
   } 
 
+  imageData = await flopImage(imageData);
+  if (imageData == null) {
+    console.error('Failed to flop image');
+    return null;
+  }
+
+  imageData = await cutImage(imageData);
+  if (imageData == null) {
+    console.error('Failed to cut image');
+    return null;
+  } 
+
+  imageData = await flopImage(imageData);
+  if (imageData == null) {
+    console.error('Failed to flop image');
+    return null;
+  }
+
   const croppedImgName = `edges-cropped.${newAsset.type}`;
   const croppedImgUrl = await storeImageIntoBunny(
     imageData,
