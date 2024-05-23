@@ -35,7 +35,7 @@ const resourceList = [
   "brewery",
 ];
 
-// Picks a random street furniture
+// Picks a random street cosmetic
 export async function generateCosmeticObjectImage(): Promise<OpenAI.Images.Image | null> {
   const furniture = cosmeticList[randomInt(0, cosmeticList.length - 1)];
   // const prompt = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Created a simple pixelated image with a standard isometric perspective of a singular ${furniture}, for my simulation game with a village theme. Ensure that the lighting appears to come from the west side, casting appropriate shadows. The item is placed against a plain white background.The item must be within the image's borders whilst being as large as possible.`;
@@ -69,11 +69,37 @@ export async function generateCosmeticObjectImage(): Promise<OpenAI.Images.Image
   return generateImage(generateImagePrompt);
 }
 
-// Pick a random resource building
 export async function generateResourceObjectImage(): Promise<OpenAI.Images.Image | null> {
   const resource = resourceList[randomInt(0, resourceList.length - 1)];
-  const prompt = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Created a simple pixelated image with a standard isometric perspective of a singular ${resource}, for my simulation game with a village theme. Ensure that the lighting appears to come from the west side, casting appropriate shadows. The item is placed against a plain white background. The item must be within the constraints of the image borders whilst being as large as possible.`;
-  return generateImage(prompt);
+//   const prompt = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Created a simple pixelated image with a standard isometric perspective of a singular ${resource}, for my simulation game with a village theme. Ensure that the lighting appears to come from the west side, casting appropriate shadows. The item is placed against a plain white background. The item must be within the constraints of the image borders whilst being as large as possible.`;
+  // return generateImage(prompt);
+
+  const textGenerationMessages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> =
+    [
+      {
+        role: "system",
+        content:
+          "You are a world-class architectural designer specializing in light-hearted, pleasant, friendly styles and integrating a vast variety of building architectures from all ages throughout history and places around the world. Help the user design some highly aesthetic, visually pleasing descriptions of manufacture buildings architectures.",
+      },
+      {
+        role: "user",
+        content:
+          `Write a short description of the architectural style of a ${resource}. The style could be anything from cottagecore, modern, or a combination of these, or anything else you can think of that is somewhat realistic! The more unique and special and niche, the better. Be creative, it is completely up to you what style you choose! Make sure it is a cute cozy friendly design. The ${resource} must be the primary and only subject. Be brief, coherent, clear, sharp, picturesque. Around 120 words. Start the first sentence with 'The ${resource} is...'`,
+      },
+    ];
+
+  const responseChoice = await generateText(textGenerationMessages);
+  if (responseChoice == null) {
+    console.error("Failed to generate text");
+    return null;
+  }
+  const resourceItemDescription = responseChoice.message.content;
+
+  const generateImagePrompt = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: A cute aesthetic standard isometric aerial view of a single large square ${resource}. ${resourceItemDescription} The ${resource} is 10 metres by 10 metres in dimension, sitting on a thin, flat, perfectly square, isometric platform of size 20 metres by 20 metres, made of a single layer of thin stone tiles, perfectly centered in the image, maintaining a straightforward composition. The ${resource} must be the primary subject of the image and occupy the most of the space. Any other surrounding elements are small and entirely contained within the bounds of the platform, allowing for an unobstructed view of the ${resource}. The entire square platform must be fully visible and fully contained within the frame of the image. The ${resource} is quaint and cozy with a storybook charm. The ground is a flat open space with a grassy texture in the color of spring green and the straight edges of the platform are lined smooth uniform stone bricks. Warm, gentle, pleasant light source from the west. Style is 3D boxy art RPG video game with a soft texture. Completely plain white background, floating in white space. The platform should be oriented so that the front corner forms a 120-degree angle. Ensure the isometric view has equal dimensions and accurate perspective, with the object centered on the platform. All subjects in the image MUST be MUCH LESS wide than the platform itself, with a border of at least 2 metres.`;
+
+  console.log(`Final prompt for generateImage: ${generateImagePrompt}\n`);
+
+  return generateImage(generateImagePrompt);
 }
 
 // Picks a random number between min and max

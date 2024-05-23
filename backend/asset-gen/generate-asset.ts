@@ -91,7 +91,7 @@ export async function generateAsset(
     return null;
   }
 
-  const filename = `house-${new Date().toISOString()}`;
+  const filename = `${AssetType[assetType]}-${new Date().toISOString()}`;
   const newAsset = new Asset(
     generatedImage.revised_prompt ?? "",
     generatedImage.fileType,
