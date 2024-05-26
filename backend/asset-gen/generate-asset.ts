@@ -11,15 +11,13 @@ import {
 } from "asset-gen/edit-image.ts";
 import {
   generateCosmeticObjectImage,
-  generateResourceObjectImage,
-  generateHouseObjectImage,
-  generateVillagerObjectImage,
-  generateHouseObjectImageV2,
+  generateProductionObjectImage,
+  generateVillagerImage,
+  generateHouseImage,
   // generateVillagerObjectImageV2,
 } from "asset-gen/generate-image.ts";
 import { storeImageIntoBunny } from "asset-gen/store-image.ts";
 import OpenAI from "openai";
-import nanoid from "src/utils/nanoid.ts";
 
 class Asset {
   private readonly _id: string;
@@ -60,27 +58,23 @@ class NamedRemoteObject {
 export enum AssetType {
   COSMETIC_ENVIRONMENT_OBJ,
   RESOURCE_ENVIRONMENT_OBJ,
-  HOUSE,
   VILLAGER,
 }
 
 // === Generate image based on prompt
-export async function generateAsset(
-  assetType: AssetType
-): Promise<Asset | null> {
+// Note: Should unwrap this funciton into multiple functions that each handle
+// generating a specific asset
+async function generateAsset(assetType: AssetType): Promise<Asset | null> {
   let generatedImage: OpenAI.Images.Image;
   switch (assetType) {
     case AssetType.COSMETIC_ENVIRONMENT_OBJ:
       generatedImage = await generateCosmeticObjectImage();
       break;
     case AssetType.RESOURCE_ENVIRONMENT_OBJ:
-      generatedImage = await generateResourceObjectImage();
-      break;
-    case AssetType.HOUSE:
-      generatedImage = await generateHouseObjectImage();
+      generatedImage = await generateProductionObjectImage();
       break;
     case AssetType.VILLAGER:
-      generatedImage = await generateVillagerObjectImage();
+      generatedImage = await generateVillagerImage();
       break;
     default:
       console.error("Invalid asset type");
@@ -168,25 +162,25 @@ export async function generateAsset(
   // Cut edges from both sides
   imageData = await cutImage(imageData);
   if (imageData == null) {
-    console.error('Failed to cut image');
+    console.error("Failed to cut image");
     return null;
-  } 
+  }
 
   imageData = await flopImage(imageData);
   if (imageData == null) {
-    console.error('Failed to flop image');
+    console.error("Failed to flop image");
     return null;
   }
 
   imageData = await cutImage(imageData);
   if (imageData == null) {
-    console.error('Failed to cut image');
+    console.error("Failed to cut image");
     return null;
-  } 
+  }
 
   imageData = await flopImage(imageData);
   if (imageData == null) {
-    console.error('Failed to flop image');
+    console.error("Failed to flop image");
     return null;
   }
 
@@ -215,9 +209,9 @@ export async function generateAsset(
   return newAsset;
 }
 
-export async function generateHouseAssetV2(): Promise<Asset | null> {
+export async function generateHouseAsset(): Promise<Asset | null> {
   // === Generate image of house object and create asset ===
-  const generatedImage = await generateHouseObjectImageV2();
+  const generatedImage = await generateHouseImage();
 
   if (generatedImage == null || generatedImage.url == null) {
     console.error("Failed to generate image");
@@ -305,25 +299,25 @@ export async function generateHouseAssetV2(): Promise<Asset | null> {
 
   imageData = await cutImage(imageData);
   if (imageData == null) {
-    console.error('Failed to cut image');
+    console.error("Failed to cut image");
     return null;
-  } 
+  }
 
   imageData = await flopImage(imageData);
   if (imageData == null) {
-    console.error('Failed to flop image');
+    console.error("Failed to flop image");
     return null;
   }
 
   imageData = await cutImage(imageData);
   if (imageData == null) {
-    console.error('Failed to cut image');
+    console.error("Failed to cut image");
     return null;
-  } 
+  }
 
   imageData = await flopImage(imageData);
   if (imageData == null) {
-    console.error('Failed to flop image');
+    console.error("Failed to flop image");
     return null;
   }
 
@@ -351,4 +345,20 @@ export async function generateHouseAssetV2(): Promise<Asset | null> {
   // ===
 
   return newAsset;
+}
+
+export async function generateVillagerAsset(): Promise<Asset | null> {
+  // TODO: Implement this in a specialised way rather than delegate to
+  // generateAsset()
+  return generateAsset(AssetType.VILLAGER);
+}
+
+export async function generateProductionObjectAsset(): Promise<Asset | null> {
+  // TODO: Implement this in a specialised way rather than delegate to
+  // generateAsset()
+  return generateAsset(AssetType.RESOURCE_ENVIRONMENT_OBJ);
+}
+
+export async function generateCosmeticObjectAsset(): Promise<Asset | null> {
+  return await generateAsset(AssetType.COSMETIC_ENVIRONMENT_OBJ);
 }

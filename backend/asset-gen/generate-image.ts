@@ -33,9 +33,23 @@ const resourceList = [
   "Lumber mill",
   "Iron mine",
   "Wheat farm",
-  "fishery",
+  "Fishery",
   "Chicken farm",
-  "brewery",
+  "Brewery",
+  "Bakery",
+  "Cotton field",
+  "Sugarcane mill",
+  "Coal mine",
+  "Cow farm",
+  "Pig farm",
+  "Oil well",
+  "Oil refinery",
+  "Steel mill",
+  "Smelter",
+  "Glassworks",
+  "Textile mill",
+  "Soybean farm",
+  "Cocoa farm",
 ];
 
 // Picks a random street cosmetic
@@ -53,8 +67,7 @@ export async function generateCosmeticObjectImage(): Promise<OpenAI.Images.Image
       },
       {
         role: "user",
-        content:
-          `Write a short description of the architectural style of a ${furniture}. The style could be anything from cottagecore, modern, or a combination of these, or anything else you can think of! The more unique and special and niche, the better. Be creative, it is completely up to you what style you choose! Make sure it is a cute cozy friendly design. The ${furniture} must be the primary and only subject. Be brief, coherent, clear, sharp, picturesque. Around 120 words. Start the first sentence with 'The ${furniture} is...'`,
+        content: `Write a short description of the architectural style of a ${furniture}. The style could be anything from cottagecore, modern, or a combination of these, or anything else you can think of! The more unique and special and niche, the better. Be creative, it is completely up to you what style you choose! Make sure it is a cute cozy friendly design. The ${furniture} must be the primary and only subject. Be brief, coherent, clear, sharp, picturesque. Around 120 words. Start the first sentence with 'The ${furniture} is...'`,
       },
     ];
 
@@ -72,9 +85,9 @@ export async function generateCosmeticObjectImage(): Promise<OpenAI.Images.Image
   return generateImage(generateImagePrompt);
 }
 
-export async function generateResourceObjectImage(): Promise<OpenAI.Images.Image | null> {
+export async function generateProductionObjectImage(): Promise<OpenAI.Images.Image | null> {
   const resource = resourceList[randomInt(0, resourceList.length - 1)];
-//   const prompt = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Created a simple pixelated image with a standard isometric perspective of a singular ${resource}, for my simulation game with a village theme. Ensure that the lighting appears to come from the west side, casting appropriate shadows. The item is placed against a plain white background. The item must be within the constraints of the image borders whilst being as large as possible.`;
+  //   const prompt = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Created a simple pixelated image with a standard isometric perspective of a singular ${resource}, for my simulation game with a village theme. Ensure that the lighting appears to come from the west side, casting appropriate shadows. The item is placed against a plain white background. The item must be within the constraints of the image borders whilst being as large as possible.`;
   // return generateImage(prompt);
 
   const textGenerationMessages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> =
@@ -86,8 +99,7 @@ export async function generateResourceObjectImage(): Promise<OpenAI.Images.Image
       },
       {
         role: "user",
-        content:
-          `Write a short description of the architectural style of a ${resource}. The style could be anything from cottagecore, modern, or a combination of these, or anything else you can think of that is somewhat realistic! The more unique and special and niche, the better. Be creative, it is completely up to you what style you choose! Make sure it is a cute cozy friendly design. The ${resource} must be the primary and only subject. Be brief, coherent, clear, sharp, picturesque. Around 120 words. Start the first sentence with 'The ${resource} is...'`,
+        content: `Write a short description of the architectural style of a ${resource}. The style could be anything from cottagecore, modern, or a combination of these, or anything else you can think of that is somewhat realistic! The more unique and special and niche, the better. Be creative, it is completely up to you what style you choose! Make sure it is a cute cozy friendly design. The ${resource} must be the primary and only subject. Be brief, coherent, clear, sharp, picturesque. Around 120 words. Start the first sentence with 'The ${resource} is...'`,
       },
     ];
 
@@ -110,14 +122,7 @@ function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-// Get house
-export async function generateHouseObjectImage(): Promise<OpenAI.Images.Image | null> {
-  const prompt =
-    "I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Create a simple pixelated image with a standard isometric view showing a large, singular square house with warm lighting. Ensure that the lighting appears to come from the west side, casting appropriate shadows. It should be encapsulated in a village core theme that showcases the house's charming characteristics - a thatched roof, timber frames with some greenery. The entire house must be contained within the image's borders, allowing for an unobstructed view of the dwelling. Let the house against a plain white background, highlighting the house's charming attributes and maintaining a straightforward composition. The item must be within the constraints of the image borders whilst being as large as possible.";
-  return generateImage(prompt);
-}
-
-export async function generateVillagerObjectImage(): Promise<OpenAI.Images.Image | null> {
+export async function generateVillagerImage(): Promise<OpenAI.Images.Image | null> {
   // const prompt =
   //   "I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Created a simple pixelated image with a standard isometric perspective of a pixelated cute villager. Put the villager against a plain white background with no additional items.";
   // return generateImage(prompt);
@@ -147,7 +152,7 @@ export async function generateVillagerObjectImage(): Promise<OpenAI.Images.Image
 
   console.log(`Final prompt for generateImage: ${generateImagePrompt}\n`);
 
-  return generateImage(generateImagePrompt);  
+  return generateImage(generateImagePrompt);
 }
 
 // export async function generateVillagerObjectImageV2() {
@@ -174,11 +179,11 @@ export async function generateVillagerObjectImage(): Promise<OpenAI.Images.Image
 //   const villagerDescription = responseChoice.message.content;
 
 //   const generateImagePrompt = `${villagerDescription}, character only, 8 bit pixel style, white background`
-  
+
 //   return generateStableImage(generateImagePrompt);
 // }
 
-export async function generateHouseObjectImageV2(): Promise<OpenAI.Images.Image | null> {
+export async function generateHouseImage(): Promise<OpenAI.Images.Image | null> {
   const textGenerationMessages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> =
     [
       {

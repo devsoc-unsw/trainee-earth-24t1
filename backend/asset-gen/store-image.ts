@@ -89,17 +89,17 @@ export async function storeImageIntoBunny(
   return cdnURL;
 }
 
-export async function deleteImageFromBunny (
-  pathname: string,
+export async function deleteImageFromBunny(
+  pathname: string
 ): Promise<undefined> {
   const options = {
-    method: 'DELETE',
+    method: "DELETE",
     url: pathname,
     header: {
-      AccessKey: `${process.env.BUNNY_ACCESS_KEY}`
-    }
+      AccessKey: `${process.env.BUNNY_ACCESS_KEY}`,
+    },
   };
-  
+
   await axios
     .request(options)
     .then(function (response) {

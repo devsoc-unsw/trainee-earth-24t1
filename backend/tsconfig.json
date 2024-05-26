@@ -10,8 +10,9 @@
     "baseUrl": "./",
     "paths": {
     },
-    "typeRoots" : ["./node_modules/@types", "type-extensions"]
+    "typeRoots" : ["./node_modules/@types", "type-extensions"],
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*", "asset-gen/**/*"],
+  "include": ["src/**/*", "asset-gen/**/*",],
   "lib": ["ES2022", "ES2022.error"],
 }
