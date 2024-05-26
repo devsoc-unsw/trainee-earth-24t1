@@ -15,6 +15,7 @@ import {
   generateHouseObjectImage,
   generateVillagerObjectImage,
   generateHouseObjectImageV2,
+  // generateVillagerObjectImageV2,
 } from "asset-gen/generate-image.ts";
 import { storeImageIntoBunny } from "asset-gen/store-image.ts";
 import OpenAI from "openai";
@@ -165,29 +166,35 @@ export async function generateAsset(
   }
 
   // Cut edges from both sides
-  // imageData = await cutImage(imageData);
-  // if (imageData == null) {
-  //   console.error('Failed to cut image');
-  //   return null;
-  // } 
+  imageData = await cutImage(imageData);
+  if (imageData == null) {
+    console.error('Failed to cut image');
+    return null;
+  } 
 
-  // imageData = await flopImage(imageData);
-  // if (imageData == null) {
-  //   console.error('Failed to flop image');
-  //   return null;
-  // }
+  imageData = await flopImage(imageData);
+  if (imageData == null) {
+    console.error('Failed to flop image');
+    return null;
+  }
 
-  // imageData = await cutImage(imageData);
-  // if (imageData == null) {
-  //   console.error('Failed to cut image');
-  //   return null;
-  // } 
+  imageData = await cutImage(imageData);
+  if (imageData == null) {
+    console.error('Failed to cut image');
+    return null;
+  } 
 
-  // imageData = await flopImage(imageData);
-  // if (imageData == null) {
-  //   console.error('Failed to flop image');
-  //   return null;
-  // }
+  imageData = await flopImage(imageData);
+  if (imageData == null) {
+    console.error('Failed to flop image');
+    return null;
+  }
+
+  imageData = await cropImage(imageData);
+  if (imageData == null) {
+    console.error("Failed to crop image");
+    return null;
+  }
 
   const croppedImgName = `edges-cropped.${newAsset.type}`;
   const croppedImgUrl = await storeImageIntoBunny(
@@ -317,6 +324,12 @@ export async function generateHouseAssetV2(): Promise<Asset | null> {
   imageData = await flopImage(imageData);
   if (imageData == null) {
     console.error('Failed to flop image');
+    return null;
+  }
+
+  imageData = await cropImage(imageData);
+  if (imageData == null) {
+    console.error("Failed to crop image");
     return null;
   }
 

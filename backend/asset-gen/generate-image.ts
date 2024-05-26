@@ -1,6 +1,9 @@
 import OpenAI from "openai";
 import { generateText } from "./generate-text.ts";
 import { isImageFileTypeType } from "src/utils/imageFileTypes.ts";
+import axios from "axios";
+import FormData from "form-data";
+import fs from "node:fs";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -146,6 +149,34 @@ export async function generateVillagerObjectImage(): Promise<OpenAI.Images.Image
 
   return generateImage(generateImagePrompt);  
 }
+
+// export async function generateVillagerObjectImageV2() {
+//   const textGenerationMessages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> =
+//     [
+//       {
+//         role: "system",
+//         content:
+//           "You are a world-class designer specializing in light-hearted, pleasant, friendly styles and integrating a vast variety of characters from all ages throughout history and places around the world. Help the user design some highly aesthetic, visually pleasing descriptions of a villager.",
+//       },
+//       {
+//         role: "user",
+//         content:
+//           "Write a short description of the personality of a villager of a village lodge. The villager's style could be anything from such as ancient Egyptian, Greek, Japanese, medieval, Moroccan, Mughal, Georgian, Victorian American, Swiss, Craftsman, Spanish, Scandinavian, or contemporary, or a combination of these, or anything else you can think of! The more unique and special and niche, the better. Be creative, it is completely up to you what style you choose! Make sure it is a cute cozy friendly design. The villager must be the primary and only subject. Be brief, coherent, clear, sharp, picturesque. Around 120 words. Start the first sentence with 'The villager is...'",
+//       },
+//     ];
+
+//   const responseChoice = await generateText(textGenerationMessages);
+//   if (responseChoice == null) {
+//     console.error("Failed to generate text");
+//     return null;
+//   }
+
+//   const villagerDescription = responseChoice.message.content;
+
+//   const generateImagePrompt = `${villagerDescription}, character only, 8 bit pixel style, white background`
+  
+//   return generateStableImage(generateImagePrompt);
+// }
 
 export async function generateHouseObjectImageV2(): Promise<OpenAI.Images.Image | null> {
   const textGenerationMessages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> =

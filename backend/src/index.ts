@@ -9,6 +9,7 @@ import {
   generateAsset,
   AssetType,
   generateHouseAssetV2,
+  // generateVillagerAssetV2
 } from "asset-gen/generate-asset.ts";
 
 const EXPRESS_PORT = 3000;
