@@ -12,8 +12,11 @@ type Dimensions = {
 
 export type AssetId = string;
 
+export type AssetsJSON = { [key: AssetId]: AssetJSON };
+export type Assets = Map<AssetId, Asset>;
+
 export interface AssetJSON extends JSONObject {
-  id: string;
+  _id: string;
   name: string;
   date: string;
   description: string;
@@ -23,7 +26,7 @@ export interface AssetJSON extends JSONObject {
 }
 
 export class Asset implements Serializable<AssetJSON> {
-  private readonly _id: AssetId;
+  public readonly _id: AssetId;
   public name: string;
   public type: string;
   public description: string;
@@ -66,7 +69,7 @@ export class Asset implements Serializable<AssetJSON> {
 
   serialize(): JSONCompatible<AssetJSON> {
     return {
-      id: this._id,
+      _id: this._id,
       name: this.name,
       date: toIsoStringWithTimezone(this.date),
       description: this.description,
@@ -83,7 +86,7 @@ export class Asset implements Serializable<AssetJSON> {
       obj.description,
       obj.type,
       new Date(obj.date),
-      obj.id,
+      obj._id,
       obj.remoteImages.map((remoteImageObj) =>
         RemoteImage.deserialize(remoteImageObj)
       ),

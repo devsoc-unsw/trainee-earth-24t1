@@ -10,7 +10,12 @@ import { WebSocketServer, WebSocket } from "ws";
 import { handleWSRequest } from "src/wsHandler.ts";
 import { GameLoop } from "./gameloopFramework.js";
 import { SimulationServer } from "./simulationServer.js";
-import { simulationState1 } from "sample-data/simulation_state/simulation_state_1.ts";
+import {
+  assets1,
+  simulationState1,
+} from "sample-data/simulation_state/simulation_state_1.ts";
+import { Asset } from "asset-gen/generate-asset.ts";
+import { deserializeJSONToMap } from "./utils/objectTyping.ts";
 
 const EXPRESS_PORT = 3000;
 
@@ -103,7 +108,9 @@ wss.on("connection", (ws: WebSocket) => {
   });
 });
 
-const simulationState = SimulationState.deserialize(simulationState1);
-const simulationServer = new SimulationServer(simulationState);
+const simulationServer = new SimulationServer(
+  SimulationState.deserialize(simulationState1),
+  deserializeJSONToMap(assets1, Asset.deserialize)
+);
 const myGameLoop = new GameLoop(simulationServer.simulationStep);
 myGameLoop.startGameLoop();

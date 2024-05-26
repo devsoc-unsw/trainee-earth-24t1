@@ -1,14 +1,14 @@
-import { Asset, AssetId } from "asset-gen/generate-asset.ts";
+import { Assets } from "asset-gen/generate-asset.ts";
 import { UpdateFn } from "./gameloopFramework.js";
 import { SimulationState, Villager } from "src/types/simulationTypes.ts";
 
 export class SimulationServer {
   private state: SimulationState;
-  private assets: Map<AssetId, Asset>;
+  private assets: Assets;
 
   constructor(
     state: SimulationState = new SimulationState(),
-    assets: Map<AssetId, Asset> = new Map()
+    assets: Assets = new Map()
   ) {
     this.state = state;
     this.assets = assets;

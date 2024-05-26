@@ -1,4 +1,4 @@
-import { AssetJSON } from "asset-gen/generate-asset.ts";
+import { AssetJSON, AssetsJSON } from "asset-gen/generate-asset.ts";
 import {
   AttributeJSON,
   CosmeticObjectJSON,
@@ -42,8 +42,8 @@ const villager1: VillagerJSON = {
   energy: 3000,
   coins: 24000,
   resources: {
-    resource_1: 48,
-    resource_2: 63,
+    resource_1: { total: 48, isSelling: 23, buyPrice: 8 },
+    resource_2: { total: 57, isSelling: 36, buyPrice: 5 },
   },
   cosmeticEnvironmentObjects: ["cosmetic_object_1"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
   characterAttributes: {
@@ -155,9 +155,9 @@ export const simulationState1: SimulationStateJSON = {
   },
 };
 
-export const assets1: AssetJSON[] = [
-  {
-    id: "house_object_1_asset",
+export const assets1: AssetsJSON = {
+  house_object_1_asset: {
+    _id: "house_object_1_asset",
     name: "Villager 1 House asset",
     date: "2024-05-21T18:23:42.555+10:00",
     description:
@@ -178,8 +178,8 @@ export const assets1: AssetJSON[] = [
       height: 40,
     },
   },
-  {
-    id: "production_object_1_asset",
+  production_object_1_asset: {
+    _id: "production_object_1_asset",
     name: "Wheat Farm asset",
     date: "2024-05-21T18:23:42.555+10:00",
     description: "..........",
@@ -199,8 +199,8 @@ export const assets1: AssetJSON[] = [
       height: 36,
     },
   },
-  {
-    id: "cosmetic_object_1_asset",
+  cosmetic_object_1_asset: {
+    _id: "cosmetic_object_1_asset",
     name: "Fountain of Youth asset",
     date: "2024-05-21T18:23:42.555+10:00",
     description: "..........",
@@ -220,4 +220,4 @@ export const assets1: AssetJSON[] = [
       height: 10,
     },
   },
-];
+};
