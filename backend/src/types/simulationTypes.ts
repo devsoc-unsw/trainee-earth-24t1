@@ -225,7 +225,7 @@ export class EnviroObject implements Serializable<EnviroObjectJSON> {
   }
 
   static deserialize(obj: JSONCompatible<EnviroObjectJSON>): EnviroObject {
-    return new this(obj.name, obj._id, obj.asset);
+    return new EnviroObject(obj.name, obj._id, obj.asset);
   }
 }
 
