@@ -1,10 +1,21 @@
 import express from "express";
-import type { PlayerMap, Coordinates, Cell } from "./types/simulationTypes.ts";
+import {
+  type Coordinates,
+  Cell,
+  SimulationState,
+  WorldMap,
+} from "./types/simulationTypes.ts";
 import { run as runDB } from "src/db.ts";
 import { WebSocketServer, WebSocket } from "ws";
 import { handleWSRequest } from "src/wsHandler.ts";
 import { GameLoop } from "./gameloopFramework.js";
-import { simulationStep } from "./simulationServer.js";
+import { Asset } from "asset-gen/generate-asset.ts";
+import {
+  assets1,
+  simulationState1,
+} from "sample-data/simulation_state/simulation_state_1.ts";
+import { SimulationServer } from "./simulationServer.js";
+import { deserializeJSONToMap } from "./utils/objectTyping.ts";
 import {
   generateHouseAsset,
   generateVillagerAsset,
@@ -12,9 +23,9 @@ import {
   generateCosmeticObjectAsset,
   // generateVillagerAssetV2
 } from "asset-gen/generate-asset.ts";
-import cosmeticPresetJSON from "sample_data/websocket_requests/cosmetic_object_assets/presets.json";
-import housePresetJSON from "sample_data/websocket_requests/house_object_assets/presets.json";
-import resourcePresetJSON from "sample_data/websocket_requests/resource_object_assets/presets.json";
+import cosmeticPresetJSON from "sample-data/gen-assets/cosmetic_object_assets/presets.json";
+import housePresetJSON from "sample-data/gen-assets/house_object_assets/presets.json";
+import resourcePresetJSON from "sample-data/gen-assets/resource_object_assets/presets.json";
 import axios, { AxiosResponse } from "axios";
 import { cropImage } from "asset-gen/edit-image.ts";
 import fs from "fs";
@@ -36,14 +47,10 @@ app.get("/", (req, res) => {
  * Right now, it just generates a placeholder map.
  */
 app.get("/map", (req, res) => {
-  const map: PlayerMap = { cells: new Map<Coordinates, Cell>() };
+  const map: WorldMap = new WorldMap();
   const origin: Coordinates = { x: 0, y: 0 };
-  const originCell: Cell = {
-    owner: undefined,
-    object: null,
-  };
-  map.cells.set(origin, originCell);
-  // map.cells.set({ x: 0, y: 1 }, originCell);
+  const originCell: Cell = new Cell(origin.x, origin.y);
+  map.addCell(origin, originCell);
   res.send(map);
 });
 
@@ -262,5 +269,9 @@ wss.on("connection", (ws: WebSocket) => {
   });
 });
 
-const myGameLoop = new GameLoop(simulationStep);
-// myGameLoop.startGameLoop();
+const simulationServer = new SimulationServer(
+  SimulationState.deserialize(simulationState1),
+  deserializeJSONToMap(assets1, Asset.deserialize)
+);
+const myGameLoop = new GameLoop(simulationServer.simulationStep);
+myGameLoop.startGameLoop();

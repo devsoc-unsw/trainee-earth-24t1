@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { generateText } from "./generate-text.ts";
-import { isImageFileTypeType } from "src/utils/imageFileTypes.ts";
+import { isImageFileTypeType } from "src/types/imageFileTypes.ts";
 import axios from "axios";
 import FormData from "form-data";
 import fs from "node:fs";

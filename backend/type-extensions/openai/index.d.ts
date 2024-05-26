@@ -1,4 +1,4 @@
-import { ImageFileTypeType } from "src/utils/imageFileTypes.ts";
+import { ImageFileTypeType } from "src/types/imageFileTypes.ts";
 
 declare module "openai" {
   namespace OpenAI {
