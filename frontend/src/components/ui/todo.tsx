@@ -66,7 +66,7 @@ export default function TodoWidget({draggableId, x, y}: {draggableId: string, x:
 
   return (
     <section>
-      <div style={ style } ref={setNodeRef} className="absolute bg-white rounded-xl h-70 w-60 flex-col justify-center content-center">
+      <div style={ style } ref={setNodeRef} className="relative bg-white rounded-xl h-70 w-60 flex-col justify-center content-center">
         <div className='flex-col items-center justify-center'>
           <button {...listeners} {...attributes} className='flex justify-center items-center text-2xl w-full opacity-60'>
             <IconDots />

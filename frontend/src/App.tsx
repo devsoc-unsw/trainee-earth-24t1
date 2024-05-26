@@ -6,46 +6,55 @@ import GithubWidget from "./components/ui/github";
 import CalendarWidget from "./components/ui/calendarWidget";
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { useEffect, useState } from "react";
+import HabitCounter from "./components/ui/habitCounter";
 
 const defaultWidgetsData: widgetDataType = [
   {
-    id: "timer",
-    type: "timer",
-    position: {
-      x: 581,
-      y: 169,
-    },
+    "id":"timer",
+    "type":"timer",
+    "position": {
+      "x":370,
+      "y":355
+    }
   },
   {
-    id: "github",
-    type: "github",
-    position: {
-      x: 84,
-      y: 231,
-    },
+    "id":"github",
+    "type":"github",
+    "position": {
+      "x":330,
+      "y":-221
+    }
   },
   {
-    id: "todo-list",
-    type: "todo-list",
-    position: {
-      x: 156,
-      y: 474,
-    },
+    "id":"todo-list",
+    "type":"todo-list",
+    "position": {
+      "x":47,
+      "y":-25
+    }
   },
   {
-    id: "calendar",
-    type: "calendar",
-    position: {
-      x: 483,
-      y: 516,
-    },
+    "id":"calendar",
+    "type":"calendar",
+    "position": {
+      "x":-23,
+      "y":-588
+    }
+  },
+  {
+    "id":"habitCounter",
+    "type":"habitCounter",
+    "position": {
+      "x":-23,
+      "y":-310
+    }
   }
 ];
 
 type widgetDataType = {id: string, type: widgetType, position: {x: number, y: number}}[];
 
 
-type widgetType = "timer" | "calendar" | "todo-list" | "github"
+type widgetType = "timer" | "calendar" | "todo-list" | "github" | "habitCounter"
 
 export default function App() {
   const [widgets, setWidgets] = useState<widgetDataType>(() => {
@@ -77,6 +86,7 @@ export default function App() {
         <Navbar />
       </header>
       <div className="content flex-col mx-auto w-full max-w-screen-xl justify-center items-center">
+        <button onClick={() => localStorage.clear()}>reset local storage</button>
         <DndContext onDragEnd={handleDragEnd}>
           {widgets.map((widget) => {
             switch(widget.type) {
@@ -116,16 +126,18 @@ export default function App() {
                     draggableId={widget.id}
                   />
                 )
+              case "habitCounter":
+                return(
+                  <HabitCounter
+                    key={widget.id}
+                    x={widget.position.x}
+                    y={widget.position.y}
+                    draggableId={widget.id}
+                  />
+                )
             };
           })}
         </DndContext>
-        <button onClick={() => localStorage.clear()}>reset local storage</button>
-        <div className="flex-col justify-around w-100">
-          <div className="pt-5">
-          </div>
-          <div className="pt-5">
-          </div>
-        </div>
       </div>
     </div>
   );
