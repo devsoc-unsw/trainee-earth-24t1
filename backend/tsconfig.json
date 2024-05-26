@@ -8,7 +8,21 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "baseUrl": "./",
+    "paths": {},
+    "typeRoots": [
+      "./node_modules/@types",
+      "type-extensions"
+    ],
+    "resolveJsonModule": true,
   },
-  "include": ["src/**/*", "asset-gen/**/*", "sample-data/**/*"],
-  "lib": ["ES2022", "ES2022.error"],
+  "include": [
+    "src/**/*",
+    "asset-gen/**/*",
+    "sample-data/**/*",
+    "type-extensions/**/*"
+  ],
+  "lib": [
+    "ES2022",
+    "ES2022.error"
+  ],
 }
