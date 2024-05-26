@@ -1,4 +1,4 @@
-import { UpdateFn } from "./gameloopFramework.js";
+import { UpdateFn } from "src/gameloopFramework.js";
 
 /**
  * Servers as the update function to the gameloop framework.

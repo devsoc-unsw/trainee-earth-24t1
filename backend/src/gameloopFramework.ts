@@ -2,8 +2,6 @@
  * Adapted from https://github.com/timetocode/node-game-loop
  */
 
-import assert from "assert";
-
 export type UpdateFn = (delta: number) => void;
 type GameLoopFn = () => void;
 

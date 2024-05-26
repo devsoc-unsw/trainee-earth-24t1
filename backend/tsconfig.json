@@ -9,9 +9,10 @@
     "noEmit": true,
     "baseUrl": "./",
     "paths": {
-      "*": ["./src/*"]
-    }
+    },
+    "typeRoots" : ["./node_modules/@types", "type-extensions"],
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "asset-gen/**/*",],
   "lib": ["ES2022", "ES2022.error"],
 }

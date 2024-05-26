@@ -1,5 +1,4 @@
-import assert from "assert";
-import { CustomError } from "utils/customError.ts";
+import { CustomError } from "src/utils/customError.ts";
 
 export enum ClientRequestType {
   PING = "PING",
