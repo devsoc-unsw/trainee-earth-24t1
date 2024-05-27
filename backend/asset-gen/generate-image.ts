@@ -122,66 +122,42 @@ function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-export async function generateVillagerImage(): Promise<OpenAI.Images.Image | null> {
-  // const prompt =
-  //   "I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Created a simple pixelated image with a standard isometric perspective of a pixelated cute villager. Put the villager against a plain white background with no additional items.";
-  // return generateImage(prompt);
-
-  const textGenerationMessages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> =
-    [
-      {
-        role: "system",
-        content:
-          "You are a world-class designer specializing in light-hearted, pleasant, friendly styles and integrating a vast variety of characters from all ages throughout history and places around the world. Help the user design some highly aesthetic, visually pleasing descriptions of a villager.",
-      },
-      {
-        role: "user",
-        content:
-          "Write a short description of the personality of a villager of a village lodge. The villager's style could be anything from such as ancient Egyptian, Greek, Japanese, medieval, Moroccan, Mughal, Georgian, Victorian American, Swiss, Craftsman, Spanish, Scandinavian, or contemporary, or a combination of these, or anything else you can think of! The more unique and special and niche, the better. Be creative, it is completely up to you what style you choose! Make sure it is a cute cozy friendly design. The villager must be the primary and only subject. Be brief, coherent, clear, sharp, picturesque. Around 120 words. Start the first sentence with 'The villager is...'",
-      },
-    ];
-
-  const responseChoice = await generateText(textGenerationMessages);
-  if (responseChoice == null) {
-    console.error("Failed to generate text");
-    return null;
-  }
-  const villagerDescription = responseChoice.message.content;
-
-  const generateImagePrompt = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: A cute aesthetic standard isometric aerial view of a single villager. ${villagerDescription} The villager must be the primary subject of the image and occupy the most of the space. The villager is quaint and cozy with a storybook charm. Warm, gentle, pleasant light source from the west. Style is 3D boxy art RPG video game with a soft texture. Completely plain white background, floating in white space. The villager should be oriented so that the front corner forms a 120-degree angle. Ensure the isometric view has equal dimensions and accurate perspective, with the object centered. Make the proportions of the villager equal, so a third head, a third torso and a third legs. ONLY provide an image of the villager and NOTHING ELSE. The villager's whole body MUST fit the image. The villager MUST be in an isometric perspective.`;
-
-  console.log(`Final prompt for generateImage: ${generateImagePrompt}\n`);
-
-  return generateImage(generateImagePrompt);
+export async function generateVillagerImage(): Promise<undefined> {
+  return await generateStableImage();
 }
 
-// export async function generateVillagerObjectImageV2() {
-//   const textGenerationMessages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> =
-//     [
-//       {
-//         role: "system",
-//         content:
-//           "You are a world-class designer specializing in light-hearted, pleasant, friendly styles and integrating a vast variety of characters from all ages throughout history and places around the world. Help the user design some highly aesthetic, visually pleasing descriptions of a villager.",
-//       },
-//       {
-//         role: "user",
-//         content:
-//           "Write a short description of the personality of a villager of a village lodge. The villager's style could be anything from such as ancient Egyptian, Greek, Japanese, medieval, Moroccan, Mughal, Georgian, Victorian American, Swiss, Craftsman, Spanish, Scandinavian, or contemporary, or a combination of these, or anything else you can think of! The more unique and special and niche, the better. Be creative, it is completely up to you what style you choose! Make sure it is a cute cozy friendly design. The villager must be the primary and only subject. Be brief, coherent, clear, sharp, picturesque. Around 120 words. Start the first sentence with 'The villager is...'",
-//       },
-//     ];
-
-//   const responseChoice = await generateText(textGenerationMessages);
-//   if (responseChoice == null) {
-//     console.error("Failed to generate text");
-//     return null;
-//   }
-
-//   const villagerDescription = responseChoice.message.content;
-
-//   const generateImagePrompt = `${villagerDescription}, character only, 8 bit pixel style, white background`
-
-//   return generateStableImage(generateImagePrompt);
-// }
+export async function generateStableImage() {
+  try {
+    const formData = {
+      image: fs.createReadStream("./stableDudePerfect.png"),
+      prompt: "a fun cute human for a village game, character only, 8 bit pixel style, white background. The villager has brown eyes, blond wavy hair and a shiny metal armour.",
+      control_strength: 0.6,
+      output_format: "webp",
+      negative_prompt: "background, additional props, shadows, ground, grass, floor"
+    };
+    
+    const response = await axios.postForm(
+        `https://api.stability.ai/v2beta/stable-image/control/sketch`,
+        axios.toFormData(formData, new FormData()),
+        {
+            validateStatus: undefined,
+            responseType: "arraybuffer",
+            headers: {
+                Authorization: `Bearer ${process.env.STABILITYAI_API_KEY}`,
+                Accept: "image/*"
+            },
+        },
+    );
+    
+    if (response.status === 200) {
+      return response.data
+    } else {
+      console.error(`${response.status}: ${response.data.toString()}`);
+    }
+  } catch (err) {
+    console.error(err)
+  }
+}
 
 export async function generateHouseImage(): Promise<OpenAI.Images.Image | null> {
   const textGenerationMessages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> =

@@ -17,6 +17,7 @@ import {
   generateProductionObjectImage,
   generateVillagerImage,
   generateHouseImage,
+  generateStableImage,
   // generateVillagerObjectImageV2,
 } from "asset-gen/generate-image.ts";
 import { storeImageIntoBunny } from "asset-gen/store-image.ts";
@@ -85,6 +86,10 @@ export class Asset implements Serializable<AssetJSON> {
 
   getRemoteImages(): RemoteImage[] {
     return this.remoteImages;
+  }
+
+  getDimensions(): Dimensions {
+    return this.dimensions;
   }
 
   serialize(): JSONCompatible<AssetJSON> {
@@ -415,10 +420,62 @@ export async function generateHouseAsset(): Promise<Asset | null> {
   return newAsset;
 }
 
+export async function generateAssetVillagerImage(assetType: AssetType): Promise<Asset | null> {
+  const generatedImage = await generateStableImage();
+
+  // make new asset class
+  if (generatedImage == null) {
+    console.error("Failed to generate image");
+    return null;
+  }
+
+  const filename = `villager-${new Date().toISOString()}`;
+  const newAsset = new Asset(
+    "villager new asset",
+    filename,
+    "png",
+    undefined,
+    undefined,
+    undefined,
+    { width: 1, height: 1 }
+  );
+
+  let imageData: ArrayBuffer | null = null;
+
+  // remove background
+  imageData = await removeBackgroundStableDiffusion(generatedImage);
+  if (imageData == null) {
+    console.error("Failed to remove background from image using stability AI");
+    return null;
+  }
+
+  // crop
+  imageData = await cropImage(imageData);
+  if (imageData == null) {
+    console.error("Failed to crop image");
+    return null;
+  }
+  // store
+  const croppedImgName = `edges-cropped.${newAsset.type}`;
+  const croppedImgUrl = await storeImageIntoBunny(
+    imageData,
+    newAsset.name + "/",
+    croppedImgName
+  );
+  if (croppedImgUrl == null) {
+    console.error("Failed to store image after cropping");
+  } else {
+    console.log(`Stored image after cropping: ${croppedImgUrl}`);
+    newAsset.addRemoteImage(new RemoteImage(croppedImgName, croppedImgUrl));
+  }
+  // send
+  return newAsset
+}
+
 export async function generateVillagerAsset(): Promise<Asset | null> {
   // TODO: Implement this in a specialised way rather than delegate to
   // generateAsset()
-  return generateAsset(AssetType.VILLAGER);
+  return await generateAssetVillagerImage(AssetType.VILLAGER);
 }
 
 export async function generateProductionObjectAsset(): Promise<Asset | null> {
