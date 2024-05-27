@@ -22,6 +22,7 @@ import {
 } from "asset-gen/generate-image.ts";
 import { storeImageIntoBunny } from "asset-gen/store-image.ts";
 import OpenAI from "openai";
+import { parse } from "node:path";
 
 /**
  * Number of tiles that the asset occupies physically on the map.
@@ -90,6 +91,10 @@ export class Asset implements Serializable<AssetJSON> {
 
   getDimensions(): Dimensions {
     return this.dimensions;
+  }
+
+  setDimensions(dimensions: Dimensions): void {
+    this.dimensions = dimensions
   }
 
   serialize(): JSONCompatible<AssetJSON> {
@@ -284,6 +289,14 @@ async function generateAsset(assetType: AssetType): Promise<Asset | null> {
     newAsset.addRemoteImage(new RemoteImage(croppedImgName, croppedImgUrl));
   }
   // ===
+  
+  const remoteImages = newAsset.getRemoteImages()
+  const supposedDimensions = await estimateDimensions(remoteImages[remoteImages.length - 1].url)
+  const finalDimensions = supposedDimensions.split(' ')
+  newAsset.setDimensions({ width: parseInt(finalDimensions[0], 10),
+    height: parseInt(finalDimensions[0], 10) })
+
+  console.log(newAsset.getDimensions())
 
   return newAsset;
 }
@@ -300,8 +313,8 @@ export async function generateHouseAsset(): Promise<Asset | null> {
   const filename = `house-${new Date().toISOString()}`;
   const newAsset = new Asset(
     generatedImage.revised_prompt ?? "",
+    filename,
     generatedImage.fileType,
-    filename
   );
 
   let imageData: ArrayBuffer | null = null;
@@ -415,8 +428,13 @@ export async function generateHouseAsset(): Promise<Asset | null> {
     newAsset.addRemoteImage(new RemoteImage(croppedImgName, croppedImgUrl));
   }
 
-  // ===
+  const remoteImages = newAsset.getRemoteImages()
+  const supposedDimensions = await estimateDimensions(remoteImages[remoteImages.length - 1].url)
+  const finalDimensions = supposedDimensions.split(' ')
+  newAsset.setDimensions({ width: parseInt(finalDimensions[0], 10),
+    height: parseInt(finalDimensions[0], 10) })
 
+  console.log(newAsset.getDimensions())
   return newAsset;
 }
 
@@ -487,3 +505,32 @@ export async function generateProductionObjectAsset(): Promise<Asset | null> {
 export async function generateCosmeticObjectAsset(): Promise<Asset | null> {
   return await generateAsset(AssetType.COSMETIC_ENVIRONMENT_OBJ);
 }
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+async function estimateDimensions(imageURL: string) {
+  // send it to chatgpt for opinion
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: `pretend you are a game character within the game world standing before this object shown in the image. please accurately estimate the width and breadth of the entire plot of land, in meters. For reference, a house plot is typically 10 meters by 10 meters, a bench plot would be about 2 metres by 2 metres. Mention the measurement in the format "x y" where x and y are the width and breadth in metres respectively, nothing else.` },
+            {
+              type: "image_url",
+              image_url: {
+                "url": imageURL,
+              },
+            },
+          ],
+        },
+      ],
+    });
+    return response.choices[0].message.content
+  } catch (err) {
+    console.error(err)
+  }
+}
+
