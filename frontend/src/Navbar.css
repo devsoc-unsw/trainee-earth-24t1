@@ -1,0 +1,37 @@
+.logo {
+  color: var(--foreground);
+  font-size: 50px;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-gif {
+  height: 4.5rem;
+  padding-right: 0.5rem;
+}
+
+.navbar {
+  padding: 1rem 8%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar a {
+  color: var(--foreground);
+  font-size: 35px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.logo:hover,
+.navbar a:hover {
+  color: var(--clr-primary);
+}
