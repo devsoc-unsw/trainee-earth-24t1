@@ -35,6 +35,7 @@ export class SimulationState {
 
   public readonly resources: Map<ResourceId, Resource>;
 
+  transactions: TransactionsType;
   constructor(
     worldMap: WorldMap = new WorldMap(),
     villagers = new Map(),
@@ -81,6 +82,22 @@ export class SimulationState {
     return state;
   }
 }
+
+export interface BuyInfo {
+  resourceId: ResourceId;
+  buyingPrice: number;
+  buyingState: buyPref;
+  bought: boolean;
+}
+
+export interface SellInfo {
+  resourceId: ResourceId;
+  sellingPrice: number;
+  sellingQuantity: number;
+  sold: boolean;
+}
+
+type TransactionsType = Array<SellInfo>;
 
 export type Coordinates = {
   x: number;
@@ -225,7 +242,7 @@ export class EnviroObject implements Serializable<EnviroObjectJSON> {
   }
 
   static deserialize(obj: JSONCompatible<EnviroObjectJSON>): EnviroObject {
-    return new this(obj.name, obj._id, obj.asset);
+    return new EnviroObject(obj.name, obj._id, obj.asset);
   }
 }
 
@@ -265,7 +282,7 @@ export class HouseObject
   }
 }
 
-type VillagerId = string;
+export type VillagerId = string;
 
 export const VILLAGER_TYPES_ARRAY = [
   "farmer",
@@ -287,6 +304,13 @@ export const VILLAGER_TYPES_ARRAY = [
 ] as const;
 export type VillagerType = (typeof VILLAGER_TYPES_ARRAY)[number];
 
+export type villagerAssignType = {
+  resource: ResourceId;
+  sellingPrice: number;
+  nItemsMade: number;
+  energyCost: number;
+} | null;
+
 export interface VillagerJSON extends JSONObject {
   _id: string;
   type: VillagerType;
@@ -301,6 +325,12 @@ export interface VillagerJSON extends JSONObject {
   resourceConsumptionEnergyGainMultipliers: { [resource: ResourceId]: number };
   characterAttributes: { [attribute: AttributeId]: AttributeValueJSON };
   houseObject: EnviroObjectId | null;
+  assignment: {
+    resource: ResourceId;
+    sellingPrice: number;
+    nItemsMade: number;
+    energyCost: number;
+  } | null;
 }
 
 export class Villager implements Serializable<VillagerJSON> {
@@ -311,9 +341,10 @@ export class Villager implements Serializable<VillagerJSON> {
   public _interactingWith: VillagerId | EnviroObjectId | null = null;
   public energy: number;
   public coins: number;
-  resources: ResourcesCount;
+  public resources: ResourcesCount;
   public cosmeticEnvironmentObjects: EnviroObjectId[];
   public characterAttributes: AttributeValues;
+  public assignedPlant: boolean;
 
   /**
    * Multipliers against the basic energy gain from producing each kind of
@@ -349,6 +380,8 @@ export class Villager implements Serializable<VillagerJSON> {
 
   public houseObject: EnviroObjectId | null = null;
 
+  public assignment: villagerAssignType;
+
   constructor(type: VillagerType, _id: VillagerId = createId()) {
     this.type = type;
     this._id = _id;
@@ -376,6 +409,7 @@ export class Villager implements Serializable<VillagerJSON> {
         (attributeValue) => attributeValue.serialize()
       ),
       houseObject: this.houseObject,
+      assignment: this.assignment,
     };
   }
 
@@ -404,6 +438,7 @@ export class Villager implements Serializable<VillagerJSON> {
     );
 
     villager.houseObject = obj.houseObject;
+    villager.assignment = obj.assignment;
 
     return villager;
   }
@@ -443,11 +478,26 @@ const RESOURCE_TYPES_ARRAY = [
 
 export type ResourceTypeType = (typeof RESOURCE_TYPES_ARRAY)[number];
 
+export enum resourceOrigin {
+  bought,
+  produced,
+  gifted,
+}
+
+export enum buyPref {
+  wanted,
+  notWanted,
+  needed,
+}
+
 type ResourcesCount = {
   [k: ResourceId]: {
     total: number;
     isSelling: number;
+    sellPrice: number;
     buyPrice: number;
+    buyState: buyPref;
+    origin: resourceOrigin;
   };
 };
 
@@ -459,10 +509,13 @@ export interface ResourceJSON extends JSONObject {
   productionEnergyCostBasic: number;
   consumptionEnergyGainBasic: number;
   type: ResourceTypeType;
+  attirbuteAffinity: AttributeId[];
+  productionObject: EnviroObjectId;
 }
 
 export class Resource implements Serializable<ResourceJSON> {
   public readonly _id: ResourceId;
+
   public readonly name: string;
 
   /**
@@ -483,21 +536,25 @@ export class Resource implements Serializable<ResourceJSON> {
 
   public readonly type: ResourceTypeType;
 
-  sellingPrice: number | string | boolean | Coordinates;
+  public readonly attirbuteAffinity: AttributeId[];
+
+  public readonly productionObject: EnviroObjectId;
 
   constructor(
     name: string,
     productionEnergyCostBasic: number,
     consumptionEnergyGainBasic: number,
     type: ResourceTypeType,
-    sellingPrice: number | string | boolean | Coordinates,
+    attirbuteAffinity: AttributeId[],
+    productionObject: EnviroObjectId,
     _id: string = createId()
   ) {
     this.name = name;
     this.productionEnergyCostBasic = productionEnergyCostBasic;
     this.consumptionEnergyGainBasic = consumptionEnergyGainBasic;
     this.type = type;
-    this.sellingPrice = sellingPrice;
+    this.attirbuteAffinity = attirbuteAffinity;
+    this.productionObject = productionObject;
     this._id = _id;
   }
 
@@ -508,6 +565,8 @@ export class Resource implements Serializable<ResourceJSON> {
       productionEnergyCostBasic: this.productionEnergyCostBasic,
       consumptionEnergyGainBasic: this.consumptionEnergyGainBasic,
       type: this.type,
+      attirbuteAffinity: this.attirbuteAffinity,
+      productionObject: this.productionObject,
     };
   }
 
@@ -517,6 +576,8 @@ export class Resource implements Serializable<ResourceJSON> {
       obj.productionEnergyCostBasic,
       obj.consumptionEnergyGainBasic,
       obj.type,
+      obj.attirbuteAffinity,
+      obj.productionObject,
       obj._id
     );
   }
@@ -575,7 +636,7 @@ export interface AttributeJSON extends JSONObject {
 }
 
 export class Attribute implements Serializable<AttributeJSON> {
-  public readonly _id: string;
+  public readonly _id: AttributeId;
   public readonly name: string;
 
   constructor(name: string, _id: string = createId()) {
@@ -617,7 +678,9 @@ export interface AttributeValueJSON extends JSONObject {
   boosts: AttributeBoostJSON[];
 }
 
-class AttributeValue implements Serializable<AttributeValueJSON> {
+type attributeValueId = string;
+
+export class AttributeValue implements Serializable<AttributeValueJSON> {
   public readonly _id: string;
 
   // Base value for the attribute

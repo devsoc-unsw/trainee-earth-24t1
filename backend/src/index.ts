@@ -105,5 +105,6 @@ wss.on("connection", (ws: WebSocket) => {
 
 const simulationState = SimulationState.deserialize(simulationState1);
 const simulationServer = new SimulationServer(simulationState);
+simulationServer.simulationInit();
 const myGameLoop = new GameLoop(simulationServer.simulationStep);
 myGameLoop.startGameLoop();

@@ -8,6 +8,7 @@ import {
   SimulationStateJSON,
   VillagerJSON,
   WorldMapJSON,
+  resourceOrigin,
 } from "src/types/simulationTypes.ts";
 
 const worldMap: WorldMapJSON = {
@@ -39,20 +40,34 @@ const villager1: VillagerJSON = {
   friends: ["villager_2"],
   enemies: [],
   interactingWith: null,
-  energy: 3000,
-  coins: 24000,
+  energy: 30,
+  coins: 90,
   resources: {
-    resource_1: 48,
-    resource_2: 63,
+    resource_1: {
+      total: 30,
+      isSelling: 10,
+      sellPrice: 12,
+      buyPrice: 9,
+      buyState: 0,
+      origin: resourceOrigin.bought,
+    },
+    resource_2: {
+      total: 20,
+      isSelling: 5,
+      sellPrice: 8,
+      buyPrice: 9,
+      buyState: 0,
+      origin: resourceOrigin.produced,
+    },
   },
   cosmeticEnvironmentObjects: ["cosmetic_object_1"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
   characterAttributes: {
-    attribute_1: {
+    Strength: {
       _id: "attribute_value_1",
       base: 10,
       boosts: [],
     },
-    attribute_2: {
+    Speed: {
       _id: "attribute_value_2",
       base: 5,
       boosts: [
@@ -78,15 +93,78 @@ const villager1: VillagerJSON = {
     resource_2: 0.8,
   },
   houseObject: "house_object_1",
+  assignment: null,
+};
+
+const villager2: VillagerJSON = {
+  _id: "villager_2",
+  type: "miner",
+  friends: ["villager_1"],
+  enemies: [],
+  interactingWith: null,
+  energy: 30,
+  coins: 90,
+  resources: {
+    resource_1: {
+      total: 30,
+      isSelling: 10,
+      sellPrice: 12,
+      buyPrice: 9,
+      buyState: 0,
+      origin: resourceOrigin.bought,
+    },
+    resource_2: {
+      total: 20,
+      isSelling: 5,
+      sellPrice: 8,
+      buyPrice: 9,
+      buyState: 0,
+      origin: resourceOrigin.produced,
+    },
+  },
+  cosmeticEnvironmentObjects: ["cosmetic_object_1"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
+  characterAttributes: {
+    Strength: {
+      _id: "attribute_value_1",
+      base: 10,
+      boosts: [],
+    },
+    Speed: {
+      _id: "attribute_value_2",
+      base: 5,
+      boosts: [
+        {
+          value: 2,
+          duration: 3600,
+          expiration: Date.now() + 3600,
+        },
+        {
+          value: 3,
+          duration: 7200,
+          expiration: Date.now() + 7200,
+        },
+      ],
+    },
+  },
+  resourceProductionEnergyCostMultipliers: {
+    resource_1: 1.3,
+    resource_2: 0.9,
+  },
+  resourceConsumptionEnergyGainMultipliers: {
+    resource_1: 1.5,
+    resource_2: 0.8,
+  },
+  houseObject: "house_object_1",
+  assignment: null,
 };
 
 const attribute1: AttributeJSON = {
-  _id: "attribute_1",
+  _id: "Strength",
   name: "Strength",
 };
 
 const attribute2: AttributeJSON = {
-  _id: "attribute_2",
+  _id: "Speed",
   name: "Speed",
 };
 
@@ -124,6 +202,8 @@ const resource1: ResourceJSON = {
   productionEnergyCostBasic: 10,
   consumptionEnergyGainBasic: 10,
   type: "edible",
+  attirbuteAffinity: ["Strength"],
+  productionObject: "production_object_1",
 };
 
 const resource2: ResourceJSON = {
@@ -132,6 +212,8 @@ const resource2: ResourceJSON = {
   productionEnergyCostBasic: 15,
   consumptionEnergyGainBasic: 13,
   type: "edible",
+  attirbuteAffinity: ["Speed"],
+  productionObject: "production_object_1",
 };
 
 export const simulationState1: SimulationStateJSON = {
@@ -139,10 +221,11 @@ export const simulationState1: SimulationStateJSON = {
   worldMap: worldMap,
   villagers: {
     villager_1: villager1,
+    villager_2: villager2,
   },
   attributes: {
-    attribute_1: attribute1,
-    attribute_2: attribute2,
+    Strength: attribute1,
+    Speed: attribute2,
   },
   enviroObjects: {
     house_object_1: houseObject1,
