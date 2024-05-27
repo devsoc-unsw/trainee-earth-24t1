@@ -1,35 +1,36 @@
 import express from "express";
 import {
-  type Coordinates,
+  Coordinates,
   Cell,
   SimulationState,
   WorldMap,
-} from "./types/simulationTypes.ts";
-import { run as runDB } from "src/db.ts";
+  serializeCoordStr,
+} from "../types/simulationTypes.ts";
+import { run as runDB } from "@backend/src/db.ts";
 import { WebSocketServer, WebSocket } from "ws";
-import { handleWSRequest } from "src/wsHandler.ts";
+import { handleWSRequest } from "@backend/src/wsHandler.ts";
 import { GameLoop } from "./gameloopFramework.js";
-import { Asset } from "asset-gen/generate-asset.ts";
 import {
   assets1,
   simulationState1,
 } from "sample-data/simulation_state/simulation_state_1.ts";
 import { SimulationServer } from "./simulationServer.js";
-import { deserializeJSONToMap } from "./utils/objectTyping.ts";
+import { deserializeJSONToMap } from "../utils/objectTyping.ts";
 import {
   generateHouseAsset,
   generateVillagerAsset,
   generateProductionObjectAsset,
   generateCosmeticObjectAsset,
   // generateVillagerAssetV2
-} from "asset-gen/generate-asset.ts";
+} from "@backend/asset-gen/generate-asset.ts";
 import cosmeticPresetJSON from "sample-data/gen-assets/cosmetic_object_assets/presets.json";
 import housePresetJSON from "sample-data/gen-assets/house_object_assets/presets.json";
 import resourcePresetJSON from "sample-data/gen-assets/resource_object_assets/presets.json";
 import axios, { AxiosResponse } from "axios";
-import { cropImage } from "asset-gen/edit-image.ts";
+import { cropImage } from "@backend/asset-gen/edit-image.ts";
 import fs from "fs";
-import { storeImageIntoBunny } from "asset-gen/store-image.ts";
+import { storeImageIntoBunny } from "@backend/asset-gen/store-image.ts";
+import { Asset } from "@backend/types/assetTypes.ts";
 
 const EXPRESS_PORT = 3000;
 
@@ -50,7 +51,7 @@ app.get("/map", (req, res) => {
   const map: WorldMap = new WorldMap();
   const origin: Coordinates = { x: 0, y: 0 };
   const originCell: Cell = new Cell(origin.x, origin.y);
-  map.addCell(origin, originCell);
+  map.addCell(serializeCoordStr(origin), originCell);
   res.send(map);
 });
 

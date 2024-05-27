@@ -1,12 +1,11 @@
 import { Db, MongoClient, ObjectId, ServerApiVersion } from "mongodb";
-import { User } from "./types/databaseTypes.js";
 import {
   Cell,
   Coordinates,
   WorldMap,
-  Villager,
-} from "./types/simulationTypes.js";
-import createId from "./utils/createId.ts";
+  serializeCoordStr,
+} from "@backend/types/simulationTypes.ts";
+import createId from "@backend/utils/createId.ts";
 
 const mongoURI: string = process.env.MONGODB_CONNECTION_STR;
 
@@ -62,7 +61,7 @@ const generateMap = (): WorldMap => {
   const map: WorldMap = new WorldMap();
   const origin: Coordinates = { x: 0, y: 0 };
   const originCell = new Cell(origin.x, origin.y);
-  map.addCell(origin, originCell);
+  map.addCell(serializeCoordStr(origin), originCell);
   return map;
 };
 
@@ -106,43 +105,4 @@ const generateMap = (): WorldMap => {
 //   } catch (e) {
 //     console.error(e);
 //   }
-// }
-
-export interface Serializable<JSONType extends JSONObject> {
-  serialize(): JSONCompatible<JSONType>;
-}
-
-export type JSONPrimitive = string | number | boolean | null | undefined;
-export type JSONObject = { [key: string]: JSONValue };
-export type JSONArray = JSONValue[];
-export type JSONValue = JSONPrimitive | JSONArray | JSONObject;
-
-export type JSONCompatible<T> = unknown extends T
-  ? never
-  : {
-      [P in keyof T]: T[P] extends JSONValue
-        ? T[P]
-        : T[P] extends NotAssignableToJson
-        ? never
-        : JSONCompatible<T[P]>;
-    };
-
-type NotAssignableToJson = bigint | symbol | Function;
-
-/**
- * Don't use this interface. It's just for reference when making deserialize
- * functions for classes that you want to instantiate from serialized JSON.
- * Make the method static.
- *
- * Example:
- * class MyClass {
- *    constructor(public f1: string, public f2: number) {}
- *
- *    static deserialize(obj: { f1: string, f2: number }): MyClass {
- *      return new MyClass(obj.f1, obj.f2);
- *    }
- * }
- */
-// export interface Deserializer {
-//   deserialize: (obj: JSONValue) => Object;
 // }

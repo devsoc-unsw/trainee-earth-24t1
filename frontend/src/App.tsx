@@ -1,11 +1,12 @@
-import "./App.css";
-import Navbar from "./Navbar";
-import TimerWidget from "./components/ui/timer";
-import TodoWidget from "./components/ui/todo";
-import GithubWidget from "./components/ui/github";
-import CalendarWidget from "./components/ui/calendarWidget";
-import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import "@frontend/src/App.css";
+import Navbar from "@frontend/src/Navbar";
+import TimerWidget from "@frontend/src/components/ui/timer";
+import TodoWidget from "@frontend/src/components/ui/todo";
+import GithubWidget from "@frontend/src/components/ui/github";
+import CalendarWidget from "@frontend/src/components/ui/calendarWidget";
+import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useEffect, useState } from "react";
+import WorldMap from "@frontend/src/components/map/WorldMap";
 
 const defaultWidgetsData: widgetDataType = [
   {
@@ -39,22 +40,25 @@ const defaultWidgetsData: widgetDataType = [
       x: 483,
       y: 516,
     },
-  }
+  },
 ];
 
-type widgetDataType = {id: string, type: widgetType, position: {x: number, y: number}}[];
+type widgetDataType = {
+  id: string;
+  type: widgetType;
+  position: { x: number; y: number };
+}[];
 
-
-type widgetType = "timer" | "calendar" | "todo-list" | "github"
+type widgetType = "timer" | "calendar" | "todo-list" | "github";
 
 export default function App() {
   const [widgets, setWidgets] = useState<widgetDataType>(() => {
-    const savedWidgetsData = localStorage.getItem('widgetsData');
+    const savedWidgetsData = localStorage.getItem("widgetsData");
     return savedWidgetsData ? JSON.parse(savedWidgetsData) : defaultWidgetsData;
   });
 
   useEffect(() => {
-    localStorage.setItem('widgetsData', JSON.stringify(widgets));
+    localStorage.setItem("widgetsData", JSON.stringify(widgets));
   }, [widgets]);
 
   function handleDragEnd(ev: DragEndEvent): void {
@@ -79,9 +83,9 @@ export default function App() {
       <div className="content flex-col mx-auto w-full max-w-screen-xl justify-center items-center">
         <DndContext onDragEnd={handleDragEnd}>
           {widgets.map((widget) => {
-            switch(widget.type) {
+            switch (widget.type) {
               case "timer":
-                return(
+                return (
                   <TimerWidget
                     key={widget.id}
                     x={widget.position.x}
@@ -90,7 +94,7 @@ export default function App() {
                   />
                 );
               case "todo-list":
-                return(
+                return (
                   <TodoWidget
                     key={widget.id}
                     x={widget.position.x}
@@ -99,32 +103,45 @@ export default function App() {
                   />
                 );
               case "github":
-                return(
+                return (
                   <GithubWidget
                     key={widget.id}
                     x={widget.position.x}
                     y={widget.position.y}
                     draggableId={widget.id}
                   />
-                )
+                );
               case "calendar":
-                return(
+                return (
                   <CalendarWidget
                     key={widget.id}
                     x={widget.position.x}
                     y={widget.position.y}
                     draggableId={widget.id}
                   />
-                )
-            };
+                );
+            }
           })}
         </DndContext>
-        <button onClick={() => localStorage.clear()}>reset local storage</button>
+        <button onClick={() => localStorage.clear()}>
+          reset local storage
+        </button>
         <div className="flex-col justify-around w-100">
-          <div className="pt-5">
-          </div>
-          <div className="pt-5">
-          </div>
+          <div className="pt-5"></div>
+          <div className="pt-5"></div>
+        </div>
+        <div
+          style={{
+            width: "100vw",
+            height: "100vh",
+            overflow: "hidden",
+            position: "absolute",
+            left: 0,
+            top: 0,
+            zIndex: -1,
+          }}
+        >
+          <WorldMap />
         </div>
       </div>
     </div>

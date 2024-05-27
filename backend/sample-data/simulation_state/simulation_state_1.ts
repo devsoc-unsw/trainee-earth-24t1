@@ -1,4 +1,4 @@
-import { AssetJSON, AssetsJSON } from "asset-gen/generate-asset.ts";
+import { AssetsJSON } from "@backend/types/assetTypes.ts";
 import {
   AttributeJSON,
   CosmeticObjectJSON,
@@ -8,11 +8,11 @@ import {
   SimulationStateJSON,
   VillagerJSON,
   WorldMapJSON,
-} from "src/types/simulationTypes.ts";
+} from "@backend/types/simulationTypes.ts";
 
 const worldMap: WorldMapJSON = {
-  cells: [
-    {
+  cells: {
+    "0,0": {
       coordinates: {
         x: 0,
         y: 0,
@@ -20,7 +20,7 @@ const worldMap: WorldMapJSON = {
       owner: "villager_1",
       object: "house_object_1",
     },
-    {
+    "1,0": {
       coordinates: {
         x: 1,
         y: 0,
@@ -30,7 +30,7 @@ const worldMap: WorldMapJSON = {
     },
     // TODO: Fill in rest of the map, including cells occupied by the other
     // EnviroObject
-  ],
+  },
 };
 
 const villager1: VillagerJSON = {

@@ -8,7 +8,11 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "baseUrl": "./",
-    "paths": {},
+    "paths": {
+      "@backend/*": [
+        "./*"
+      ]
+    },
     "typeRoots": [
       "./node_modules/@types",
       "type-extensions"
@@ -19,6 +23,8 @@
     "src/**/*",
     "asset-gen/**/*",
     "sample-data/**/*",
+    "types/**/*",
+    "utils/**/*",
     "type-extensions/**/*"
   ],
   "lib": [

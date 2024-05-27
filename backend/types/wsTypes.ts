@@ -1,4 +1,4 @@
-import { CustomError } from "src/utils/customError.ts";
+import { CustomError } from "@backend/utils/customError.ts";
 
 export enum ClientRequestType {
   PING = "PING",

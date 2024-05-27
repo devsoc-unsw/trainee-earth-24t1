@@ -1,6 +1,6 @@
-import { IconTrash } from '@tabler/icons-react'
+import { IconTrash } from "@tabler/icons-react";
 import { Checkbox } from "./checkbox";
-import { Button } from './button';
+import { Button } from "./button";
 
 interface TaskProps {
   name: string;
@@ -10,7 +10,7 @@ interface TaskProps {
   // onTrash: ()
 }
 
-export default function Task({ name, done, onToggle, onTrash}: TaskProps) {
+export default function Task({ name, done, onToggle, onTrash }: TaskProps) {
   return (
     <div className="flex items-center justify-between pt-2">
       <div className="flex items-center space-x-2 pb-2 pt-2">
@@ -23,12 +23,12 @@ export default function Task({ name, done, onToggle, onTrash}: TaskProps) {
           {name}
         </label>
       </div>
-      <div className='flex h-6 w-6 mr-0.5 justify-center items-center'>
+      <div className="flex h-6 w-6 mr-0.5 justify-center items-center">
         <Button
-          className='h-6 w-6 px-1 py-1 bg-white hover:bg-white' 
+          className="h-6 w-6 px-1 py-1 bg-white hover:bg-white"
           onClick={onTrash}
         >
-          <IconTrash size={20} color='black' />
+          <IconTrash size={20} color="black" />
         </Button>
       </div>
     </div>

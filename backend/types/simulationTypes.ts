@@ -3,11 +3,13 @@ import {
   mapToObject,
   serializeMapToJSON,
   deserializeJSONToMap,
-} from "src/utils/objectTyping.ts";
-import { IWorldMapDocument } from "./databaseTypes.ts";
-import { JSONCompatible, JSONObject, JSONValue, Serializable } from "src/db.ts";
-import createId from "src/utils/createId.ts";
-import { Asset, AssetId, AssetJSON } from "asset-gen/generate-asset.ts";
+  JSONCompatible,
+  JSONObject,
+  Serializable,
+} from "@backend/utils/objectTyping.ts";
+import { IWorldMapDocument } from "@backend/types/databaseTypes.ts";
+import createId from "@backend/utils/createId.ts";
+import { AssetId } from "./assetTypes.ts";
 
 export interface SimulationStateJSON extends JSONObject {
   _id: string;
@@ -82,36 +84,63 @@ export class SimulationState {
   }
 }
 
+export type Dimensions = {
+  width: number; // x-axis
+  height: number; // y-axis
+};
+
+export type CoordStr = `${number},${number}`;
+
+export const isCoordStr = (str: string): str is CoordStr => {
+  return /^-?\d+,-?\d+$/.test(str);
+};
+
+// expects x and y to be integers
+export const serializeCoordStr = ({
+  x,
+  y,
+}: {
+  x: number;
+  y: number;
+}): CoordStr => `${x},${y}`;
+
+export const parseCoordStr = (coordStr: CoordStr): Coordinates => {
+  const [x, y] = coordStr.split(",").map((str) => parseInt(str));
+  return { x, y };
+};
+
 export type Coordinates = {
   x: number;
   y: number;
 };
 
+export type CellsJSON = { [key: CoordStr]: CellJSON };
+
+export type Cells = Map<CoordStr, Cell>;
+
 export interface WorldMapJSON extends JSONObject {
-  cells: CellJSON[];
+  cells: CellsJSON;
 }
 
 export class WorldMap implements Serializable<WorldMapJSON> {
-  readonly cells: Map<Coordinates, Cell> = new Map();
+  cells: Cells = new Map();
 
-  constructor() {}
+  constructor(cells: Cells = new Map()) {
+    this.cells = cells;
+  }
 
-  addCell(coordinates: Coordinates, cell: Cell): void {
-    this.cells.set(coordinates, cell);
+  addCell(coordStr: CoordStr, cell: Cell): void {
+    this.cells.set(coordStr, cell);
   }
 
   serialize(): JSONCompatible<WorldMapJSON> {
     return {
-      cells: Object.values(this.cells).map((cell) => cell.serialize()),
+      cells: serializeMapToJSON(this.cells),
     };
   }
 
   static deserialize(obj: JSONCompatible<WorldMapJSON>): WorldMap {
-    const map = new WorldMap();
-    obj.cells.forEach((cell) => {
-      map.addCell(cell.coordinates, Cell.deserialize(cell));
-    });
-    return map;
+    return new WorldMap(deserializeJSONToMap(obj.cells, Cell.deserialize));
   }
 }
 // const map: WorldMap = {
@@ -128,13 +157,13 @@ export class WorldMap implements Serializable<WorldMapJSON> {
 // }
 
 export interface CellJSON extends JSONObject {
-  coordinates: Coordinates;
   owner: VillagerId | null;
   object: EnviroObjectId | null;
+  coordinates?: Coordinates;
 }
 
 export class Cell implements Serializable<CellJSON> {
-  public readonly coordinates: Coordinates;
+  public readonly coordinates?: Coordinates;
 
   /**
    * VillagerId if the cell is owned by a villager. null if the cell is
@@ -483,21 +512,17 @@ export class Resource implements Serializable<ResourceJSON> {
 
   public readonly type: ResourceTypeType;
 
-  sellingPrice: number | string | boolean | Coordinates;
-
   constructor(
     name: string,
     productionEnergyCostBasic: number,
     consumptionEnergyGainBasic: number,
     type: ResourceTypeType,
-    sellingPrice: number | string | boolean | Coordinates,
     _id: string = createId()
   ) {
     this.name = name;
     this.productionEnergyCostBasic = productionEnergyCostBasic;
     this.consumptionEnergyGainBasic = consumptionEnergyGainBasic;
     this.type = type;
-    this.sellingPrice = sellingPrice;
     this._id = _id;
   }
 
@@ -793,20 +818,20 @@ export interface SpecialItemJSON extends JSONObject {
   _id: string;
   name: string;
   description: string;
-  asset: AssetJSON | null;
+  asset: AssetId | null;
 }
 
 export class SpecialItem implements Serializable<SpecialItemJSON> {
   public readonly _id: string;
   public readonly name: string;
   public readonly description: string;
-  public readonly asset: Asset | null;
+  public readonly asset: AssetId | null;
 
   constructor(
     name: string,
     description: string,
     _id: string = createId(),
-    asset: Asset | null = null
+    asset: AssetId | null = null
   ) {
     this.name = name;
     this.description = description;
@@ -819,16 +844,11 @@ export class SpecialItem implements Serializable<SpecialItemJSON> {
       _id: this._id,
       name: this.name,
       description: this.description,
-      asset: this.asset?.serialize() ?? null,
+      asset: this.asset,
     };
   }
 
   static deserialize(obj: JSONCompatible<SpecialItemJSON>): SpecialItem {
-    return new SpecialItem(
-      obj.name,
-      obj.description,
-      obj._id,
-      obj.asset ? Asset.deserialize(obj.asset) : null
-    );
+    return new SpecialItem(obj.name, obj.description, obj._id, obj.asset);
   }
 }

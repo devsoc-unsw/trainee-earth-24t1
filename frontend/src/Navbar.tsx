@@ -1,5 +1,5 @@
-import logo from "../img/logo.gif";
-import "./Navbar.css";
+import logo from "@frontend/img/logo.gif";
+import "@frontend/src/Navbar.css";
 import {
   SignInButton,
   SignedIn,
