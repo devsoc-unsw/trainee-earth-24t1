@@ -9,7 +9,7 @@ import { run as runDB } from "src/db.ts";
 import { WebSocketServer, WebSocket } from "ws";
 import { handleWSRequest } from "src/wsHandler.ts";
 import { GameLoop } from "./gameloopFramework.js";
-import { Asset } from "asset-gen/generate-asset.ts";
+import { Asset, generateResourceItemAsset } from "asset-gen/generate-asset.ts";
 import {
   assets1,
   simulationState1,
@@ -123,6 +123,20 @@ app.get("/gen/villager", async (req, res) => {
     res.status(500).send(err);
   }
 });
+
+app.get("/gen/villager", async (req, res) => {
+  try {
+    const asset = await generateResourceItemAsset();
+    res.send(
+      `<html><body><img src="${
+        asset.getRemoteImages().at(-1).url
+      }" /></body></html>`
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err);
+  }
+})
 
 app.get("/edit/cosmetic", async (req, res) => {
   try {

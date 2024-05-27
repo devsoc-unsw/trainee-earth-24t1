@@ -18,6 +18,7 @@ import {
   generateVillagerImage,
   generateHouseImage,
   generateStableImage,
+  generateResourceImage,
   // generateVillagerObjectImageV2,
 } from "asset-gen/generate-image.ts";
 import { storeImageIntoBunny } from "asset-gen/store-image.ts";
@@ -488,6 +489,10 @@ export async function generateAssetVillagerImage(assetType: AssetType): Promise<
   }
   // send
   return newAsset
+}
+
+export async function generateResourceItemAsset() {
+  const generatedImage = generateResourceImage();
 }
 
 export async function generateVillagerAsset(): Promise<Asset | null> {

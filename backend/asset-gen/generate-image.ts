@@ -51,6 +51,26 @@ const resourceList = [
   "Soybean farm",
   "Cocoa farm",
 ];
+const productionList = [
+  "wood log",
+  "iron ore",
+  "wheat",
+  "salmon",
+  "chicken breast fillet",
+  "wood mug of beer",
+  "bread",
+  "round cotton wool",
+  "sugarcane pieces",
+  "coal ore",
+  "t-bone fillet",
+  "bacon slice",
+  "drum of oil",
+  "steel ore",
+  "glass pane",
+  "spool of thread",
+  "soybean bean",
+  "cocoa powder"
+]
 
 // Picks a random street cosmetic
 export async function generateCosmeticObjectImage(): Promise<OpenAI.Images.Image | null> {
@@ -124,6 +144,15 @@ function randomInt(min, max) {
 
 export async function generateVillagerImage(): Promise<undefined> {
   return await generateStableImage();
+}
+
+export async function generateResourceImage() {
+  for (const item in productionList) {
+    // create image
+    const textGenerationMessages = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Create an image of ${item} for my village game. It is an icon to represent the resource produced by a production plant. Create the image in a simple style, and do not create any other elements, just make the ${item} only. Place the item against a plain white background.`,
+
+    return await generateImage(textGenerationMessages)
+  }
 }
 
 export async function generateStableImage() {
