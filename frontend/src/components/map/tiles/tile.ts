@@ -7,15 +7,15 @@ import { getTransformedPoint } from "@frontend/src/components/map/WorldMap";
 const CONFIRM_OUT_OF_BOUND = false;
 
 // Use to represent (x,y) position on canvas
-// For (x,y) position on tile map, use Coordinates
-export type Pos2D = {
+// For (x,y) position on tile map, use Pos2D
+export type Coords = {
   x: number;
   y: number;
 };
 
 export type TilePropsType = {
-  mapStartPosition: Pos2D;
-  tileIndex: Pos2D;
+  mapStartPosition: Coords;
+  tileIndex: Coords;
   tileImage: HTMLImageElement;
   ctx: CanvasRenderingContext2D;
 };
@@ -34,12 +34,12 @@ export default class Tile {
 
   static readonly TILE_TYPE_EMPTY = 0;
 
-  mapStartPosition: Pos2D;
-  tileIndex: Pos2D;
+  mapStartPosition: Coords;
+  tileIndex: Coords;
   tileImage: HTMLImageElement;
   ctx: CanvasRenderingContext2D;
 
-  renderPosition: Pos2D;
+  renderPosition: Coords;
 
   constructor(props: TilePropsType) {
     this.tileImage = props.tileImage;
@@ -49,7 +49,7 @@ export default class Tile {
     this.ctx = props.ctx;
   }
 
-  private calculateRenderPosition(tileIndex: Pos2D): Pos2D {
+  private calculateRenderPosition(tileIndex: Coords): Coords {
     const renderX =
       this.mapStartPosition.x +
       (tileIndex.x - tileIndex.y) * Tile.TILE_HALF_WIDTH;

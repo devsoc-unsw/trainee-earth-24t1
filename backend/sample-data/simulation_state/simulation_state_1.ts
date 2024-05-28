@@ -78,6 +78,11 @@ const villager1: VillagerJSON = {
     resource_2: 0.8,
   },
   houseObject: "house_object_1",
+  asset: "villager_1_asset",
+  position: {
+    x: 0,
+    y: 5,
+  },
 };
 
 const attribute1: AttributeJSON = {
@@ -218,6 +223,23 @@ export const assets1: AssetsJSON = {
     dimensions: {
       dx: 10,
       dy: 10,
+    },
+  },
+  villager_1_asset: {
+    _id: "villager_1_asset",
+    name: "Villager 1 asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "..........",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/VILLAGER-2024-05-25T20:40/elowen-removebg-preview.png",
+      },
+    ],
+    dimensions: {
+      dx: 1,
+      dy: 1,
     },
   },
 };

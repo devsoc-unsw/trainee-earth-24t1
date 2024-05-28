@@ -41,9 +41,6 @@ export class Asset implements Serializable<AssetJSON> {
   public readonly remoteImages: RemoteImage[];
   public dimensions: Dimensions;
 
-  // For use on map visualiser frontend, cache loaded image element
-  public imageEl: HTMLImageElement | null = null;
-
   constructor(
     description: string,
     name: string,

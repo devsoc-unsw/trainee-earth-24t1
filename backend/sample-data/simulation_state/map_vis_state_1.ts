@@ -131,6 +131,7 @@ const villager1: VillagerJSON = {
   },
   houseObject: "house_object_1",
   asset: "villager_1_asset",
+  position: { x: 0, y: 5 }, // in front of house_object_1
 };
 
 const attribute1 = {

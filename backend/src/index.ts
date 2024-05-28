@@ -1,10 +1,10 @@
 import express from "express";
 import {
-  Coords,
+  Pos,
   Cell,
   SimulationState,
   WorldMap,
-  serializeCoordStr,
+  serializePosStr,
 } from "../types/simulationTypes.ts";
 import { run as runDB } from "@backend/src/db.ts";
 import { WebSocketServer, WebSocket } from "ws";
@@ -49,9 +49,9 @@ app.get("/", (req, res) => {
  */
 app.get("/map", (req, res) => {
   const map: WorldMap = new WorldMap();
-  const origin: Coords = { x: 0, y: 0 };
+  const origin: Pos = { x: 0, y: 0 };
   const originCell: Cell = new Cell(origin);
-  map.addCell(serializeCoordStr(origin), originCell);
+  map.addCell(serializePosStr(origin), originCell);
   res.send(map);
 });
 

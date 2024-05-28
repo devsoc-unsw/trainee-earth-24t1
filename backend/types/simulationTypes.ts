@@ -89,34 +89,29 @@ export type Dimensions = {
   dy: number; // y-axis
 };
 
-export type CoordStr = `${number},${number}`;
+export type PosStr = `${number},${number}`;
 
-export const isCoordStr = (str: string): str is CoordStr => {
+export const isPosStr = (str: string): str is PosStr => {
   return /^-?\d+,-?\d+$/.test(str);
 };
 
 // expects x and y to be integers
-export const serializeCoordStr = ({
-  x,
-  y,
-}: {
-  x: number;
-  y: number;
-}): CoordStr => `${x},${y}`;
+export const serializePosStr = ({ x, y }: { x: number; y: number }): PosStr =>
+  `${x},${y}`;
 
-export const parseCoordStr = (coordStr: CoordStr): Coords => {
+export const parsePosStr = (coordStr: PosStr): Pos => {
   const [x, y] = coordStr.split(",").map((str) => parseInt(str));
   return { x, y };
 };
 
-export type Coords = {
+export type Pos = {
   x: number;
   y: number;
 };
 
-export type CellsJSON = { [key: CoordStr]: CellJSON };
+export type CellsJSON = { [key: PosStr]: CellJSON };
 
-export type Cells = Map<CoordStr, Cell>;
+export type Cells = Map<PosStr, Cell>;
 
 export interface WorldMapJSON extends JSONObject {
   cells: CellsJSON;
@@ -129,7 +124,7 @@ export class WorldMap implements Serializable<WorldMapJSON> {
     this.cells = cells;
   }
 
-  addCell(coordStr: CoordStr, cell: Cell): void {
+  addCell(coordStr: PosStr, cell: Cell): void {
     this.cells.set(coordStr, cell);
   }
 
@@ -159,11 +154,11 @@ export class WorldMap implements Serializable<WorldMapJSON> {
 export interface CellJSON extends JSONObject {
   owner: VillagerId | null;
   object: EnviroObjectId | null;
-  coordinates?: Coords;
+  coordinates?: Pos;
 }
 
 export class Cell implements Serializable<CellJSON> {
-  public readonly coordinates?: Coords;
+  public readonly coordinates?: Pos;
 
   /**
    * VillagerId if the cell is owned by a villager. null if the cell is
@@ -182,7 +177,7 @@ export class Cell implements Serializable<CellJSON> {
    */
   public object: EnviroObjectId | null = null;
 
-  constructor(coordinates: Coords) {
+  constructor(coordinates: Pos) {
     this.coordinates = { ...coordinates };
   }
 
@@ -330,6 +325,8 @@ export interface VillagerJSON extends JSONObject {
   resourceConsumptionEnergyGainMultipliers: { [resource: ResourceId]: number };
   characterAttributes: { [attribute: AttributeId]: AttributeValueJSON };
   houseObject: EnviroObjectId | null;
+  readonly asset: AssetId | null;
+  position: Pos | null;
 }
 
 export class Villager implements Serializable<VillagerJSON> {
@@ -378,6 +375,10 @@ export class Villager implements Serializable<VillagerJSON> {
 
   public houseObject: EnviroObjectId | null = null;
 
+  public asset: AssetId | null;
+
+  public position: Pos | null;
+
   constructor(type: VillagerType, _id: VillagerId = createId()) {
     this.type = type;
     this._id = _id;
@@ -405,6 +406,8 @@ export class Villager implements Serializable<VillagerJSON> {
         (attributeValue) => attributeValue.serialize()
       ),
       houseObject: this.houseObject,
+      asset: this.asset,
+      position: this.position,
     };
   }
 
@@ -433,6 +436,8 @@ export class Villager implements Serializable<VillagerJSON> {
     );
 
     villager.houseObject = obj.houseObject;
+    villager.asset = obj.asset;
+    villager.position = obj.position;
 
     return villager;
   }

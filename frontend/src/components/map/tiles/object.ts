@@ -1,6 +1,6 @@
 import { DEBUG_MAP_VIS, drawPoint, getTransformedPoint } from "../WorldMap";
 import { Dimensions } from "@backend/types/simulationTypes";
-import Tile, { Pos2D } from "./tile";
+import Tile, { Coords } from "./tile";
 
 // Normally will Tile.draw() will only render tiles that are visible in the bounds
 // of the canvas, excluding the tiles that are completely out of the canvas.
@@ -9,8 +9,8 @@ import Tile, { Pos2D } from "./tile";
 const CONFIRM_OUT_OF_BOUND = true;
 
 export type EnviroObjectPropsType = {
-  mapStartPosition: Pos2D;
-  tilePos: Pos2D;
+  mapStartPosition: Coords;
+  tilePos: Coords;
   tileImage: HTMLImageElement;
   dimensions: Dimensions;
   ctx: CanvasRenderingContext2D;
@@ -20,14 +20,14 @@ export type EnviroObjectPropsType = {
  * @deprecated use MapObject instead
  */
 class EnviroObject {
-  mapStartPosition: Pos2D;
-  tilePos: Pos2D;
-  offsetTilePos: Pos2D;
+  mapStartPosition: Coords;
+  tilePos: Coords;
+  offsetTilePos: Coords;
   tileImage: HTMLImageElement;
   dimensions: Dimensions;
   ctx: CanvasRenderingContext2D;
 
-  renderPosition: Pos2D;
+  renderPosition: Coords;
 
   constructor(props: EnviroObjectPropsType) {
     this.tileImage = props.tileImage;
@@ -45,7 +45,7 @@ class EnviroObject {
     this.renderPosition = this.calculateRenderPosition(this.offsetTilePos);
   }
 
-  private calculateRenderPosition(tilePos: Pos2D): Pos2D {
+  private calculateRenderPosition(tilePos: Coords): Coords {
     const numTilesOffset = Math.floor(this.dimensions.dx / 2);
 
     const renderX =

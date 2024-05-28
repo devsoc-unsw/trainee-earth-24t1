@@ -1,9 +1,9 @@
 import { Db, MongoClient, ObjectId, ServerApiVersion } from "mongodb";
 import {
   Cell,
-  Coords,
+  Pos,
   WorldMap,
-  serializeCoordStr,
+  serializePosStr,
 } from "@backend/types/simulationTypes.ts";
 import createId from "@backend/utils/createId.ts";
 
@@ -59,9 +59,9 @@ export async function getUserByEmail(email: string) {
 
 const generateMap = (): WorldMap => {
   const map: WorldMap = new WorldMap();
-  const origin: Coords = { x: 0, y: 0 };
+  const origin: Pos = { x: 0, y: 0 };
   const originCell = new Cell(origin);
-  map.addCell(serializeCoordStr(origin), originCell);
+  map.addCell(serializePosStr(origin), originCell);
   return map;
 };
 

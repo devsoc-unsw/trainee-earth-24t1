@@ -1,6 +1,6 @@
-import { CellJSON, CoordStr } from "@backend/types/simulationTypes.ts";
+import { CellJSON, PosStr } from "@backend/types/simulationTypes.ts";
 
-export const cells: Record<CoordStr, CellJSON> = {
+export const cells: Record<PosStr, CellJSON> = {
   "-25,-25": {
     owner: null,
     object: null,

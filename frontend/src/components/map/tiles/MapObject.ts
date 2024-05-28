@@ -1,12 +1,12 @@
 import {
   DEBUG_MAP_VIS,
-  coordToIsoVec,
+  posToIsoCoords,
   drawPoint,
   drawSquare,
   getTransformedPoint,
 } from "@frontend/src/components/map/WorldMap";
-import Tile, { Pos2D } from "./tile";
-import { Coords, Dimensions } from "@backend/types/simulationTypes";
+import Tile, { Coords } from "./tile";
+import { Pos, Dimensions } from "@backend/types/simulationTypes";
 import { Coordinates } from "@dnd-kit/core/dist/types";
 
 // Normally will Tile.draw() will only render tiles that are visible in the bounds
@@ -16,69 +16,65 @@ import { Coordinates } from "@dnd-kit/core/dist/types";
 const CONFIRM_OUT_OF_BOUND = false;
 
 export default class MapObject {
-  originPos: Pos2D;
-  coords: Coords;
+  pos: Pos;
   // Elevation from ground, in tile units
   elevation: number;
   dimensions: Dimensions;
   htmlImage: HTMLImageElement;
 
-  // Cached canvas position of bottom left tile's coordinate (top-middle of bounding box)
-  botLeftTilePos: Pos2D;
-
   constructor(
     imgUrl: string,
-    originPos: Coords,
     initCoords: Coordinates,
     elevation: number,
     dimensions: Dimensions
   ) {
     this.htmlImage = new Image();
     this.htmlImage.src = imgUrl;
-    this.originPos = originPos;
-    this.coords = initCoords;
+    this.pos = initCoords;
     this.elevation = elevation;
     this.dimensions = dimensions;
-    // Make sure to calculate after setting this.originPos, this.coords and this.elevation
-    this.botLeftTilePos = this.calculateRenderPos();
   }
 
   // Calculate final render position on screen using isometric projection
-  calculateRenderPos(): Pos2D {
-    const botLeftTileCoord = {
-      x: this.coords.x - Math.floor(this.dimensions.dx / 2),
-      y: this.coords.y + Math.floor(this.dimensions.dy / 2),
+  static calculateBotLeftTileCoords(
+    originCoords: Coords,
+    pos: Pos,
+    dimensions: Dimensions
+  ): Coords {
+    const botLeftTilePos = {
+      x: pos.x - Math.floor(dimensions.dx / 2),
+      y: pos.y + Math.floor(dimensions.dy / 2),
     };
-    const botLeftPos = coordToIsoVec(this.originPos, botLeftTileCoord);
+    const botLeftCoords = posToIsoCoords(originCoords, botLeftTilePos);
     // const renderX =
     //   this.originPos.x + (this.coords.x - this.coords.y) * Tile.TILE_HALF_WIDTH;
     // const renderY =
     //   this.originPos.y +
     //   (this.coords.x + this.coords.y) * Tile.TILE_HALF_HEIGHT;
-    return botLeftPos;
+    return botLeftCoords;
   }
 
   updateCoords(newCoords: Coordinates) {
-    this.coords = newCoords;
-    this.botLeftTilePos = this.calculateRenderPos();
+    this.pos = newCoords;
   }
 
-  updateOriginPos(newOriginPos: Pos2D) {
-    this.originPos = newOriginPos;
-    this.botLeftTilePos = this.calculateRenderPos();
-  }
+  drawTile(ctx: CanvasRenderingContext2D, originPos: Coords): void {
+    const botLeftTilePos = MapObject.calculateBotLeftTileCoords(
+      originPos,
+      this.pos,
+      this.dimensions
+    );
 
-  drawTile(ctx: CanvasRenderingContext2D): void {
     const scaledWidth = this.dimensions.dx * Tile.TILE_WIDTH;
     const scaledHeight =
       (scaledWidth / this.htmlImage.width) * this.htmlImage.height;
 
     // bounding box bottom left point of the bot-left tile
-    const boundingBoxBotLeft: Pos2D = {
-      x: this.botLeftTilePos.x - Tile.TILE_HALF_WIDTH,
-      y: this.botLeftTilePos.y + Tile.TILE_HALF_HEIGHT,
+    const boundingBoxBotLeft: Coords = {
+      x: botLeftTilePos.x - Tile.TILE_HALF_WIDTH,
+      y: botLeftTilePos.y + Tile.TILE_HALF_HEIGHT,
     };
-    const boundingBoxTopLeft: Pos2D = {
+    const boundingBoxTopLeft: Coords = {
       ...boundingBoxBotLeft,
       y:
         boundingBoxBotLeft.y -
@@ -90,12 +86,12 @@ export default class MapObject {
     };
 
     // === If tile not visible, don't draw it ===
-    const transformedPosNW = getTransformedPoint(
+    const transformedCoordsTopLeft = getTransformedPoint(
       ctx.getTransform().inverse(),
       boundingBoxTopLeft.x + (CONFIRM_OUT_OF_BOUND ? 0 : scaledWidth),
       boundingBoxTopLeft.y + (CONFIRM_OUT_OF_BOUND ? 0 : scaledHeight)
     );
-    const transformedPosSE = getTransformedPoint(
+    const transformedCoordsBotRight = getTransformedPoint(
       ctx.getTransform().inverse(),
       boundingBoxTopLeft.x +
         scaledWidth -
@@ -105,20 +101,11 @@ export default class MapObject {
         (CONFIRM_OUT_OF_BOUND ? 0 : scaledHeight)
     );
 
-    console.log(
-      window.innerWidth,
-      window.innerHeight,
-      ctx.canvas.width,
-      ctx.canvas.height,
-      transformedPosNW,
-      transformedPosSE
-    );
-
     if (
-      transformedPosNW.x < 0 ||
-      transformedPosSE.x > ctx.canvas.width ||
-      transformedPosNW.y < 0 ||
-      transformedPosSE.y > ctx.canvas.height
+      transformedCoordsTopLeft.x < 0 ||
+      transformedCoordsBotRight.x > ctx.canvas.width ||
+      transformedCoordsTopLeft.y < 0 ||
+      transformedCoordsBotRight.y > ctx.canvas.height
     ) {
       return;
     }
@@ -145,7 +132,7 @@ export default class MapObject {
     }
 
     if (DEBUG_MAP_VIS) {
-      drawPoint(ctx, this.botLeftTilePos, "hotpink", 4);
+      drawPoint(ctx, botLeftTilePos, "hotpink", 4);
     }
     if (DEBUG_MAP_VIS) {
       drawPoint(ctx, boundingBoxBotLeft, "turquoise", 4);
