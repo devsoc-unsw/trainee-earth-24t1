@@ -10,7 +10,7 @@ import { Button } from "./components/ui/button";
 
 const Navbar = () => {
   return (
-    <nav className="navbar w-full max-w-screen-3xl">
+    <nav className="navbar py-1 px-4 w-full max-w-screen-2xl">
       <a className="logo">
         <img className="logo-gif" src={logo} alt="Logo" />
         Groveify
