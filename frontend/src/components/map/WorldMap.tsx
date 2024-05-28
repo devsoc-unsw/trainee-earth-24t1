@@ -353,7 +353,7 @@ const WorldMap = ({}: MapProps) => {
   const renderBackground = useCallback(
     (ctx: CanvasRenderingContext2D, canvasSize: Dimensions) => {
       // Can/Should change the color once UI design is determined
-      ctx.fillStyle = "#151d26";
+      ctx.fillStyle = "#A7C7E7";
 
       // If render background using canvas width and height, must
       // reset canvase transformation matrix to normal before rendering.
