@@ -6,6 +6,8 @@ import { getTransformedPoint } from "@frontend/src/components/map/WorldMap";
 // visible on the canvas edge, just to demonstrate it working.
 const CONFIRM_OUT_OF_BOUND = false;
 
+// Use to represent (x,y) position on canvas
+// For (x,y) position on tile map, use Coordinates
 export type Pos2D = {
   x: number;
   y: number;

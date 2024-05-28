@@ -1,5 +1,13 @@
-import { AssetJSON } from "@backend/types/assetTypes.ts";
-import { WorldMapJSON } from "@backend/types/simulationTypes.ts";
+import { AssetsJSON } from "@backend/types/assetTypes.ts";
+import {
+  CosmeticObjectJSON,
+  HouseObjectJSON,
+  ProductionObjectJSON,
+  ResourceJSON,
+  SimulationStateJSON,
+  VillagerJSON,
+  WorldMapJSON,
+} from "@backend/types/simulationTypes.ts";
 import { cells } from "./map_vis_cells_1.ts";
 
 export const worldMap: WorldMapJSON = {
@@ -64,7 +72,7 @@ export const worldMap: WorldMapJSON = {
   },
 };
 
-const villager1 = {
+const villager1: VillagerJSON = {
   _id: "villager_1",
   type: "farmer",
   friends: ["villager_2"],
@@ -76,19 +84,16 @@ const villager1 = {
     resource_1: {
       total: 48,
       isSelling: 12,
-      sellingPrice: 6, // $8 per unit
       buyPrice: 7, // $7 per unit
     },
     resource_2: {
       total: 64,
       isSelling: 12,
-      sellingPrice: 6, // $8 per unit
       buyPrice: 2, // $7 per unit
     },
     resource_3: {
       total: 64,
       isSelling: 12,
-      sellingPrice: 6, // $8 per unit
       buyPrice: 3, // $7 per unit
     },
   },
@@ -138,14 +143,14 @@ const attribute2 = {
   name: "Speed",
 };
 
-const houseObject1 = {
+const houseObject1: HouseObjectJSON = {
   _id: "house_object_1",
   name: "Villager 1's house",
   asset: "house_object_1_asset",
   owner: "villager_1",
 };
 
-const productionObject1 = {
+const productionObject1: ProductionObjectJSON = {
   _id: "production_object_1",
   name: "Wheat Farm",
   asset: "production_object_1_asset",
@@ -160,13 +165,13 @@ const productionObject1 = {
   // it is replenished with more energy (through time).
 };
 
-const cosmeticObject1 = {
+const cosmeticObject1: CosmeticObjectJSON = {
   _id: "cosmetic_object_1",
   name: "Fountain of Youth",
   asset: "cosmetic_object_1_asset",
 };
 
-const resource1 = {
+const resource1: ResourceJSON = {
   _id: "resource_1",
   name: "Wheat",
   productionEnergyCostBasic: 10,
@@ -174,7 +179,7 @@ const resource1 = {
   type: "edible",
 };
 
-const resource2 = {
+const resource2: ResourceJSON = {
   _id: "resource_2",
   name: "Flour",
   productionEnergyCostBasic: 15,
@@ -182,7 +187,7 @@ const resource2 = {
   type: "edible",
 };
 
-export const simulationState1 = {
+export const simulationState1: SimulationStateJSON = {
   _id: "simulation_server_state",
   worldMap: worldMap,
   villagers: {
@@ -203,8 +208,8 @@ export const simulationState1 = {
   },
 };
 
-export const assets: AssetJSON[] = [
-  {
+export const assets1: AssetsJSON = {
+  house_object_1_asset: {
     _id: "house_object_1_asset",
     name: "Villager 1 House asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -222,11 +227,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 8,
-      height: 8,
+      dx: 8,
+      dy: 8,
     },
   },
-  {
+  house_object_2_asset: {
     _id: "house_object_2_asset",
     name: "Villager 2 House asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -239,11 +244,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 8,
-      height: 8,
+      dx: 8,
+      dy: 8,
     },
   },
-  {
+  house_object_3_asset: {
     _id: "house_object_3_asset",
     name: "Villager 8 House asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -256,11 +261,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 8,
-      height: 8,
+      dx: 8,
+      dy: 8,
     },
   },
-  {
+  house_object_4_asset: {
     _id: "house_object_4_asset",
     name: "Villager 4 House asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -273,11 +278,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 8,
-      height: 8,
+      dx: 8,
+      dy: 8,
     },
   },
-  {
+  house_object_5_asset: {
     _id: "house_object_5_asset",
     name: "Villager 5 House asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -290,11 +295,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 8,
-      height: 8,
+      dx: 8,
+      dy: 8,
     },
   },
-  {
+  house_object_6_asset: {
     _id: "house_object_6_asset",
     name: "Villager 6 House asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -307,11 +312,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 8,
-      height: 8,
+      dx: 8,
+      dy: 8,
     },
   },
-  {
+  production_object_1_asset: {
     _id: "production_object_1_asset",
     name: "Production Object 1 asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -324,11 +329,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 9,
-      height: 9,
+      dx: 9,
+      dy: 9,
     },
   },
-  {
+  production_object_2_asset: {
     _id: "production_object_2_asset",
     name: "Production Object 2 asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -341,11 +346,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 7,
-      height: 7,
+      dx: 7,
+      dy: 7,
     },
   },
-  {
+  production_object_3_asset: {
     _id: "production_object_3_asset",
     name: "Production Object 3 asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -358,11 +363,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 8,
-      height: 8,
+      dx: 8,
+      dy: 8,
     },
   },
-  {
+  production_object_4_asset: {
     _id: "production_object_4_asset",
     name: "Production Object 4 asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -375,11 +380,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 8,
-      height: 8,
+      dx: 8,
+      dy: 8,
     },
   },
-  {
+  production_object_5_asset: {
     _id: "production_object_5_asset",
     name: "Production Object 5 asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -392,11 +397,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 8,
-      height: 8,
+      dx: 8,
+      dy: 8,
     },
   },
-  {
+  cosmetic_object_1_asset: {
     _id: "cosmetic_object_1_asset",
     name: "Cosmetic Object 1 asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -409,11 +414,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 3,
-      height: 3,
+      dx: 3,
+      dy: 3,
     },
   },
-  {
+  cosmetic_object_2_asset: {
     _id: "cosmetic_object_2_asset",
     name: "Cosmetic Object 2 asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -426,11 +431,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 3,
-      height: 3,
+      dx: 3,
+      dy: 3,
     },
   },
-  {
+  cosmetic_object_3_asset: {
     _id: "cosmetic_object_3_asset",
     name: "Cosmetic Object 3 asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -443,11 +448,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 2,
-      height: 2,
+      dx: 2,
+      dy: 2,
     },
   },
-  {
+  cosmetic_object_4_asset: {
     _id: "cosmetic_object_4_asset",
     name: "Cosmetic Object 4 asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -460,11 +465,11 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 2,
-      height: 2,
+      dx: 2,
+      dy: 2,
     },
   },
-  {
+  cosmetic_object_5_asset: {
     _id: "cosmetic_object_5_asset",
     name: "Cosmetic Object 5 asset",
     date: "2024-05-21T18:23:42.555+10:00",
@@ -477,8 +482,25 @@ export const assets: AssetJSON[] = [
       },
     ],
     dimensions: {
-      width: 4,
-      height: 4,
+      dx: 4,
+      dy: 4,
     },
   },
-];
+  villager_1_asset: {
+    _id: "villager_1_asset",
+    name: "Villager 1 asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "..........",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/VILLAGER-2024-05-25T20:40/elowen-removebg-preview.png",
+      },
+    ],
+    dimensions: {
+      dx: 1,
+      dy: 1,
+    },
+  },
+};

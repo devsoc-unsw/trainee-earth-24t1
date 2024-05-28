@@ -10,8 +10,8 @@ import {
  * Number of tiles that the asset occupies physically on the map.
  */
 type Dimensions = {
-  width: number; // x-axis
-  height: number; // y-axis
+  dx: number; // x-axis
+  dy: number; // y-axis
 };
 
 export type AssetId = string;
@@ -20,7 +20,7 @@ export type AssetsJSON = { [key: AssetId]: AssetJSON };
 export type Assets = Map<AssetId, Asset>;
 
 export interface AssetJSON extends JSONObject {
-  _id: string;
+  _id: AssetId;
   name: string;
   date: string;
   description: string;
@@ -51,7 +51,7 @@ export class Asset implements Serializable<AssetJSON> {
     date: Date = new Date(),
     id: AssetId = createId(),
     remoteImages: RemoteImage[] = [],
-    dimensions: Dimensions = { width: 0, height: 0 }
+    dimensions: Dimensions = { dx: 0, dy: 0 }
   ) {
     this.description = description;
     this.type = type;
@@ -76,11 +76,11 @@ export class Asset implements Serializable<AssetJSON> {
 
   serialize(): JSONCompatible<AssetJSON> {
     return {
-      _id: this._id,
+      description: this.description,
       name: this.name,
       type: this.type,
       date: toIsoStringWithTimezone(this.date),
-      description: this.description,
+      _id: this._id,
       remoteImages: this.remoteImages.map((remoteImage) =>
         remoteImage.serialize()
       ),
@@ -88,7 +88,7 @@ export class Asset implements Serializable<AssetJSON> {
     };
   }
 
-  static deserialize(obj: AssetJSON): Asset {
+  static deserialize(obj: JSONCompatible<AssetJSON>): Asset {
     return new Asset(
       obj.description,
       obj.name,

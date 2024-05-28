@@ -85,8 +85,8 @@ export class SimulationState {
 }
 
 export type Dimensions = {
-  width: number; // x-axis
-  height: number; // y-axis
+  dx: number; // x-axis
+  dy: number; // y-axis
 };
 
 export type CoordStr = `${number},${number}`;
@@ -104,12 +104,12 @@ export const serializeCoordStr = ({
   y: number;
 }): CoordStr => `${x},${y}`;
 
-export const parseCoordStr = (coordStr: CoordStr): Coordinates => {
+export const parseCoordStr = (coordStr: CoordStr): Coords => {
   const [x, y] = coordStr.split(",").map((str) => parseInt(str));
   return { x, y };
 };
 
-export type Coordinates = {
+export type Coords = {
   x: number;
   y: number;
 };
@@ -159,11 +159,11 @@ export class WorldMap implements Serializable<WorldMapJSON> {
 export interface CellJSON extends JSONObject {
   owner: VillagerId | null;
   object: EnviroObjectId | null;
-  coordinates?: Coordinates;
+  coordinates?: Coords;
 }
 
 export class Cell implements Serializable<CellJSON> {
-  public readonly coordinates?: Coordinates;
+  public readonly coordinates?: Coords;
 
   /**
    * VillagerId if the cell is owned by a villager. null if the cell is
@@ -182,8 +182,8 @@ export class Cell implements Serializable<CellJSON> {
    */
   public object: EnviroObjectId | null = null;
 
-  constructor(x: number, y: number) {
-    this.coordinates = { x, y };
+  constructor(coordinates: Coords) {
+    this.coordinates = { ...coordinates };
   }
 
   serialize(): JSONCompatible<CellJSON> {
@@ -195,7 +195,7 @@ export class Cell implements Serializable<CellJSON> {
   }
 
   static deserialize(obj: JSONCompatible<CellJSON>): Cell {
-    const cell = new Cell(obj.coordinates.x, obj.coordinates.y);
+    const cell = new Cell({ ...obj.coordinates });
     cell.owner = obj.owner;
     cell.object = obj.object;
     return cell;

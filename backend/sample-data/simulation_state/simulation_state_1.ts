@@ -174,8 +174,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      width: 40,
-      height: 40,
+      dx: 40,
+      dy: 40,
     },
   },
   production_object_1_asset: {
@@ -195,8 +195,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      width: 36,
-      height: 36,
+      dx: 36,
+      dy: 36,
     },
   },
   cosmetic_object_1_asset: {
@@ -216,8 +216,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      width: 10,
-      height: 10,
+      dx: 10,
+      dy: 10,
     },
   },
 };

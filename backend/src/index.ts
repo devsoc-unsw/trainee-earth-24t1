@@ -1,6 +1,6 @@
 import express from "express";
 import {
-  Coordinates,
+  Coords,
   Cell,
   SimulationState,
   WorldMap,
@@ -49,8 +49,8 @@ app.get("/", (req, res) => {
  */
 app.get("/map", (req, res) => {
   const map: WorldMap = new WorldMap();
-  const origin: Coordinates = { x: 0, y: 0 };
-  const originCell: Cell = new Cell(origin.x, origin.y);
+  const origin: Coords = { x: 0, y: 0 };
+  const originCell: Cell = new Cell(origin);
   map.addCell(serializeCoordStr(origin), originCell);
   res.send(map);
 });

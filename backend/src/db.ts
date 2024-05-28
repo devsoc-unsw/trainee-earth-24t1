@@ -1,7 +1,7 @@
 import { Db, MongoClient, ObjectId, ServerApiVersion } from "mongodb";
 import {
   Cell,
-  Coordinates,
+  Coords,
   WorldMap,
   serializeCoordStr,
 } from "@backend/types/simulationTypes.ts";
@@ -59,8 +59,8 @@ export async function getUserByEmail(email: string) {
 
 const generateMap = (): WorldMap => {
   const map: WorldMap = new WorldMap();
-  const origin: Coordinates = { x: 0, y: 0 };
-  const originCell = new Cell(origin.x, origin.y);
+  const origin: Coords = { x: 0, y: 0 };
+  const originCell = new Cell(origin);
   map.addCell(serializeCoordStr(origin), originCell);
   return map;
 };

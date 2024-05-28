@@ -1,17 +1,12 @@
 import { DEBUG_MAP_VIS, drawPoint, getTransformedPoint } from "../WorldMap";
 import { Dimensions } from "@backend/types/simulationTypes";
-import Tile from "./tile";
+import Tile, { Pos2D } from "./tile";
 
 // Normally will Tile.draw() will only render tiles that are visible in the bounds
 // of the canvas, excluding the tiles that are completely out of the canvas.
 // Set this option true to exclude also one line of tiles that are partially
 // visible on the canvas edge, just to demonstrate it working.
 const CONFIRM_OUT_OF_BOUND = true;
-
-export type Pos2D = {
-  x: number;
-  y: number;
-};
 
 export type EnviroObjectPropsType = {
   mapStartPosition: Pos2D;
@@ -21,7 +16,10 @@ export type EnviroObjectPropsType = {
   ctx: CanvasRenderingContext2D;
 };
 
-export default class EnviroObject {
+/**
+ * @deprecated use MapObject instead
+ */
+class EnviroObject {
   mapStartPosition: Pos2D;
   tilePos: Pos2D;
   offsetTilePos: Pos2D;
@@ -38,17 +36,17 @@ export default class EnviroObject {
     this.dimensions = props.dimensions;
     this.ctx = props.ctx;
 
-    // bottom left
+    // bottom left tile
     this.offsetTilePos = {
-      x: this.tilePos.x - Math.floor(this.dimensions.width / 2),
-      y: this.tilePos.y + Math.floor(this.dimensions.height / 2),
+      x: this.tilePos.x - Math.floor(this.dimensions.dx / 2),
+      y: this.tilePos.y + Math.floor(this.dimensions.dy / 2),
     };
 
     this.renderPosition = this.calculateRenderPosition(this.offsetTilePos);
   }
 
   private calculateRenderPosition(tilePos: Pos2D): Pos2D {
-    const numTilesOffset = Math.floor(this.dimensions.width / 2);
+    const numTilesOffset = Math.floor(this.dimensions.dx / 2);
 
     const renderX =
       this.mapStartPosition.x +
@@ -62,14 +60,12 @@ export default class EnviroObject {
   }
 
   drawTile(tileHeight: number): void {
-    const scaledWidth = 2 * this.dimensions.width * (Tile.TILE_WIDTH / 2);
+    const scaledWidth = 2 * this.dimensions.dx * (Tile.TILE_WIDTH / 2);
     const scaledHeight =
       (scaledWidth / this.tileImage.width) * this.tileImage.height;
 
     const offsetY =
-      tileHeight -
-      scaledHeight +
-      (this.dimensions.width / 2) * Tile.TILE_HEIGHT;
+      tileHeight - scaledHeight + (this.dimensions.dx / 2) * Tile.TILE_HEIGHT;
     // const offsetY = tileHeight - this.tileImage.height;
     // === If tile not visible, don't draw it ===
     const transformedPosNW = getTransformedPoint(
