@@ -8,6 +8,16 @@ import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useEffect, useState } from "react";
 import WorldMap from "@frontend/src/components/map/WorldMap";
 import HabitCounter from "./components/ui/habitCounter";
+import { Button } from "./components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@frontend/@/components/ui/dialog";
 
 /**
  * Default widget positions calculated relative to middle
@@ -19,7 +29,7 @@ const defaultWidgetsData: widgetDataType = [
     type: "timer",
     position: {
       x: -window.innerWidth / 2 + 180,
-      y: +window.innerHeight / 2 - 380,
+      y: +window.innerHeight / 2 - 380 + window.innerHeight / 2,
     },
   },
   {
@@ -27,7 +37,7 @@ const defaultWidgetsData: widgetDataType = [
     type: "github",
     position: {
       x: -180,
-      y: +window.innerHeight / 2 - 270,
+      y: +window.innerHeight / 2 - 270 + window.innerHeight / 2,
     },
   },
   {
@@ -35,7 +45,7 @@ const defaultWidgetsData: widgetDataType = [
     type: "todo-list",
     position: {
       x: +window.innerWidth / 2 - 350,
-      y: -window.innerHeight / 2 + 200,
+      y: -window.innerHeight / 2 + 200 + window.innerHeight / 2,
     },
   },
   {
@@ -43,7 +53,7 @@ const defaultWidgetsData: widgetDataType = [
     type: "calendar",
     position: {
       x: +window.innerWidth / 2 - 380,
-      y: +window.innerHeight / 2 - 420,
+      y: +window.innerHeight / 2 - 420 + window.innerHeight / 2,
     },
   },
   {
@@ -51,7 +61,7 @@ const defaultWidgetsData: widgetDataType = [
     type: "habitCounter",
     position: {
       x: -window.innerWidth / 2 + 180,
-      y: -window.innerHeight / 2 + 200,
+      y: -window.innerHeight / 2 + 200 + window.innerHeight / 2,
     },
   },
 ];
@@ -93,11 +103,40 @@ export default function App() {
     setWidgets(_widgets);
   }
 
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const handleOpenProfile = (isOpen: boolean) => {
+    setIsProfileOpen(isOpen);
+  };
+
   return (
     <>
-      <header className="header">
-        <Navbar />
-      </header>
+      <Dialog onOpenChange={handleOpenProfile}>
+        <header className="header">
+          <Navbar>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="bg-white">
+                Open Inventory
+              </Button>
+            </DialogTrigger>
+          </Navbar>
+        </header>
+        <DialogContent className="sm:max-w-[1000px] h-[500px] bg-white rounded-md fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <DialogHeader>
+            <DialogTitle>Edit profile</DialogTitle>
+            <DialogDescription>
+              Make changes to your profile here. Click save when you're done.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4"></div>
+            <div className="grid grid-cols-4 items-center gap-4"></div>
+          </div>
+          <DialogFooter>
+            <Button type="submit">Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <DndContext onDragEnd={handleDragEnd}>
         {widgets.map((widget) => {
           switch (widget.type) {

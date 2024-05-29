@@ -39,7 +39,7 @@ export default function GithubWidget({
   }, [userName]);
 
   return (
-    <div className="absolute left-1/2 top-1/2">
+    <div className="relative left-1/2 top-1/2">
       <div
         style={style}
         ref={setNodeRef}
