@@ -289,7 +289,7 @@ export class HouseObject
   }
 }
 
-type VillagerId = string;
+export type VillagerId = string;
 
 export const VILLAGER_TYPES_ARRAY = [
   "farmer",

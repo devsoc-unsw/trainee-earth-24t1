@@ -8,12 +8,12 @@ import {
 } from "../types/simulationTypes.ts";
 import { run as runDB } from "@backend/src/db.ts";
 import { WebSocketServer, WebSocket } from "ws";
-import { handleWSRequest } from "@backend/src/wsHandler.ts";
+import { handleDisconnect, handleWSRequest } from "@backend/src/wsHandler.ts";
 import { GameLoop } from "./gameloopFramework.js";
 import {
   assets1,
   simulationState1,
-} from "sample-data/simulation_state/simulation_state_1.ts";
+} from "@backend/sample-data/simulation_state/simulation_state_1.ts";
 import { SimulationServer } from "./simulationServer.js";
 import { deserializeJSONToMap } from "../utils/objectTyping.ts";
 import {
@@ -23,14 +23,15 @@ import {
   generateCosmeticObjectAsset,
   // generateVillagerAssetV2
 } from "@backend/asset-gen/generate-asset.ts";
-import cosmeticPresetJSON from "sample-data/gen-assets/cosmetic_object_assets/presets.json";
-import housePresetJSON from "sample-data/gen-assets/house_object_assets/presets.json";
-import resourcePresetJSON from "sample-data/gen-assets/resource_object_assets/presets.json";
+import cosmeticPresetJSON from "@backend/sample-data/gen-assets/cosmetic_assets/presets.json";
+import resourcePresetJSON from "@backend/sample-data/gen-assets/resource_assets/presets.json";
 import axios, { AxiosResponse } from "axios";
 import { cropImage } from "@backend/asset-gen/edit-image.ts";
 import fs from "fs";
 import { storeImageIntoBunny } from "@backend/asset-gen/store-image.ts";
 import { Asset } from "@backend/types/assetTypes.ts";
+import { WSClients } from "@backend/types/wsTypes.ts";
+import createId from "@backend/utils/createId.ts";
 
 const EXPRESS_PORT = 3000;
 
@@ -215,6 +216,8 @@ app.get("/edit/resource", async (req, res) => {
   }
 });
 
+const clients: WSClients = new Map();
+
 /**
  * Instantiates a new WebSocketServer.
  * Runs on the same server and port as Express (3000).
@@ -224,22 +227,24 @@ const wss = new WebSocketServer({ server: server });
 /**
  * Handle a new client connecting to the WebSocket server.
  */
-wss.on("connection", (ws: WebSocket) => {
-  console.log("New WS connection opened");
+wss.on("connection", (connection: WebSocket) => {
+  const userId = createId();
+  console.log(`New WS connection opened. Assigned userId ${userId}`);
+  clients.set(userId, connection);
 
-  ws.on("error", console.error);
+  connection.on("error", console.error);
 
   /**
    * Executes when a message is received from the client.
    */
-  ws.on("message", (msg) => {
+  connection.on("message", (msg) => {
     console.log(`Received ws message`);
 
     try {
       const message = JSON.parse(msg.toString("utf-8"));
       // handleWSRequest takes care of replying to the client
       // in wsHandler.ts
-      handleWSRequest(message, ws);
+      handleWSRequest(message, connection);
     } catch (e) {
       console.error(e);
       let clientErrorMsg = e.message;
@@ -251,7 +256,7 @@ wss.on("connection", (ws: WebSocket) => {
         console.log(e.name);
       }
       // sends the error back to the client
-      ws.send(
+      connection.send(
         JSON.stringify({
           err: {
             name: e.name,
@@ -265,8 +270,9 @@ wss.on("connection", (ws: WebSocket) => {
   /**
    * Executes when a client closes.
    */
-  ws.on("close", () => {
-    console.log("WS connection closed");
+  connection.on("close", () => {
+    console.log(`WS connection to ${userId} closed`);
+    handleDisconnect(userId, clients);
   });
 });
 
@@ -275,4 +281,4 @@ const simulationServer = new SimulationServer(
   deserializeJSONToMap(assets1, Asset.deserialize)
 );
 const myGameLoop = new GameLoop(simulationServer.simulationStep);
-myGameLoop.startGameLoop();
+// myGameLoop.startGameLoop();

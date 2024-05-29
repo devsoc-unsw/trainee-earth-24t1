@@ -13,12 +13,14 @@ import {
   EnviroObjectId,
   PosStr,
   Pos,
+  VillagerId,
 } from "@backend/types/simulationTypes";
 import { Asset, Assets } from "@backend/types/assetTypes";
 import { deserializeJSONToMap } from "@backend/utils/objectTyping";
 import grassTileImgPath from "@frontend/img/special-assets/grass-tile.png";
 import MapObject from "./tiles/MapObject";
 import { Coordinates } from "@dnd-kit/core/dist/types";
+import WSBox from "@frontend/src/reactUseWebsocket";
 
 const DEBUG1 = false;
 export const DEBUG_MAP_VIS = false;
@@ -33,7 +35,6 @@ export interface IKeys {
   up: boolean;
   right: boolean;
   down: boolean;
-  space: boolean;
 }
 
 interface IRange {
@@ -42,6 +43,8 @@ interface IRange {
   minY: number;
   maxY: number;
 }
+
+type MapObjectId = EnviroObjectId | VillagerId;
 
 const DEFAULT_MAP_SCALE = 1;
 const DEFAULT_DELTA_X = 1;
@@ -83,10 +86,6 @@ const WorldMap = ({}: MapProps) => {
   const frameCount = useRef(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Coords of the mouse relative to the top-left of canvas,
-  // raw ie before panzoom transformation
-  const mouseRaw = useRef<Coords>({ x: -1, y: -1 });
-
   // Coords of the origin of the map, raw ie before panzoom transformation
   // Derived from canvas size
   // const originRaw = useRef({ x: -1, y: -1 });
@@ -99,6 +98,21 @@ const WorldMap = ({}: MapProps) => {
 
   // Translation speed in distance units per second
   const vel = useRef({ x: 0, y: 0 });
+
+  // Coords of the mouse relative to the top-left of canvas,
+  // raw ie before panzoom transformation
+  const mouseCoords = useRef<Coords>({ x: -1, y: -1 });
+
+  // Previous tile map position of the mouse cursor pointing at.
+  // Used to determine whether the mouse cursor has moved to a new tile,
+  // initialised implemented to avoid unnecessary collision detection on mouse
+  // move.
+  const prevMouseTileMapPos = useRef<Pos | null>(null);
+
+  // Mainly for rendering an iso square perimeter around environment objects that
+  // are being hovered over by the mouse cursor, or showing stats of villager
+  // that is being hovered.
+  const mouseCollidingObjects = useRef<Set<MapObjectId>>(new Set());
 
   // const [simState, setTileMap] = React.useState(TILE_MAP);
   // const simState = useRef<Map<CoordStr, CellJSON>>(
@@ -119,9 +133,9 @@ const WorldMap = ({}: MapProps) => {
     maxY: 19,
   });
 
-  // Order to visit coords to render objects so that front objects are rendered
+  // Order to visit map tile positions to render objects so that front objects are rendered
   // on top of back objects
-  const coordsOrder = useRef<Coordinates[]>(
+  const posRenderOrder = useRef<Pos[]>(
     calculateCoordsOrder(tileMapRange.current)
   );
 
@@ -139,15 +153,16 @@ const WorldMap = ({}: MapProps) => {
       // grass field object is drawn
       // negative elevation, grass field goes below the ground
       -116,
-      { dx: 10, dy: 10 } // dimensions 10x10 tiles per grass field object
+      { dx: 10, dy: 10 }, // dimensions 10x10 tiles per grass field object
+      null
     )
   );
 
   // All map objects including loaded HTMLImageElement:
   // house object, production object, cosmetic object, villagers
   // Second render layer above grass
-  const mapObjects = useRef<Map<EnviroObjectId, MapObject>>(new Map());
-  const posToObjects = useRef<Map<PosStr, EnviroObjectId>>(new Map());
+  const mapObjects = useRef<Map<MapObjectId, MapObject>>(new Map());
+  const posToObjects = useRef<Map<PosStr, MapObjectId[]>>(new Map());
 
   const handleReceiveAssets = useCallback((assets: Assets) => {
     assetsRef.current = assets;
@@ -159,9 +174,15 @@ const WorldMap = ({}: MapProps) => {
 
       tileMapRange.current = findRange(simStateRef.current.worldMap.cells);
 
-      coordsOrder.current = calculateCoordsOrder(tileMapRange.current);
+      posRenderOrder.current = calculateCoordsOrder(tileMapRange.current);
+
+      mapObjects.current.clear();
+      posToObjects.current.clear();
 
       // === Update mapObjects and posToObjects ===
+      // TODO: calculate diff between old and new SimulationState.enviroObjects
+      // and SimulationState.villagers and only update mapObjects and posToObjects
+      // with the difference. So that we don't reload the same images.
       for (
         let tileX = tileMapRange.current.minX;
         tileX <= tileMapRange.current.maxX;
@@ -175,33 +196,24 @@ const WorldMap = ({}: MapProps) => {
           const pos: Pos = { x: tileX, y: tileY };
           const posStr = serializePosStr(pos);
           const cell = simulationState.worldMap.cells.get(posStr);
-
-          if (cell !== undefined) {
-            const enviroObjectId = cell.object;
-            if (enviroObjectId !== null) {
-              // Draw environment object
-              const asset = assetsRef.current?.get(enviroObjectId);
-              if (asset !== undefined) {
-                const finalRemoteImage = asset.remoteImages.at(-1);
-                if (finalRemoteImage !== undefined) {
-                  console.log(`Loading image ${enviroObjectId} at ${posStr}`);
-                  const environObject: MapObject = new MapObject(
-                    finalRemoteImage.url,
-                    pos,
-                    0,
-                    asset.dimensions
-                  );
-                  mapObjects.current.set(enviroObjectId, environObject);
-                  posToObjects.current.set(posStr, enviroObjectId);
-                }
-              } else {
-                console.error(
-                  `Asset of enviro object with key ${enviroObjectId} not found in assets`
-                );
-              }
-            }
-          } else {
-            // cell does not have a Cell with key {x: tileX, y: tileY}
+          const enviroObjectId = cell?.object;
+          const enviroObject =
+            enviroObjectId && simulationState.enviroObjects.get(enviroObjectId);
+          const asset =
+            enviroObject &&
+            enviroObject.asset !== null &&
+            assetsRef.current?.get(enviroObject.asset);
+          const finalRemoteImageUrl = asset && asset.remoteImages.at(-1)?.url;
+          if (finalRemoteImageUrl) {
+            const environObject: MapObject = new MapObject(
+              finalRemoteImageUrl,
+              pos,
+              0,
+              asset.dimensions,
+              enviroObjectId
+            );
+            mapObjects.current.set(enviroObjectId, environObject);
+            posToObjectsAdd(posToObjects.current, posStr, enviroObjectId);
           }
         }
       }
@@ -212,15 +224,16 @@ const WorldMap = ({}: MapProps) => {
           if (asset !== undefined) {
             const finalRemoteImage = asset.remoteImages.at(-1);
             if (finalRemoteImage !== undefined) {
-              console.log(`Loading villager image ${villagerId}`);
               const environObject: MapObject = new MapObject(
                 finalRemoteImage.url,
                 villager.position,
                 0,
-                asset.dimensions
+                asset.dimensions,
+                villagerId
               );
               mapObjects.current.set(villagerId, environObject);
-              posToObjects.current.set(
+              posToObjectsAdd(
+                posToObjects.current,
                 serializePosStr(villager.position),
                 villagerId
               );
@@ -246,8 +259,11 @@ const WorldMap = ({}: MapProps) => {
     up: false,
     right: false,
     down: false,
-    space: false,
   });
+
+  const mouseLeftIsDown = useRef(false);
+
+  const selectedEnviroObject = useRef<EnviroObjectId | null>(null);
 
   // DOMHIghResTimeStamp is a double representing the time in milliseconds,
   // potentially accurate to one thousandth of a millisecond but at least
@@ -259,17 +275,19 @@ const WorldMap = ({}: MapProps) => {
   console.log("Render Map");
 
   const renderTiles = useCallback((ctx: CanvasRenderingContext2D) => {
-    if (!canvasRef.current) return;
-    const canvasSize = getCanvasSize(canvasRef.current);
+    const canvas = canvasRef.current;
+    const canvasSize = canvas
+      ? getCanvasSize(canvas)
+      : { dx: window.innerWidth, dy: window.innerHeight };
     const originRaw = getOriginRaw(canvasSize);
 
     if (grassTileObject.current !== null) {
-      for (let coords of coordsOrder.current ?? []) {
+      for (let pos of posRenderOrder.current ?? []) {
         if (
-          coords.x % grassTileObject.current.dimensions.dx === 0 &&
-          coords.y % grassTileObject.current.dimensions.dy === 0
+          pos.x % grassTileObject.current.dimensions.dx === 0 &&
+          pos.y % grassTileObject.current.dimensions.dy === 0
         ) {
-          grassTileObject.current.updateCoords(coords);
+          grassTileObject.current.updatePos(pos);
           grassTileObject.current.drawTile(ctx, originRaw);
         }
       }
@@ -277,6 +295,7 @@ const WorldMap = ({}: MapProps) => {
       console.error("Could render grass field: grass tile object is null");
     }
 
+    // === Draw square grid ===
     for (
       let tileX = tileMapRange.current.minX;
       tileX <= tileMapRange.current.maxX;
@@ -287,15 +306,14 @@ const WorldMap = ({}: MapProps) => {
         tileY <= tileMapRange.current.maxY;
         ++tileY
       ) {
-        let renderX = originRaw.x + (tileX - tileY) * Tile.TILE_HALF_WIDTH;
-        let renderY = originRaw.y + (tileX + tileY) * Tile.TILE_HALF_HEIGHT;
+        const coordsRender = posToIsoCoords(originRaw, {
+          x: tileX,
+          y: tileY,
+        });
 
-        if (DEBUG_MAP_VIS) {
-          // drawPoint(ctx, { x: renderX, y: renderY }, "black", 3);
-        }
         drawTileOutline(
           ctx,
-          { x: renderX, y: renderY },
+          coordsRender,
           { dx: Tile.TILE_WIDTH, dy: Tile.TILE_HEIGHT },
           "rgba(255,255,255,0.4)",
           "rgba(25,34,44,0.08)"
@@ -315,27 +333,59 @@ const WorldMap = ({}: MapProps) => {
       }
     }
 
-    for (let coords of coordsOrder.current) {
-      const mapObjectId = posToObjects.current.get(serializePosStr(coords));
-      if (mapObjectId) {
-        const mapObject = mapObjects.current.get(mapObjectId);
-        if (mapObject) {
-          mapObject.drawTile(ctx, originRaw);
+    // === Draw map objects in iso projection back to front ===
+    for (let pos of posRenderOrder.current) {
+      const mapObjectIds = posToObjects.current.get(serializePosStr(pos)) ?? [];
+      for (let mapObjectId of mapObjectIds) {
+        if (mapObjectId) {
+          const mapObject = mapObjects.current.get(mapObjectId);
+          if (mapObject) {
+            mapObject.drawTile(ctx, originRaw);
+          }
         }
       }
     }
 
+    // === Draw mouse cursor colliding object outlines ===
+    for (let mouseCollidingObject of mouseCollidingObjects.current) {
+      const mapObject = mapObjects.current.get(mouseCollidingObject);
+      if (mapObject) {
+        // Note: assumes mapObject.dimensions.dx and mapObject.dimensions.dy are
+        // same value ie mapObject is square. Shouldnt matter which you use.
+        const centerCoord = posToIsoCoords(originRaw, mapObject.pos);
+        const outlineMidTopCoord = {
+          x: centerCoord.x,
+          // Center coord y minus half of the diagonal length of the object
+          y:
+            centerCoord.y -
+            Math.floor(mapObject.dimensions.dy / 2) * Tile.TILE_HEIGHT,
+        };
+
+        drawTileOutline(
+          ctx,
+          outlineMidTopCoord,
+          {
+            dx: mapObject.dimensions.dx * Tile.TILE_WIDTH,
+            dy: mapObject.dimensions.dy * Tile.TILE_HEIGHT,
+          },
+          "rgba(247, 217, 22, 0.7)",
+          "rgba(0,0,0,0)",
+          5,
+          []
+        );
+      }
+    }
+
     // === Draw mouse hover tile ===
-    drawPoint(ctx, originRaw, "yellow");
+    drawPoint(ctx, originRaw, "rgba(23, 23, 23,0.5)", 5);
 
     const mouseTransformed = getTransformedPoint(
       transformMat.current,
-      mouseRaw.current.x,
-      mouseRaw.current.y
+      mouseCoords.current
     );
 
     // drawPoint(ctx, mouseRaw.current, "orange");
-    drawPoint(ctx, mouseTransformed, "lavender");
+    drawPoint(ctx, mouseTransformed, "lavender", 5);
 
     const hoverTilePos = inputCoordsToTileMapPos(originRaw, mouseTransformed);
 
@@ -350,26 +400,24 @@ const WorldMap = ({}: MapProps) => {
     }
   }, []);
 
-  const renderBackground = useCallback(
-    (ctx: CanvasRenderingContext2D, canvasSize: Dimensions) => {
-      // Can/Should change the color once UI design is determined
-      ctx.fillStyle = "#A7C7E7";
+  const renderBackground = useCallback((ctx: CanvasRenderingContext2D) => {
+    const canvas = ctx.canvas;
+    const canvasSize: Dimensions = canvas
+      ? getCanvasSize(canvas)
+      : { dx: window.innerWidth, dy: window.innerHeight };
 
-      // If render background using canvas width and height, must
-      // reset canvase transformation matrix to normal before rendering.
-      ctx.fillRect(0, 0, canvasSize.dx, canvasSize.dy);
+    // Can/Should change the color once UI design is determined
+    ctx.fillStyle = "#A7C7E7";
 
-      // ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-    },
-    []
-  );
+    // If render background using canvas width and height, must
+    // reset canvase transformation matrix to normal before rendering.
+    ctx.fillRect(0, 0, canvasSize.dx, canvasSize.dy);
+
+    // ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+  }, []);
 
   const render = useCallback(
     (ctx: CanvasRenderingContext2D) => {
-      // if (!canvasSize.width || !canvasSize.height) return;
-      if (!canvasRef.current) return;
-      const canvasSize = getCanvasSize(canvasRef.current);
-
       if (DEBUG1) console.log(`Render`);
 
       // const offsetX = Tile.TILE_WIDTH / 2;
@@ -382,21 +430,11 @@ const WorldMap = ({}: MapProps) => {
       // const tileStartY =
       //     canvasSize.height / 2 - offsetY - MAGIC_NUMBER_TO_ADJUST;
 
-      // if (
-      //   !checkTransformMatChanged(
-      //     prevTransformMat.current,
-      //     transformMat.current
-      //   )
-      // ) {
-      //   if (DEBUG1) console.log("Transform matrix not changed");
-      // return;
-      // }
-
       // Save normal transformation matrix (done in useEffect prior
       // to starting rendering loop)
       // ctx.setTransform(DOMMatrix.fromMatrix(DEFAULT_ZOOM_MATRIX));
       ctx.save();
-      renderBackground(ctx, canvasSize);
+      renderBackground(ctx);
 
       ctx.setTransform(transformMat.current);
       renderTiles(ctx);
@@ -409,16 +447,11 @@ const WorldMap = ({}: MapProps) => {
     (ctx: CanvasRenderingContext2D, e: WheelEvent) => {
       // const currentScale = ctx.getTransform().a;
       const currentScale = transformMat.current.a;
-      const zoomAmount = e.deltaY * ZOOM_SENSITIVITY;
+      const zoomAmount = -e.deltaY * ZOOM_SENSITIVITY;
 
       const transformedCursor = getTransformedPoint(
         transformMat.current,
-        // e.offsetX,
-        // e.clientX - ctx.canvas.getBoundingClientRect().left,
-        mouseRaw.current.x,
-        // e.offsetY
-        // e.clientY - ctx.canvas.getBoundingClientRect().top
-        mouseRaw.current.y
+        mouseCoords.current
       );
 
       // When reaching MAX_SCALE, it only allows zoom OUT (= negative zoomAmount)
@@ -462,63 +495,86 @@ const WorldMap = ({}: MapProps) => {
       // 	deltaY: e.deltaY,
       // });
     },
-    [transformMat.current]
-  );
-
-  const onScrollX = useCallback(
-    (ctx: CanvasRenderingContext2D, e: WheelEvent) => {
-      const moveAmount =
-        DEFAULT_DELTA_X * e.deltaX * HORIZONTAL_SCROLL_SENSITIVITY;
-
-      // Only allows x axis move
-      // ctx.translate(moveAmount, 0);
-      // transformMat.current.translateSelf(moveAmount, 0);
-    },
     []
   );
 
   const onWheel = useCallback(
     (ctx: CanvasRenderingContext2D, e: WheelEvent) => {
       onScrollY(ctx, e);
-      onScrollX(ctx, e);
     },
-    [onScrollX, onScrollY]
+    [onScrollY]
   );
 
   const onMouseMove = useCallback(
     (ctx: CanvasRenderingContext2D, e: MouseEvent) => {
       const rect = ctx.canvas.getBoundingClientRect();
 
-      mouseRaw.current = {
+      mouseCoords.current = {
         x: e.clientX - rect.x,
         y: e.clientY - rect.y,
       };
+
+      const mouseCoordsTransformed = getTransformedPoint(
+        transformMat.current,
+        mouseCoords.current
+      );
+      const mouseTileMapPos = inputCoordsToTileMapPos(
+        getOriginRaw(getCanvasSize(ctx.canvas)),
+        mouseCoordsTransformed
+      );
+
+      if (
+        mouseTileMapPos.x === prevMouseTileMapPos.current?.x &&
+        mouseTileMapPos.y === prevMouseTileMapPos.current?.y
+      ) {
+      }
+      // Mouse cursor might have moved, but still on the same tile
+      else {
+        // Mouse cursor has moved to a new tile
+        mouseCollidingObjects.current = getCollidingObjects(
+          mouseTileMapPos,
+          mapObjects.current
+        );
+      }
+
+      if (selectedEnviroObject.current !== null) {
+        // === Move selected environment object with mouse movement ===
+        // Map object of the selected environment object
+        const mapObject = mapObjects.current.get(selectedEnviroObject.current);
+        if (mapObject !== undefined) {
+          const prevSelectedObjectPos = { ...mapObject.pos };
+          mapObject.updatePos(mouseTileMapPos);
+          posToObjectsUpdate(
+            posToObjects.current,
+            selectedEnviroObject.current,
+            serializePosStr(prevSelectedObjectPos),
+            serializePosStr(mouseTileMapPos)
+          );
+        }
+      } else if (mouseLeftIsDown.current) {
+        // Drag map using mouse. Add mouse movement to transform matrix
+        const displacement = {
+          x: e.movementX,
+          y: e.movementY,
+        };
+        transformMat.current.translateSelf(
+          displacement.x / transformMat.current.a,
+          displacement.y / transformMat.current.a
+        );
+      }
+
+      prevMouseTileMapPos.current = { ...mouseTileMapPos };
     },
     []
   );
 
-  const onClick = useCallback(
+  const onMouseDown = useCallback(
     (ctx: CanvasRenderingContext2D, e: MouseEvent) => {
       const originRaw = getOriginRaw(getCanvasSize(ctx.canvas));
       const mouseTransformed = getTransformedPoint(
         transformMat.current,
-        mouseRaw.current.x,
-        mouseRaw.current.y
+        mouseCoords.current
       );
-
-      // drawPoint(ctx, mouseRaw.current, "violet");
-      drawPoint(ctx, mouseTransformed, "beige");
-
-      // const clickedTileCoords: Coordinates = {
-      //   x: Math.floor(
-      //     mouseRelativeToRawOrigin.y / Tile.TILE_HEIGHT +
-      //       mouseRelativeToRawOrigin.x / Tile.TILE_WIDTH
-      //   ),
-      //   y: Math.floor(
-      //     -mouseRelativeToRawOrigin.x / Tile.TILE_WIDTH +
-      //       mouseRelativeToRawOrigin.y / Tile.TILE_HEIGHT
-      //   ),
-      // };
       const clickedTileCoords = inputCoordsToTileMapPos(
         originRaw,
         mouseTransformed
@@ -529,14 +585,142 @@ const WorldMap = ({}: MapProps) => {
           serializePosStr(clickedTileCoords)
         )
       ) {
-        console.log("Clicked tile", clickedTileCoords);
-        if (DEBUG1) {
-        }
-        const clickedTileRenderCoords = posToIsoCoords(
-          originRaw,
-          clickedTileCoords
+        const cell = simStateRef.current.worldMap.cells.get(
+          serializePosStr(clickedTileCoords)
         );
-        // do smthn with the clicked tile
+        if (cell !== undefined) {
+          if (cell.object === null) {
+            // Mouse down on an empty grass tile
+            console.log(
+              `Mouse down on empty grass tile at ${clickedTileCoords.x}, ${clickedTileCoords.y}`
+            );
+            mouseLeftIsDown.current = true;
+          }
+        }
+      }
+    },
+    []
+  );
+
+  const onMouseUp = useCallback(
+    (ctx: CanvasRenderingContext2D, e: MouseEvent) => {
+      mouseLeftIsDown.current = false;
+    },
+    []
+  );
+
+  const onClick = useCallback(
+    (ctx: CanvasRenderingContext2D, e: MouseEvent) => {
+      const originRaw = getOriginRaw(getCanvasSize(ctx.canvas));
+      const mouseCoordsTransformed = getTransformedPoint(
+        transformMat.current,
+        mouseCoords.current
+      );
+
+      // drawPoint(ctx, mouseRaw.current, "violet");
+      drawPoint(ctx, mouseCoordsTransformed, "beige");
+
+      const clickedTileMapPos = inputCoordsToTileMapPos(
+        originRaw,
+        mouseCoordsTransformed
+      );
+
+      const clickedCell = simStateRef.current?.worldMap.cells.get(
+        serializePosStr(clickedTileMapPos)
+      );
+      if (clickedCell) {
+        console.log(
+          `Clicked tile ${clickedTileMapPos.x}, ${clickedTileMapPos.y}`
+        );
+        if (selectedEnviroObject.current !== null) {
+          // Place down environment object wherever user clicked
+          // TODO: Need to validate the place down position
+          if (
+            // cell to place enviro object down is empty
+            clickedCell.object === null &&
+            // Only collidign object is the current selected object. Note that
+            // the mouse might be "ahead" of the dragged position of the object,
+            // in which case the mouse cursor is not colliding with the object
+            // it is dragging. Thus check size === 0 too.
+            mouseCollidingObjects.current.size <= 1
+          ) {
+            // Place down object
+            clickedCell.object = selectedEnviroObject.current;
+            const mapObject = mapObjects.current.get(
+              selectedEnviroObject.current
+            );
+            if (mapObject !== undefined) {
+              console.log(
+                `Place down EnviroObject ${selectedEnviroObject.current} at ${clickedTileMapPos.x}, ${clickedTileMapPos.y}`
+              );
+
+              const prevMapObjectPos = { ...mapObject.pos };
+              mapObject.updatePos(clickedTileMapPos);
+              // posToObjects.current.delete(serializePosStr(prevMapObjectPos));
+              // posToObjects.current
+              //   .get(serializePosStr(clickedTileCoords))
+              //   ?.push(selectedEnviroObject.current);
+              posToObjectsUpdate(
+                posToObjects.current,
+                selectedEnviroObject.current,
+                serializePosStr(prevMapObjectPos),
+                serializePosStr(clickedTileMapPos)
+              );
+            }
+            // TODO: Send this change to simserver
+            selectedEnviroObject.current = null;
+          }
+        } else {
+          const clickedTileRenderCoords = posToIsoCoords(
+            originRaw,
+            clickedTileMapPos
+          );
+          // do smthn with the clicked tile
+
+          // Tile exists
+          if (mouseCollidingObjects.current.size > 0) {
+            // Set selected environment object to the first object that the
+            // mouse cursor is colliding with
+            for (let collidingObject of mouseCollidingObjects.current.values()) {
+              // Make sure the object is an environment object, not a villager
+              console.log(
+                `Mouse click collided with MapObjectId:`,
+                collidingObject
+              );
+
+              if (simStateRef.current?.enviroObjects.has(collidingObject)) {
+                console.log(`Selected MapObjectId`, collidingObject);
+                selectedEnviroObject.current = collidingObject;
+                break;
+              }
+            }
+            if (selectedEnviroObject.current !== null) {
+              const mapObject = mapObjects.current.get(
+                selectedEnviroObject.current
+              );
+              if (mapObject) {
+                // === Remove objectId from simstate cell ===
+                const cellOfEnviroObject =
+                  simStateRef.current?.worldMap.cells.get(
+                    serializePosStr(mapObject.pos)
+                  );
+                if (cellOfEnviroObject) {
+                  // Update simState cell object to null
+                  cellOfEnviroObject.object = null;
+                }
+                // === Update map object pos to clicked tile (teleport to mouse) ===
+                const prevSelectedObjectPos = { ...mapObject.pos };
+                mapObject.updatePos(clickedTileMapPos);
+                posToObjectsUpdate(
+                  posToObjects.current,
+                  selectedEnviroObject.current,
+                  serializePosStr(prevSelectedObjectPos),
+                  serializePosStr(clickedTileMapPos)
+                );
+              }
+            }
+          }
+        }
       }
     },
     []
@@ -603,10 +787,14 @@ const WorldMap = ({}: MapProps) => {
     const handleWheel = (e: WheelEvent) => onWheel(context, e);
     const handleMouseMouve = (e: MouseEvent) => onMouseMove(context, e);
     const handleClick = (e: MouseEvent) => onClick(context, e);
+    const handleMouseDown = (e: MouseEvent) => onMouseDown(context, e);
+    const handleMouseUp = (e: MouseEvent) => onMouseUp(context, e);
 
     canvas.addEventListener("wheel", handleWheel);
-    canvas.addEventListener("mousemove", handleMouseMouve);
     canvas.addEventListener("click", handleClick);
+    document.addEventListener("mousemove", handleMouseMouve);
+    canvas.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("mouseup", handleMouseUp);
 
     // TODO call these handles on receive ws event from simserver
     handleReceiveAssets(deserializeJSONToMap(assets1, Asset.deserialize));
@@ -641,21 +829,16 @@ const WorldMap = ({}: MapProps) => {
 
     return () => {
       canvas.removeEventListener("wheel", handleWheel);
-      canvas.removeEventListener("mousemove", handleMouseMouve);
       canvas.removeEventListener("click", handleClick);
+      document.removeEventListener("mousemove", handleMouseMouve);
+      canvas.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("mouseup", handleMouseUp);
 
       // TODO: Fix flickering when calling cancelAnimationFrame
       // This might help: https://stackoverflow.com/questions/40265707/flickering-images-in-canvas-animation
       // cancelAnimationFrame(animationFrameId)
     };
-  }, [
-    render,
-    onWheel,
-    onMouseMove,
-    onClick,
-    canvasRef.current,
-    keyRef.current,
-  ]);
+  }, [render, onWheel, onMouseMove, onClick]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -680,8 +863,10 @@ const WorldMap = ({}: MapProps) => {
   }, []);
 
   useEffect(() => {
-    document.addEventListener("keydown", (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === "ArrowLeft") {
+        console.log(`left down`);
+
         keyRef.current.right = false;
         keyRef.current.left = true;
         e.preventDefault();
@@ -697,13 +882,12 @@ const WorldMap = ({}: MapProps) => {
         keyRef.current.up = false;
         keyRef.current.down = true;
         e.preventDefault();
-      } else if (e.code === "Space") {
-        keyRef.current.space = true;
-        e.preventDefault();
       }
-    });
-    document.addEventListener("keyup", (e) => {
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
       if (e.code === "ArrowLeft") {
+        console.log(`left up`);
+
         keyRef.current.left = false;
         e.preventDefault();
       } else if (e.code === "ArrowUp") {
@@ -715,45 +899,53 @@ const WorldMap = ({}: MapProps) => {
       } else if (e.code === "ArrowDown") {
         keyRef.current.down = false;
         e.preventDefault();
-      } else if (e.code === "Space") {
-        keyRef.current.space = false;
-        e.preventDefault();
       }
-    });
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
+    };
     console.log(`Attached keydown and keyup event listeners to document`);
   }, []);
 
-  return <canvas ref={canvasRef} />;
+  return (
+    <>
+      <WSBox />
+      <canvas ref={canvasRef} />
+    </>
+  );
 };
 
 export default WorldMap;
 
 /**
  * @param context canvas context 2d
- * @param inputX mouse/touch input position x (ie. clientX)
- * @param inputY mouse/touch input position y (ie. clientY)
+ * @param initPoint mouse/touch input position x (ie. clientX, clientY)
  * @returns {x, y} x and y position of inputX/Y which map scale and position are taken into account
  */
 export const getTransformedPoint = (
   // context: CanvasRenderingContext2D,
   transform: DOMMatrix,
-  inputX: number,
-  inputY: number
+  initPoint: Coords
 ) => {
   // const transform = context.getTransform();
   const invertedScaleX = DEFAULT_MAP_SCALE / transform.a;
   const invertedScaleY = DEFAULT_MAP_SCALE / transform.d;
 
-  const transformedX = invertedScaleX * inputX - invertedScaleX * transform.e;
-  const transformedY = invertedScaleY * inputY - invertedScaleY * transform.f;
+  const transformedX =
+    invertedScaleX * initPoint.x - invertedScaleX * transform.e;
+  const transformedY =
+    invertedScaleY * initPoint.y - invertedScaleY * transform.f;
 
   return { x: transformedX, y: transformedY };
 };
 
 /**
  * @param originCoords position where map start rendered (Position2D has {x: number, y: number} type)
- * @param inputCoords mouse/touch input coordinate on screen, after transforms (ie. clientX-rect.left, clientY-rect.top)
- * @param inputY mouse/touch input position x (ie. clientY)
+ * @param inputCoords mouse/touch input coordinate on screen, after transforms ie. getTransformedpoint(clientX-rect.left, clientY-rect.top, transformMat)
  * @returns positionX, positionY: tile position x, y axis
  */
 const inputCoordsToTileMapPos = (
@@ -862,7 +1054,7 @@ const drawLine = (
  */
 const drawTileOutline = (
   ctx: CanvasRenderingContext2D,
-  pos: Coords,
+  coords: Coords,
   dim: Dimensions,
   lineColor = "rgba(255,255,255,0.4)",
   fillStyle = "rgba(25,34, 44,0.2)",
@@ -875,11 +1067,11 @@ const drawTileOutline = (
   ctx.strokeStyle = lineColor;
   ctx.fillStyle = fillStyle;
   ctx.lineWidth = lineWidth;
-  ctx.moveTo(pos.x, pos.y); // top-middle of projected bounding box
-  ctx.lineTo(pos.x + dim.dx / 2, pos.y + dim.dy / 2); // right-middle of projected bounding box
-  ctx.lineTo(pos.x, pos.y + dim.dy); // bottom-middle of projected bounding box
-  ctx.lineTo(pos.x - dim.dx / 2, pos.y + dim.dy / 2); // left-middle of projected bounding box
-  ctx.lineTo(pos.x, pos.y);
+  ctx.moveTo(coords.x, coords.y); // top-middle of projected bounding box
+  ctx.lineTo(coords.x + dim.dx / 2, coords.y + dim.dy / 2); // right-middle of projected bounding box
+  ctx.lineTo(coords.x, coords.y + dim.dy); // bottom-middle of projected bounding box
+  ctx.lineTo(coords.x - dim.dx / 2, coords.y + dim.dy / 2); // left-middle of projected bounding box
+  ctx.lineTo(coords.x, coords.y);
   ctx.stroke();
   ctx.fill();
   ctx.restore();
@@ -958,4 +1150,71 @@ export const posToIsoCoords = (
     x: originCoords.x + (pos.x - pos.y) * Tile.TILE_HALF_WIDTH,
     y: originCoords.y + (pos.x + pos.y) * Tile.TILE_HALF_HEIGHT,
   };
+};
+
+const posToObjectsAdd = (
+  posToObjects: Map<PosStr, string[]>,
+  pos: PosStr,
+  mapObjectId: MapObjectId
+) => {
+  if (!posToObjects.has(pos)) {
+    posToObjects.set(pos, []);
+  }
+
+  posToObjects.get(pos)?.push(mapObjectId);
+};
+
+const posToObjectsUpdate = (
+  posToObjects: Map<PosStr, string[]>,
+  mapObjectId: MapObjectId,
+  oldPosStr: PosStr,
+  newPosStr: PosStr
+) => {
+  if (posToObjects.has(oldPosStr)) {
+    const mapObjectIds = posToObjects.get(oldPosStr);
+    if (mapObjectIds !== undefined) {
+      const idx = mapObjectIds.indexOf(mapObjectId);
+      if (idx >= 0) {
+        mapObjectIds.splice(idx, 1);
+        posToObjectsAdd(posToObjects, newPosStr, mapObjectId);
+      }
+    }
+  }
+};
+
+const pointInBounds = (point: Pos, objPos: Pos, objDim: Dimensions) => {
+  return (
+    point.x >= objPos.x - Math.floor(objDim.dx / 2) &&
+    point.x < objPos.x + Math.ceil(objDim.dx / 2) &&
+    point.y >= objPos.y - Math.floor(objDim.dy / 2) &&
+    point.y < objPos.y + Math.ceil(objDim.dy / 2)
+  );
+};
+
+const DEDUB_COLLISIONS = false;
+/**
+ *
+ * @param mousePos Tile map position of point to check colliding e.g. (3, 4)
+ * @param mapObjects
+ */
+const getCollidingObjects = (
+  pos: Pos,
+  mapObjects: Map<MapObjectId, MapObject>
+) => {
+  if (DEDUB_COLLISIONS) {
+    console.log(`Find colliding objects with pos ${pos.x}, ${pos.y}`);
+  }
+  const collidingObjects = Array.from(mapObjects.entries())
+    .filter(
+      ([posStr, mapObject]) =>
+        mapObject.objectId !== null &&
+        pointInBounds(pos, mapObject.pos, mapObject.dimensions)
+    )
+    .map(([posStr, mapObject]) => mapObject.objectId)
+    .filter((id): id is string => id !== null);
+
+  if (DEDUB_COLLISIONS) {
+    console.log("Colliding objects found:", collidingObjects);
+  }
+  return new Set(collidingObjects);
 };
