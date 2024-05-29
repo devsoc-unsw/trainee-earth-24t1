@@ -632,7 +632,6 @@ const WorldMap = ({}: MapProps) => {
         console.log(
           `Clicked tile ${clickedTileMapPos.x}, ${clickedTileMapPos.y}`
         );
-        console.log(`colodign`, mouseCollidingObjects);
 
         if (selectedEnviroObject.current !== null) {
           // Place down environment object wherever user clicked
