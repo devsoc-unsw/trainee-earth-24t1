@@ -73,7 +73,7 @@ export default function TodoWidget({
   }
 
   return (
-    <div className="relative left-1/2 top-1/2">
+    <div className="relative left-1/2 top-1/2 w-[49vw]">
       <div
         style={style}
         ref={setNodeRef}

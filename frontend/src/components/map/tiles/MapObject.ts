@@ -4,7 +4,7 @@ import {
   drawPoint,
   drawSquare,
   getTransformedPoint,
-} from "@frontend/src/components/map/WorldMap";
+} from "@frontend/src/WorldMap";
 import Tile, { Coords } from "./tile";
 import {
   Pos,

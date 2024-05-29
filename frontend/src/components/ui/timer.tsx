@@ -108,7 +108,7 @@ export default function TimerWidget({
   const percentage = 100 - (secondsLeft / totalSeconds) * 100;
 
   return (
-    <div className="relative left-1/2 top-1/2">
+    <div className="relative left-1/2 top-1/2 w-[49vw]">
       <div
         style={style}
         ref={setNodeRef}

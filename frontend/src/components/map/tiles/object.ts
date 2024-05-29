@@ -1,4 +1,8 @@
-import { DEBUG_MAP_VIS, drawPoint, getTransformedPoint } from "../WorldMap";
+import {
+  DEBUG_MAP_VIS,
+  drawPoint,
+  getTransformedPoint,
+} from "@frontend/src/WorldMap";
 import { Dimensions } from "@backend/types/simulationTypes";
 import Tile, { Coords } from "./tile";
 
@@ -70,17 +74,23 @@ class EnviroObject {
     // === If tile not visible, don't draw it ===
     const transformedPosNW = getTransformedPoint(
       this.ctx.getTransform().inverse(),
-      this.renderPosition.x + (CONFIRM_OUT_OF_BOUND ? 0 : Tile.TILE_WIDTH),
-      this.renderPosition.y +
-        offsetY +
-        (CONFIRM_OUT_OF_BOUND ? 0 : Tile.TILE_HEIGHT)
+      {
+        x: this.renderPosition.x + (CONFIRM_OUT_OF_BOUND ? 0 : Tile.TILE_WIDTH),
+        y:
+          this.renderPosition.y +
+          offsetY +
+          (CONFIRM_OUT_OF_BOUND ? 0 : Tile.TILE_HEIGHT),
+      }
     );
     const transformedPosSE = getTransformedPoint(
       this.ctx.getTransform().inverse(),
-      this.renderPosition.x + (CONFIRM_OUT_OF_BOUND ? Tile.TILE_WIDTH : 0),
-      this.renderPosition.y +
-        offsetY +
-        (CONFIRM_OUT_OF_BOUND ? Tile.TILE_HEIGHT : 0)
+      {
+        x: this.renderPosition.x + (CONFIRM_OUT_OF_BOUND ? Tile.TILE_WIDTH : 0),
+        y:
+          this.renderPosition.y +
+          offsetY +
+          (CONFIRM_OUT_OF_BOUND ? Tile.TILE_HEIGHT : 0),
+      }
     );
 
     if (

@@ -1,5 +1,5 @@
 import { useCallback, useRef, useEffect } from "react";
-import Tile, { Coords } from "./tiles/tile";
+import Tile, { Coords } from "./components/map/tiles/tile";
 import {
   assets1,
   simulationState1,
@@ -18,9 +18,10 @@ import {
 import { Asset, Assets } from "@backend/types/assetTypes";
 import { deserializeJSONToMap } from "@backend/utils/objectTyping";
 import grassTileImgPath from "@frontend/img/special-assets/grass-tile.png";
-import MapObject from "./tiles/MapObject";
+import MapObject from "./components/map/tiles/MapObject";
 import { Coordinates } from "@dnd-kit/core/dist/types";
 import WSBox from "@frontend/src/reactUseWebsocket";
+import Interface from "./Interface";
 
 const DEBUG1 = false;
 export const DEBUG_MAP_VIS = false;
@@ -914,8 +915,20 @@ const WorldMap = ({}: MapProps) => {
 
   return (
     <>
-      <WSBox />
-      <canvas ref={canvasRef} />
+      <Interface />
+      <div
+        style={{
+          width: "100vw",
+          height: "100vh",
+          overflow: "hidden",
+          position: "absolute",
+          left: 0,
+          top: 0,
+          zIndex: -1,
+        }}
+      >
+        <canvas ref={canvasRef} />
+      </div>
     </>
   );
 };
