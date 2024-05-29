@@ -20,10 +20,18 @@ const indicatorColors = [
   "bg-green-300",
   "bg-pink-300",
   "bg-red-300",
-  "bg-indigo-300"
-]
+  "bg-indigo-300",
+];
 
-export default function HabitCounter({ draggableId, x, y }: { draggableId: string; x: number; y: number }) {
+export default function HabitCounter({
+  draggableId,
+  x,
+  y,
+}: {
+  draggableId: string;
+  x: number;
+  y: number;
+}) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: draggableId,
   });
@@ -40,21 +48,21 @@ export default function HabitCounter({ draggableId, x, y }: { draggableId: strin
       };
 
   const [habits, setHabits] = useState<HabitType[]>(() => {
-    const savedHabits = localStorage.getItem('Habits');
+    const savedHabits = localStorage.getItem("Habits");
     return savedHabits ? JSON.parse(savedHabits) : [];
   });
 
   useEffect(() => {
-    localStorage.setItem('Habits', JSON.stringify(habits));
+    localStorage.setItem("Habits", JSON.stringify(habits));
   }, [habits]);
 
   const [colorNum, setColorNum] = useState(() => {
-    const savedColorNum = localStorage.getItem('ColorNum');
+    const savedColorNum = localStorage.getItem("ColorNum");
     return savedColorNum ? JSON.parse(savedColorNum) : 0;
   });
 
   useEffect(() => {
-    localStorage.setItem('ColorNum', JSON.stringify(colorNum));
+    localStorage.setItem("ColorNum", JSON.stringify(colorNum));
   }, [colorNum]);
 
   const handleAddHabit = (habitName: string, goal: number) => {
@@ -70,54 +78,74 @@ export default function HabitCounter({ draggableId, x, y }: { draggableId: strin
   };
 
   const handleIncrement = (id: string) => {
-    setHabits(habits.map(habit =>
-      habit.id === id ? { ...habit, currentGoal: habit.currentGoal + 1 } : habit
-    ));
+    setHabits(
+      habits.map((habit) =>
+        habit.id === id
+          ? { ...habit, currentGoal: habit.currentGoal + 1 }
+          : habit
+      )
+    );
   };
 
   const handleDecrement = (id: string) => {
-    setHabits(habits.map(habit =>
-      habit.id === id && habit.currentGoal > 0 ? { ...habit, currentGoal: habit.currentGoal - 1 } : habit
-    ));
+    setHabits(
+      habits.map((habit) =>
+        habit.id === id && habit.currentGoal > 0
+          ? { ...habit, currentGoal: habit.currentGoal - 1 }
+          : habit
+      )
+    );
   };
 
   const handleReset = (id: string) => {
-    setHabits(habits.map(habit =>
-      habit.id === id ? { ...habit, currentGoal: 0 } : habit
-    ));
+    setHabits(
+      habits.map((habit) =>
+        habit.id === id ? { ...habit, currentGoal: 0 } : habit
+      )
+    );
   };
 
   const handleRemove = (id: string) => {
-    setHabits(habits.filter(habit => habit.id !== id));
+    setHabits(habits.filter((habit) => habit.id !== id));
   };
 
   return (
-    <div style={style} ref={setNodeRef} className="relative bg-white rounded-2xl h-70 w-[340px] flex-col items-center justify-center content-center">
-      <div className='flex-col items-center justify-center'>
-        <button {...listeners} {...attributes} className='flex justify-center items-center text-2xl w-full opacity-60'>
-          <IconDots />
-        </button>
-      </div>
-      <div className="p-6">
-        {"Habit Counter"}
-        <Separator className="my-4 h-[1px] bg-border" />
-        <div className="pb-2">
-          <HabitForm onAdd={(name, goal) => handleAddHabit(name, goal)} />
+    <div className="absolute left-1/2 top-1/2">
+      <div
+        style={style}
+        ref={setNodeRef}
+        className="absolute bg-white rounded-2xl h-70 w-[340px] flex-col items-center justify-center content-center"
+      >
+        <div className="flex-col items-center justify-center">
+          <button
+            {...listeners}
+            {...attributes}
+            className="flex justify-center items-center text-2xl w-full opacity-60"
+          >
+            <IconDots />
+          </button>
         </div>
-        <div className="overflow-scroll max-h-60">
-          {habits.map(habit => (
-            <Habit
-              key={habit.id}
-              name={habit.goalName}
-              goal={habit.maxGoal}
-              current={habit.currentGoal}
-              indicatorColor={habit.indicatorColor}
-              onIncrement={() => handleIncrement(habit.id)}
-              onDecrement={() => handleDecrement(habit.id)}
-              onReset={() => handleReset(habit.id)}
-              onTrash={() => handleRemove(habit.id)}
-            />
-          ))}
+        <div className="p-6">
+          {"Habit Counter"}
+          <Separator className="my-4 h-[1px] bg-border" />
+          <div className="pb-2">
+            <HabitForm onAdd={(name, goal) => handleAddHabit(name, goal)} />
+          </div>
+          <div className="overflow-scroll max-h-60">
+            {habits.map((habit) => (
+              <Habit
+                key={habit.id}
+                name={habit.goalName}
+                goal={habit.maxGoal}
+                current={habit.currentGoal}
+                indicatorColor={habit.indicatorColor}
+                onIncrement={() => handleIncrement(habit.id)}
+                onDecrement={() => handleDecrement(habit.id)}
+                onReset={() => handleReset(habit.id)}
+                onTrash={() => handleRemove(habit.id)}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>

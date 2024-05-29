@@ -1,7 +1,7 @@
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
-import { Minus, Plus } from "lucide-react"
-import { Button } from './button';
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
+import { Minus, Plus } from "lucide-react";
+import { Button } from "./button";
 import {
   Drawer,
   DrawerClose,
@@ -11,12 +11,20 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
-import { useState, useEffect } from 'react';
-import { useDraggable } from '@dnd-kit/core';
-import { IconDots } from '@tabler/icons-react';
+} from "./drawer";
+import { useState, useEffect } from "react";
+import { useDraggable } from "@dnd-kit/core";
+import { IconDots } from "@tabler/icons-react";
 
-export default function TimerWidget({draggableId, x, y}: {draggableId: string, x: number, y: number}) {
+export default function TimerWidget({
+  draggableId,
+  x,
+  y,
+}: {
+  draggableId: string;
+  x: number;
+  y: number;
+}) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: draggableId,
   });
@@ -30,41 +38,43 @@ export default function TimerWidget({draggableId, x, y}: {draggableId: string, x
     : {
         left: `${x}px`,
         top: `${y}px`,
-    };
+      };
 
   const [focusMinutes, setFocusMinutes] = useState(45);
   function changeFocusMinutes(adjustment: number) {
     setFocusMinutes(focusMinutes + adjustment);
-    setMode('focus');
+    setMode("focus");
     setSecondsLeft((focusMinutes + adjustment) * 60);
   }
 
   const [breakMinutes, setBreakMinutes] = useState(15);
   function changeBreakMinutes(adjustment: number) {
     setBreakMinutes(breakMinutes + adjustment);
-    setMode('focus');
-    setSecondsLeft((focusMinutes) * 60);
+    setMode("focus");
+    setSecondsLeft(focusMinutes * 60);
   }
 
   const [isPaused, setIsPaused] = useState(true);
   // Modes: focus, break, null
-  const [mode, setMode] = useState('break');
+  const [mode, setMode] = useState("break");
   const [secondsLeft, setSecondsLeft] = useState(0);
 
   function switchMode() {
-    const nextMode = mode === 'focus' ? 'break' : 'focus'
+    const nextMode = mode === "focus" ? "break" : "focus";
     setMode(nextMode);
 
-    setSecondsLeft(nextMode === 'focus' ? focusMinutes * 60 : breakMinutes * 60);
+    setSecondsLeft(
+      nextMode === "focus" ? focusMinutes * 60 : breakMinutes * 60
+    );
   }
 
   useEffect(() => {
     function tick() {
       if (!isPaused) {
-        setSecondsLeft(prevSeconds => {
+        setSecondsLeft((prevSeconds) => {
           if (prevSeconds === 0) {
             switchMode();
-            return mode === 'focus' ? focusMinutes * 60 : breakMinutes * 60;
+            return mode === "focus" ? focusMinutes * 60 : breakMinutes * 60;
           }
           return prevSeconds - 1;
         });
@@ -80,28 +90,36 @@ export default function TimerWidget({draggableId, x, y}: {draggableId: string, x
     const hours = Math.floor(seconds / 3600);
     const remainingMinutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-    const formattedHours = hours < 10 ? '0' + hours : hours;
-    const formattedMinutes = remainingMinutes < 10 ? '0' + remainingMinutes : remainingMinutes;
-    const formattedSeconds = remainingSeconds < 10 ? '0' + remainingSeconds : remainingSeconds;
+    const formattedHours = hours < 10 ? "0" + hours : hours;
+    const formattedMinutes =
+      remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes;
+    const formattedSeconds =
+      remainingSeconds < 10 ? "0" + remainingSeconds : remainingSeconds;
     return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
   }
 
   function formatMinutes(minutes: number) {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    return `${hours}:${mins < 10 ? '0' : ''}${mins}`;
+    return `${hours}:${mins < 10 ? "0" : ""}${mins}`;
   }
 
-  const totalSeconds = mode === 'focus'
-    ? focusMinutes * 60
-    : breakMinutes * 60;
-  const percentage = 100 - secondsLeft / totalSeconds * 100;
+  const totalSeconds = mode === "focus" ? focusMinutes * 60 : breakMinutes * 60;
+  const percentage = 100 - (secondsLeft / totalSeconds) * 100;
 
   return (
-    <section >
-      <div style={ style } ref={setNodeRef} className={`relative bg-white rounded-2xl h-70 w-60 flex-col items-center justify-center content-center`}>
-        <div className='flex-col items-center justify-center'>
-          <button {...listeners} {...attributes} className='flex justify-center items-center text-2xl w-full opacity-60'>
+    <div className="absolute left-1/2 top-1/2">
+      <div
+        style={style}
+        ref={setNodeRef}
+        className={`absolute bg-white rounded-2xl h-70 w-60 flex-col items-center justify-center content-center`}
+      >
+        <div className="flex-col items-center justify-center">
+          <button
+            {...listeners}
+            {...attributes}
+            className="flex justify-center items-center text-2xl w-full opacity-60"
+          >
             <IconDots />
           </button>
         </div>
@@ -113,20 +131,40 @@ export default function TimerWidget({draggableId, x, y}: {draggableId: string, x
             // + '\nmode:' + mode
           }
           <div className="p-2">
-            <CircularProgressbar value={percentage} text={formatSeconds(secondsLeft)} styles={buildStyles({
-              textColor: 'black',
-              pathColor: mode === 'focus' ? '#34D399' : '#3B82F6',
-              pathTransitionDuration: 0.1,
-              textSize: '18px'
-            })} />
+            <CircularProgressbar
+              value={percentage}
+              text={formatSeconds(secondsLeft)}
+              styles={buildStyles({
+                textColor: "black",
+                pathColor: mode === "focus" ? "#34D399" : "#3B82F6",
+                pathTransitionDuration: 0.1,
+                textSize: "18px",
+              })}
+            />
           </div>
           <div className="pt-2 flex justify-around">
             <div>
-              {
-                isPaused
-                ? <Button variant="secondary" className='bg-green-400 w-20' onClick={() => { setIsPaused(false) }}>Start</Button>
-                : <Button variant="secondary" className='bg-red-400 w-20' onClick={() => { setIsPaused(true) }}>Pause</Button>
-              }
+              {isPaused ? (
+                <Button
+                  variant="secondary"
+                  className="bg-green-400 w-20"
+                  onClick={() => {
+                    setIsPaused(false);
+                  }}
+                >
+                  Start
+                </Button>
+              ) : (
+                <Button
+                  variant="secondary"
+                  className="bg-red-400 w-20"
+                  onClick={() => {
+                    setIsPaused(true);
+                  }}
+                >
+                  Pause
+                </Button>
+              )}
             </div>
             <Drawer>
               <DrawerTrigger asChild>
@@ -136,7 +174,9 @@ export default function TimerWidget({draggableId, x, y}: {draggableId: string, x
                 <div className="mx-auto w-full max-w-sm">
                   <DrawerHeader>
                     <DrawerTitle>Focus Goal</DrawerTitle>
-                    <DrawerDescription>Set your focus goal and lock in.</DrawerDescription>
+                    <DrawerDescription>
+                      Set your focus goal and lock in.
+                    </DrawerDescription>
                   </DrawerHeader>
                   <div className="p-4 pb-0 pt-0">
                     <div className="pb-2 flex items-center justify-center space-x-2">
@@ -201,8 +241,7 @@ export default function TimerWidget({draggableId, x, y}: {draggableId: string, x
                     </div>
                   </div>
                   <DrawerFooter>
-                    <DrawerClose asChild>
-                    </DrawerClose>
+                    <DrawerClose asChild></DrawerClose>
                   </DrawerFooter>
                 </div>
               </DrawerContent>
@@ -210,6 +249,6 @@ export default function TimerWidget({draggableId, x, y}: {draggableId: string, x
           </div>
         </div>
       </div>
-    </section>
-  )
+    </div>
+  );
 }

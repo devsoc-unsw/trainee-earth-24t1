@@ -6,7 +6,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@frontend": path.resolve(__dirname, "./"),
+      "@backend/types": path.resolve(__dirname, "../backend/types"),
+      "@backend/utils": path.resolve(__dirname, "../backend/utils"),
+      "@backend/sample-data": path.resolve(__dirname, "../backend/sample-data"),
     },
   },
 });

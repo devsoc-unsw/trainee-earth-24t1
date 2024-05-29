@@ -1,4 +1,4 @@
-import { AssetJSON, AssetsJSON } from "asset-gen/generate-asset.ts";
+import { AssetsJSON } from "@backend/types/assetTypes.ts";
 import {
   AttributeJSON,
   CosmeticObjectJSON,
@@ -8,11 +8,11 @@ import {
   SimulationStateJSON,
   VillagerJSON,
   WorldMapJSON,
-} from "src/types/simulationTypes.ts";
+} from "@backend/types/simulationTypes.ts";
 
 const worldMap: WorldMapJSON = {
-  cells: [
-    {
+  cells: {
+    "0,0": {
       coordinates: {
         x: 0,
         y: 0,
@@ -20,7 +20,7 @@ const worldMap: WorldMapJSON = {
       owner: "villager_1",
       object: "house_object_1",
     },
-    {
+    "1,0": {
       coordinates: {
         x: 1,
         y: 0,
@@ -30,7 +30,7 @@ const worldMap: WorldMapJSON = {
     },
     // TODO: Fill in rest of the map, including cells occupied by the other
     // EnviroObject
-  ],
+  },
 };
 
 const villager1: VillagerJSON = {
@@ -78,6 +78,11 @@ const villager1: VillagerJSON = {
     resource_2: 0.8,
   },
   houseObject: "house_object_1",
+  asset: "villager_1_asset",
+  position: {
+    x: 0,
+    y: 5,
+  },
 };
 
 const attribute1: AttributeJSON = {
@@ -174,8 +179,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      width: 40,
-      height: 40,
+      dx: 40,
+      dy: 40,
     },
   },
   production_object_1_asset: {
@@ -195,8 +200,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      width: 36,
-      height: 36,
+      dx: 36,
+      dy: 36,
     },
   },
   cosmetic_object_1_asset: {
@@ -216,8 +221,25 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      width: 10,
-      height: 10,
+      dx: 10,
+      dy: 10,
+    },
+  },
+  villager_1_asset: {
+    _id: "villager_1_asset",
+    name: "Villager 1 asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "..........",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/VILLAGER-2024-05-25T20:40/elowen-removebg-preview.png",
+      },
+    ],
+    dimensions: {
+      dx: 1,
+      dy: 1,
     },
   },
 };

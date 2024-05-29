@@ -1,6 +1,6 @@
-import { Assets } from "asset-gen/generate-asset.ts";
-import { UpdateFn } from "src/gameloopFramework.js";
-import { SimulationState, Villager } from "src/types/simulationTypes.ts";
+import { UpdateFn } from "@backend/src/gameloopFramework.js";
+import { Assets } from "@backend/types/assetTypes.ts";
+import { SimulationState } from "@backend/types/simulationTypes.ts";
 
 export class SimulationServer {
   private state: SimulationState;
