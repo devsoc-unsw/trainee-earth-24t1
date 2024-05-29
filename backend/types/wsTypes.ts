@@ -1,4 +1,5 @@
 import { CustomError } from "@backend/utils/customError.ts";
+import { WebSocket } from "ws";
 
 /**
  * Maps clientIds (created by server) to WebSocket objects which represent a
@@ -23,6 +24,11 @@ export interface PlayerVisitWSReq extends WebSocketRequest {
   type: ClientRequestType.PLAYER_VISIT;
   playerId: string | null;
 }
+
+/**
+ * Types of messages that the client will send to the server.
+ */
+export type MessageTypes = PingWSReq | PlayerVisitWSReq;
 
 export function isWebSocketRequest(obj: Object): obj is WebSocketRequest {
   return (obj as WebSocketRequest).type !== undefined;

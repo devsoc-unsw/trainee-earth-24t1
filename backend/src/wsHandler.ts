@@ -10,6 +10,7 @@ import {
   assertWSReqType,
   PingWSReq,
   PlayerVisitWSReq,
+  WSClients,
 } from "@backend/types/wsTypes.ts";
 
 /**
@@ -29,6 +30,8 @@ export const handleWSRequest = (request: WebSocketRequest, ws: WebSocket) => {
   if (!isWebSocketRequest(request)) {
     throw new InvalidWSRequestTypeError();
   }
+
+  console.log(`Handle ws message: ${JSON.stringify(request)}`);
 
   /**
    * Follow different strategies depending on what
@@ -52,4 +55,9 @@ export const handleWSRequest = (request: WebSocketRequest, ws: WebSocket) => {
     default:
       throw new InvalidWSRequestSubTypeError();
   }
+};
+
+export const handleDisconnect = (userId: string, clients: WSClients) => {
+  console.log(`${userId} disconnected.`);
+  delete clients[userId];
 };

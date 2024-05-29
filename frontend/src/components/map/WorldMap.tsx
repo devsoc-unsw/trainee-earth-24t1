@@ -1,4 +1,3 @@
-import useWebSocket from "react-use-websocket";
 import { useCallback, useRef, useEffect } from "react";
 import Tile, { Coords } from "./tiles/tile";
 import {
@@ -21,6 +20,7 @@ import { deserializeJSONToMap } from "@backend/utils/objectTyping";
 import grassTileImgPath from "@frontend/img/special-assets/grass-tile.png";
 import MapObject from "./tiles/MapObject";
 import { Coordinates } from "@dnd-kit/core/dist/types";
+import WSBox from "@frontend/src/reactUseWebSocket";
 
 const DEBUG1 = false;
 export const DEBUG_MAP_VIS = false;
@@ -82,15 +82,7 @@ const MIN_VEL = 0.005; // distance units per second
 const ACCEL = 0.016;
 const VEL_DAMPER = 0.94; // 0.9 means 90% of velocity is kept each frame
 
-const WS_URL = "ws://127.0.0.1:3000";
-
 const WorldMap = ({}: MapProps) => {
-  useWebSocket(WS_URL, {
-    onOpen: () => {
-      console.log("WebSocket connection established.");
-    },
-  });
-
   const frameCount = useRef(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -213,9 +205,6 @@ const WorldMap = ({}: MapProps) => {
             assetsRef.current?.get(enviroObject.asset);
           const finalRemoteImageUrl = asset && asset.remoteImages.at(-1)?.url;
           if (finalRemoteImageUrl) {
-            console.log(
-              `Creating new MapObject for EnviroObject ${enviroObject} at ${posStr}. Image: ${finalRemoteImageUrl}`
-            );
             const environObject: MapObject = new MapObject(
               finalRemoteImageUrl,
               pos,
@@ -235,7 +224,6 @@ const WorldMap = ({}: MapProps) => {
           if (asset !== undefined) {
             const finalRemoteImage = asset.remoteImages.at(-1);
             if (finalRemoteImage !== undefined) {
-              console.log(`Loading villager image ${villagerId}`);
               const environObject: MapObject = new MapObject(
                 finalRemoteImage.url,
                 villager.position,
@@ -875,8 +863,10 @@ const WorldMap = ({}: MapProps) => {
   }, []);
 
   useEffect(() => {
-    document.addEventListener("keydown", (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === "ArrowLeft") {
+        console.log(`left down`);
+
         keyRef.current.right = false;
         keyRef.current.left = true;
         e.preventDefault();
@@ -893,9 +883,11 @@ const WorldMap = ({}: MapProps) => {
         keyRef.current.down = true;
         e.preventDefault();
       }
-    });
-    document.addEventListener("keyup", (e) => {
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
       if (e.code === "ArrowLeft") {
+        console.log(`left up`);
+
         keyRef.current.left = false;
         e.preventDefault();
       } else if (e.code === "ArrowUp") {
@@ -908,11 +900,23 @@ const WorldMap = ({}: MapProps) => {
         keyRef.current.down = false;
         e.preventDefault();
       }
-    });
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
+    };
     console.log(`Attached keydown and keyup event listeners to document`);
   }, []);
 
-  return <canvas ref={canvasRef} />;
+  return (
+    <>
+      <WSBox />
+      <canvas ref={canvasRef} />
+    </>
+  );
 };
 
 export default WorldMap;
