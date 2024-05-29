@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
+import App from "@frontend/src/App.tsx";
 import { ClerkProvider } from "@clerk/clerk-react";
-import "@/globals.css";
+import "@frontend/src/globals.css";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 

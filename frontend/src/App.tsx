@@ -1,38 +1,167 @@
-import "./App.css";
-import Navbar from "./Navbar";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./components/ui/card";
+import "@frontend/src/App.css";
+import Navbar from "@frontend/src/Navbar";
+import TimerWidget from "@frontend/src/components/ui/timer";
+import TodoWidget from "@frontend/src/components/ui/todo";
+import GithubWidget from "@frontend/src/components/ui/github";
+import CalendarWidget from "@frontend/src/components/ui/calendarWidget";
+import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import { useEffect, useState } from "react";
+import WorldMap from "@frontend/src/components/map/WorldMap";
+import HabitCounter from "./components/ui/habitCounter";
+
+/**
+ * Default widget positions calculated relative to middle
+ * of window ie (window.innerWidth / 2, window.innerHeight / 2)
+ */
+const defaultWidgetsData: widgetDataType = [
+  {
+    id: "timer",
+    type: "timer",
+    position: {
+      x: -window.innerWidth / 2 + 180,
+      y: +window.innerHeight / 2 - 380,
+    },
+  },
+  {
+    id: "github",
+    type: "github",
+    position: {
+      x: -180,
+      y: +window.innerHeight / 2 - 270,
+    },
+  },
+  {
+    id: "todo-list",
+    type: "todo-list",
+    position: {
+      x: +window.innerWidth / 2 - 350,
+      y: -window.innerHeight / 2 + 200,
+    },
+  },
+  {
+    id: "calendar",
+    type: "calendar",
+    position: {
+      x: +window.innerWidth / 2 - 380,
+      y: +window.innerHeight / 2 - 420,
+    },
+  },
+  {
+    id: "habitCounter",
+    type: "habitCounter",
+    position: {
+      x: -window.innerWidth / 2 + 180,
+      y: -window.innerHeight / 2 + 200,
+    },
+  },
+];
+
+type widgetDataType = {
+  id: string;
+  type: widgetType;
+  position: { x: number; y: number };
+}[];
+
+type widgetType =
+  | "timer"
+  | "calendar"
+  | "todo-list"
+  | "github"
+  | "habitCounter";
 
 export default function App() {
+  const [widgets, setWidgets] = useState<widgetDataType>(() => {
+    const savedWidgetsData = localStorage.getItem("widgetsData");
+    return savedWidgetsData ? JSON.parse(savedWidgetsData) : defaultWidgetsData;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("widgetsData", JSON.stringify(widgets));
+  }, [widgets]);
+
+  function handleDragEnd(ev: DragEndEvent): void {
+    const widget = widgets.find((x) => x.id === ev.active.id);
+    if (!widget) {
+      return;
+    }
+    widget.position.x += ev.delta.x;
+    widget.position.y += ev.delta.y;
+    const _widgets = widgets.map((x) => {
+      if (x.id === widget.id) return widget;
+      return x;
+    });
+    setWidgets(_widgets);
+  }
+
   return (
-    <body>
+    <>
       <header className="header">
         <Navbar />
       </header>
-      <div className="content mx-auto w-full max-w-screen-xl">
-        <Button variant="outline">Button</Button>
-        <br />
-        <br />
-        <Card>
-          <CardHeader>
-            <CardTitle>Card Title</CardTitle>
-            <CardDescription>Card Description</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p>Card Content</p>
-          </CardContent>
-          <CardFooter>
-            <p>Card Footer</p>
-          </CardFooter>
-        </Card>{" "}
+      <DndContext onDragEnd={handleDragEnd}>
+        {widgets.map((widget) => {
+          switch (widget.type) {
+            case "timer":
+              return (
+                <TimerWidget
+                  key={widget.id}
+                  x={widget.position.x}
+                  y={widget.position.y}
+                  draggableId={widget.id}
+                />
+              );
+            case "todo-list":
+              return (
+                <TodoWidget
+                  key={widget.id}
+                  x={widget.position.x}
+                  y={widget.position.y}
+                  draggableId={widget.id}
+                />
+              );
+            case "github":
+              return (
+                <GithubWidget
+                  key={widget.id}
+                  x={widget.position.x}
+                  y={widget.position.y}
+                  draggableId={widget.id}
+                />
+              );
+            case "calendar":
+              return (
+                <CalendarWidget
+                  key={widget.id}
+                  x={widget.position.x}
+                  y={widget.position.y}
+                  draggableId={widget.id}
+                />
+              );
+            case "habitCounter":
+              return (
+                <HabitCounter
+                  key={widget.id}
+                  x={widget.position.x}
+                  y={widget.position.y}
+                  draggableId={widget.id}
+                />
+              );
+          }
+        })}
+      </DndContext>
+      <div
+        style={{
+          width: "100vw",
+          height: "100vh",
+          overflow: "hidden",
+          position: "absolute",
+          left: 0,
+          top: 0,
+          zIndex: -1,
+        }}
+      >
+        <WorldMap />
       </div>
-    </body>
+    </>
   );
 }
