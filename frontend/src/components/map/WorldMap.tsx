@@ -3,7 +3,7 @@ import Tile, { Coords } from "./tiles/tile";
 import {
   assets1,
   simulationState1,
-} from "@backend/sample-data/simulation_state/map_vis_state_1";
+} from "@backend/sample-data/simulation_state/simulation_state_1";
 import {
   parsePosStr,
   serializePosStr,
@@ -20,7 +20,7 @@ import { deserializeJSONToMap } from "@backend/utils/objectTyping";
 import grassTileImgPath from "@frontend/img/special-assets/grass-tile.png";
 import MapObject from "./tiles/MapObject";
 import { Coordinates } from "@dnd-kit/core/dist/types";
-import WSBox from "@frontend/src/reactUseWebSocket";
+import WSBox from "@frontend/src/reactUseWebsocket";
 
 const DEBUG1 = false;
 export const DEBUG_MAP_VIS = false;
@@ -219,14 +219,14 @@ const WorldMap = ({}: MapProps) => {
       }
 
       for (let [villagerId, villager] of simulationState.villagers) {
-        if (villager.position && villager.asset) {
+        if (villager.pos && villager.asset) {
           const asset = assetsRef.current?.get(villager.asset);
           if (asset !== undefined) {
             const finalRemoteImage = asset.remoteImages.at(-1);
             if (finalRemoteImage !== undefined) {
               const environObject: MapObject = new MapObject(
                 finalRemoteImage.url,
-                villager.position,
+                villager.pos,
                 0,
                 asset.dimensions,
                 villagerId
@@ -234,7 +234,7 @@ const WorldMap = ({}: MapProps) => {
               mapObjects.current.set(villagerId, environObject);
               posToObjectsAdd(
                 posToObjects.current,
-                serializePosStr(villager.position),
+                serializePosStr(villager.pos),
                 villagerId
               );
             }
@@ -407,7 +407,7 @@ const WorldMap = ({}: MapProps) => {
       : { dx: window.innerWidth, dy: window.innerHeight };
 
     // Can/Should change the color once UI design is determined
-    ctx.fillStyle = "#151d26";
+    ctx.fillStyle = "#A7C7E7";
 
     // If render background using canvas width and height, must
     // reset canvase transformation matrix to normal before rendering.
@@ -632,6 +632,7 @@ const WorldMap = ({}: MapProps) => {
         console.log(
           `Clicked tile ${clickedTileMapPos.x}, ${clickedTileMapPos.y}`
         );
+
         if (selectedEnviroObject.current !== null) {
           // Place down environment object wherever user clicked
           // TODO: Need to validate the place down position

@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use simulation_state_1.ts instead
+ */
+
 import { AssetsJSON } from "@backend/types/assetTypes.ts";
 import {
   CosmeticObjectJSON,
@@ -10,7 +14,7 @@ import {
 } from "@backend/types/simulationTypes.ts";
 import { cells } from "./map_vis_cells_1.ts";
 
-export const worldMap: WorldMapJSON = {
+const worldMap: WorldMapJSON = {
   cells: {
     ...cells,
     "0,0": {
@@ -151,7 +155,7 @@ const villager1: VillagerJSON = {
   },
   houseObject: "house_1",
   asset: "villager_1_asset",
-  position: { x: 1, y: 5 }, // in front of house_1
+  pos: { x: 1, y: 5 }, // in front of house_1
 };
 
 const villager2: VillagerJSON = {
@@ -202,7 +206,7 @@ const villager2: VillagerJSON = {
   },
   houseObject: "house_2",
   asset: "villager_2_asset",
-  position: { x: 18, y: 8 },
+  pos: { x: 18, y: 8 },
 };
 
 const villager3: VillagerJSON = {
@@ -253,7 +257,7 @@ const villager3: VillagerJSON = {
   },
   houseObject: "house_3",
   asset: "villager_3_asset",
-  position: { x: -15, y: 4 },
+  pos: { x: -15, y: 4 },
 };
 
 const villager4: VillagerJSON = {
@@ -304,7 +308,7 @@ const villager4: VillagerJSON = {
   },
   houseObject: "house_4",
   asset: "villager_4_asset",
-  position: { x: 1, y: -11 },
+  pos: { x: 1, y: -11 },
 };
 
 const villager5: VillagerJSON = {
@@ -355,7 +359,7 @@ const villager5: VillagerJSON = {
   },
   houseObject: "house_5",
   asset: "villager_5_asset",
-  position: { x: 5, y: 1 },
+  pos: { x: 5, y: 1 },
 };
 
 const villager6: VillagerJSON = {
@@ -406,7 +410,7 @@ const villager6: VillagerJSON = {
   },
   houseObject: "house_6",
   asset: "villager_6_asset",
-  position: { x: -8, y: 1 },
+  pos: { x: -8, y: 1 },
 };
 
 const attribute1 = {
@@ -696,7 +700,7 @@ const resource17: ResourceJSON = {
   type: "edible",
 };
 
-export const simulationState1: SimulationStateJSON = {
+const simulationState1: SimulationStateJSON = {
   _id: "simulation_server_state",
   worldMap: worldMap,
   villagers: {
@@ -755,7 +759,7 @@ export const simulationState1: SimulationStateJSON = {
   },
 };
 
-export const assets1: AssetsJSON = {
+const assets1: AssetsJSON = {
   house_1_asset: {
     _id: "house_1_asset",
     name: "Villager 1 House asset",

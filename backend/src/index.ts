@@ -276,9 +276,9 @@ wss.on("connection", (connection: WebSocket) => {
   });
 });
 
-const simulationServer = new SimulationServer(
-  SimulationState.deserialize(simulationState1),
-  deserializeJSONToMap(assets1, Asset.deserialize)
-);
+const simulationState = SimulationState.deserialize(simulationState1);
+const assets = deserializeJSONToMap(assets1, Asset.deserialize);
+const simulationServer = new SimulationServer(simulationState, assets);
+simulationServer.simulationInit();
 const myGameLoop = new GameLoop(simulationServer.simulationStep);
-// myGameLoop.startGameLoop();
+myGameLoop.startGameLoop();
