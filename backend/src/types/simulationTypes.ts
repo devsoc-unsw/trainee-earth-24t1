@@ -84,6 +84,7 @@ export class SimulationState {
 }
 
 export interface BuyInfo {
+  villagerId: VillagerId;
   resourceId: ResourceId;
   buyingPrice: number;
   buyingState: buyPref;
@@ -91,13 +92,22 @@ export interface BuyInfo {
 }
 
 export interface SellInfo {
+  villagerId: VillagerId;
   resourceId: ResourceId;
   sellingPrice: number;
   sellingQuantity: number;
   sold: boolean;
 }
 
-type TransactionsType = Array<SellInfo>;
+export interface TradeInfo {
+  resourceId: ResourceId;
+  salePrice: number;
+  saleQuantity: number;
+  villagerSell: VillagerId;
+  villagerBuy: VillagerId;
+}
+
+export type TransactionsType = Array<TradeInfo>;
 
 export type Coordinates = {
   x: number;
@@ -451,6 +461,9 @@ export class Villager implements Serializable<VillagerJSON> {
  */
 const RESOURCES_ARRAY = [
   "wheat",
+  "corn",
+  "apples",
+  "pork",
   "sugar",
   "wood",
   "steel",

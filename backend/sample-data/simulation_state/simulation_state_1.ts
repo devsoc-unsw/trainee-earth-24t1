@@ -40,50 +40,11 @@ const villager1: VillagerJSON = {
   friends: ["villager_2"],
   enemies: [],
   interactingWith: null,
-  energy: 30,
+  energy: 100,
   coins: 90,
-  resources: {
-    resource_1: {
-      total: 30,
-      isSelling: 10,
-      sellPrice: 12,
-      buyPrice: 9,
-      buyState: 0,
-      origin: resourceOrigin.bought,
-    },
-    resource_2: {
-      total: 20,
-      isSelling: 5,
-      sellPrice: 8,
-      buyPrice: 9,
-      buyState: 0,
-      origin: resourceOrigin.produced,
-    },
-  },
+  resources: {},
   cosmeticEnvironmentObjects: ["cosmetic_object_1"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
-  characterAttributes: {
-    Strength: {
-      _id: "attribute_value_1",
-      base: 10,
-      boosts: [],
-    },
-    Speed: {
-      _id: "attribute_value_2",
-      base: 5,
-      boosts: [
-        {
-          value: 2,
-          duration: 3600,
-          expiration: Date.now() + 3600,
-        },
-        {
-          value: 3,
-          duration: 7200,
-          expiration: Date.now() + 7200,
-        },
-      ],
-    },
-  },
+  characterAttributes: {},
   resourceProductionEnergyCostMultipliers: {
     resource_1: 1.3,
     resource_2: 0.9,
@@ -102,50 +63,149 @@ const villager2: VillagerJSON = {
   friends: ["villager_1"],
   enemies: [],
   interactingWith: null,
-  energy: 30,
+  energy: 100,
   coins: 90,
-  resources: {
-    resource_1: {
-      total: 30,
-      isSelling: 10,
-      sellPrice: 12,
-      buyPrice: 9,
-      buyState: 0,
-      origin: resourceOrigin.bought,
-    },
-    resource_2: {
-      total: 20,
-      isSelling: 5,
-      sellPrice: 8,
-      buyPrice: 9,
-      buyState: 0,
-      origin: resourceOrigin.produced,
-    },
-  },
+  resources: {},
   cosmeticEnvironmentObjects: ["cosmetic_object_1"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
-  characterAttributes: {
-    Strength: {
-      _id: "attribute_value_1",
-      base: 10,
-      boosts: [],
-    },
-    Speed: {
-      _id: "attribute_value_2",
-      base: 5,
-      boosts: [
-        {
-          value: 2,
-          duration: 3600,
-          expiration: Date.now() + 3600,
-        },
-        {
-          value: 3,
-          duration: 7200,
-          expiration: Date.now() + 7200,
-        },
-      ],
-    },
+  characterAttributes: {},
+  resourceProductionEnergyCostMultipliers: {
+    resource_1: 1.3,
+    resource_2: 0.9,
   },
+  resourceConsumptionEnergyGainMultipliers: {
+    resource_1: 1.5,
+    resource_2: 0.8,
+  },
+  houseObject: "house_object_1",
+  assignment: null,
+};
+
+const villager3: VillagerJSON = {
+  _id: "villager_3",
+  type: "miner",
+  friends: ["villager_1"],
+  enemies: [],
+  interactingWith: null,
+  energy: 100,
+  coins: 90,
+  resources: {},
+  cosmeticEnvironmentObjects: ["cosmetic_object_1"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
+  characterAttributes: {},
+  resourceProductionEnergyCostMultipliers: {
+    resource_1: 1.3,
+    resource_2: 0.9,
+  },
+  resourceConsumptionEnergyGainMultipliers: {
+    resource_1: 1.5,
+    resource_2: 0.8,
+  },
+  houseObject: "house_object_1",
+  assignment: null,
+};
+
+const villager4: VillagerJSON = {
+  _id: "villager_4",
+  type: "miner",
+  friends: ["villager_1"],
+  enemies: [],
+  interactingWith: null,
+  energy: 100,
+  coins: 90,
+  resources: {},
+  cosmeticEnvironmentObjects: ["cosmetic_object_1"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
+  characterAttributes: {},
+  resourceProductionEnergyCostMultipliers: {
+    resource_1: 1.3,
+    resource_2: 0.9,
+  },
+  resourceConsumptionEnergyGainMultipliers: {
+    resource_1: 1.5,
+    resource_2: 0.8,
+  },
+  houseObject: "house_object_1",
+  assignment: null,
+};
+
+const villager5: VillagerJSON = {
+  _id: "villager_5",
+  type: "miner",
+  friends: ["villager_1"],
+  enemies: [],
+  interactingWith: null,
+  energy: 100,
+  coins: 90,
+  resources: {},
+  cosmeticEnvironmentObjects: ["cosmetic_object_1"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
+  characterAttributes: {},
+  resourceProductionEnergyCostMultipliers: {
+    resource_1: 1.3,
+    resource_2: 0.9,
+  },
+  resourceConsumptionEnergyGainMultipliers: {
+    resource_1: 1.5,
+    resource_2: 0.8,
+  },
+  houseObject: "house_object_1",
+  assignment: null,
+};
+
+const villager6: VillagerJSON = {
+  _id: "villager_6",
+  type: "miner",
+  friends: ["villager_1"],
+  enemies: [],
+  interactingWith: null,
+  energy: 100,
+  coins: 90,
+  resources: {},
+  cosmeticEnvironmentObjects: ["cosmetic_object_1"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
+  characterAttributes: {},
+  resourceProductionEnergyCostMultipliers: {
+    resource_1: 1.3,
+    resource_2: 0.9,
+  },
+  resourceConsumptionEnergyGainMultipliers: {
+    resource_1: 1.5,
+    resource_2: 0.8,
+  },
+  houseObject: "house_object_1",
+  assignment: null,
+};
+
+const villager7: VillagerJSON = {
+  _id: "villager_7",
+  type: "miner",
+  friends: ["villager_1"],
+  enemies: [],
+  interactingWith: null,
+  energy: 100,
+  coins: 90,
+  resources: {},
+  cosmeticEnvironmentObjects: ["cosmetic_object_1"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
+  characterAttributes: {},
+  resourceProductionEnergyCostMultipliers: {
+    resource_1: 1.3,
+    resource_2: 0.9,
+  },
+  resourceConsumptionEnergyGainMultipliers: {
+    resource_1: 1.5,
+    resource_2: 0.8,
+  },
+  houseObject: "house_object_1",
+  assignment: null,
+};
+
+const villager8: VillagerJSON = {
+  _id: "villager_8",
+  type: "miner",
+  friends: ["villager_1"],
+  enemies: [],
+  interactingWith: null,
+  energy: 100,
+  coins: 90,
+  resources: {},
+  cosmeticEnvironmentObjects: ["cosmetic_object_1"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
+  characterAttributes: {},
   resourceProductionEnergyCostMultipliers: {
     resource_1: 1.3,
     resource_2: 0.9,
@@ -166,6 +226,41 @@ const attribute1: AttributeJSON = {
 const attribute2: AttributeJSON = {
   _id: "Speed",
   name: "Speed",
+};
+
+const attribute3: AttributeJSON = {
+  _id: "Stamina",
+  name: "Stamina",
+};
+
+const attribute4: AttributeJSON = {
+  _id: "Intelligence",
+  name: "Intelligence",
+};
+
+const attribute5: AttributeJSON = {
+  _id: "Charisma",
+  name: "Charisma",
+};
+
+const attribute6: AttributeJSON = {
+  _id: "Dexterity",
+  name: "Dexterity",
+};
+
+const attribute7: AttributeJSON = {
+  _id: "Perception",
+  name: "Perception",
+};
+
+const attribute8: AttributeJSON = {
+  _id: "Negotation",
+  name: "Negotation",
+};
+
+const attribute9: AttributeJSON = {
+  _id: "Luck",
+  name: "Luck",
 };
 
 const houseObject1: HouseObjectJSON = {
@@ -202,17 +297,87 @@ const resource1: ResourceJSON = {
   productionEnergyCostBasic: 10,
   consumptionEnergyGainBasic: 10,
   type: "edible",
-  attirbuteAffinity: ["Strength"],
+  attirbuteAffinity: ["Speed", "Dexterity", "Perception"],
   productionObject: "production_object_1",
 };
 
 const resource2: ResourceJSON = {
   _id: "resource_2",
-  name: "Flour",
+  name: "Corn",
+  productionEnergyCostBasic: 10,
+  consumptionEnergyGainBasic: 10,
+  type: "edible",
+  attirbuteAffinity: ["Speed", "Charisma", "Stamina"],
+  productionObject: "production_object_1",
+};
+
+const resource3: ResourceJSON = {
+  _id: "resource_3",
+  name: "Carrots",
   productionEnergyCostBasic: 15,
   consumptionEnergyGainBasic: 13,
   type: "edible",
-  attirbuteAffinity: ["Speed"],
+  attirbuteAffinity: ["Speed", "Strength", "Negotiation"],
+  productionObject: "production_object_1",
+};
+
+const resource4: ResourceJSON = {
+  _id: "resource_4",
+  name: "Apples",
+  productionEnergyCostBasic: 15,
+  consumptionEnergyGainBasic: 13,
+  type: "edible",
+  attirbuteAffinity: ["Speed", "Intelligence", "Dexterity"],
+  productionObject: "production_object_1",
+};
+
+const resource5: ResourceJSON = {
+  _id: "resource_5",
+  name: "Pork",
+  productionEnergyCostBasic: 15,
+  consumptionEnergyGainBasic: 13,
+  type: "edible",
+  attirbuteAffinity: ["Speed", "Negotiation", "Luck"],
+  productionObject: "production_object_1",
+};
+
+const resource6: ResourceJSON = {
+  _id: "resource_6",
+  name: "Iron",
+  productionEnergyCostBasic: 15,
+  consumptionEnergyGainBasic: 13,
+  type: "building material",
+  attirbuteAffinity: ["Stamina", "Strength", "Perception"],
+  productionObject: "production_object_1",
+};
+
+const resource7: ResourceJSON = {
+  _id: "resource_7",
+  name: "Gold",
+  productionEnergyCostBasic: 15,
+  consumptionEnergyGainBasic: 13,
+  type: "building material",
+  attirbuteAffinity: ["Strength", "Charisma", "Luck"],
+  productionObject: "production_object_1",
+};
+
+const resource8: ResourceJSON = {
+  _id: "resource_8",
+  name: "Silver",
+  productionEnergyCostBasic: 15,
+  consumptionEnergyGainBasic: 13,
+  type: "building material",
+  attirbuteAffinity: ["Strength", "Luck", "Dexterity"],
+  productionObject: "production_object_1",
+};
+
+const resource9: ResourceJSON = {
+  _id: "Coal",
+  name: "Flour",
+  productionEnergyCostBasic: 15,
+  consumptionEnergyGainBasic: 13,
+  type: "building material",
+  attirbuteAffinity: ["Strength", "Speed", "Intelligence"],
   productionObject: "production_object_1",
 };
 
@@ -222,10 +387,23 @@ export const simulationState1: SimulationStateJSON = {
   villagers: {
     villager_1: villager1,
     villager_2: villager2,
+    villager_3: villager3,
+    villager_4: villager4,
+    villager_5: villager5,
+    villager_6: villager6,
+    villager_7: villager7,
+    villager_8: villager8,
   },
   attributes: {
     Strength: attribute1,
     Speed: attribute2,
+    Stamina: attribute3,
+    Intelligence: attribute4,
+    Charisma: attribute5,
+    Dexterity: attribute6,
+    Perception: attribute7,
+    Negotiation: attribute8,
+    Luck: attribute9,
   },
   enviroObjects: {
     house_object_1: houseObject1,
@@ -235,6 +413,13 @@ export const simulationState1: SimulationStateJSON = {
   resources: {
     resource_1: resource1,
     resource_2: resource2,
+    resource_3: resource3,
+    resource_4: resource4,
+    resource_5: resource5,
+    resource_6: resource6,
+    resource_7: resource7,
+    resource_8: resource8,
+    resource_9: resource9,
   },
 };
 

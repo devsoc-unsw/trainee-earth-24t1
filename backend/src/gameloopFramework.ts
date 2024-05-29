@@ -4,7 +4,7 @@
 
 import assert from "assert";
 
-export type UpdateFn = (delta: number) => void;
+export type UpdateFn = (delta: number, counter: number) => void;
 type GameLoopFn = () => void;
 
 /**
@@ -53,8 +53,11 @@ export class GameLoop {
 
   private gameLoop: GameLoopFn;
 
+  private counter: number;
+
   constructor(update: UpdateFn) {
     this.update = update;
+    this.counter = 0;
 
     // assert(
     //   this.accurateTickPeriodMs > this.minSetTimeoutDelayMs,
@@ -67,6 +70,7 @@ export class GameLoop {
     this.actualTicks = 0;
     let setTimeoutCount = 0;
     let setImmediateCount = 0;
+    this.counter = 0;
 
     if (!this.gameLoop) {
       const gameLoop = () => {
@@ -78,7 +82,8 @@ export class GameLoop {
           var delta = now - this.previousTick;
           this.previousTick = now;
 
-          this.update(delta);
+          this.update(delta, this.counter);
+          this.counter++;
 
           console.log(
             `delta ${delta}ms;`,
