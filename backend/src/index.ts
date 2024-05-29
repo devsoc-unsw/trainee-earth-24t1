@@ -224,22 +224,22 @@ const wss = new WebSocketServer({ server: server });
 /**
  * Handle a new client connecting to the WebSocket server.
  */
-wss.on("connection", (ws: WebSocket) => {
+wss.on("connection", (connection: WebSocket) => {
   console.log("New WS connection opened");
 
-  ws.on("error", console.error);
+  connection.on("error", console.error);
 
   /**
    * Executes when a message is received from the client.
    */
-  ws.on("message", (msg) => {
+  connection.on("message", (msg) => {
     console.log(`Received ws message`);
 
     try {
       const message = JSON.parse(msg.toString("utf-8"));
       // handleWSRequest takes care of replying to the client
       // in wsHandler.ts
-      handleWSRequest(message, ws);
+      handleWSRequest(message, connection);
     } catch (e) {
       console.error(e);
       let clientErrorMsg = e.message;
@@ -251,7 +251,7 @@ wss.on("connection", (ws: WebSocket) => {
         console.log(e.name);
       }
       // sends the error back to the client
-      ws.send(
+      connection.send(
         JSON.stringify({
           err: {
             name: e.name,
@@ -265,7 +265,7 @@ wss.on("connection", (ws: WebSocket) => {
   /**
    * Executes when a client closes.
    */
-  ws.on("close", () => {
+  connection.on("close", () => {
     console.log("WS connection closed");
   });
 });

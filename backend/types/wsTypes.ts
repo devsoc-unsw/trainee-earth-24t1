@@ -1,5 +1,11 @@
 import { CustomError } from "@backend/utils/customError.ts";
 
+/**
+ * Maps clientIds (created by server) to WebSocket objects which represent a
+ * connection to a client.
+ */
+export type WSClients = Map<string, WebSocket>;
+
 export enum ClientRequestType {
   PING = "PING",
   PLAYER_VISIT = "PLAYER_VISIT",

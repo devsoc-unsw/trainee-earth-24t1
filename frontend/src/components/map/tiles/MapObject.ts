@@ -6,7 +6,12 @@ import {
   getTransformedPoint,
 } from "@frontend/src/components/map/WorldMap";
 import Tile, { Coords } from "./tile";
-import { Pos, Dimensions } from "@backend/types/simulationTypes";
+import {
+  Pos,
+  Dimensions,
+  EnviroObjectId,
+  VillagerId,
+} from "@backend/types/simulationTypes";
 import { Coordinates } from "@dnd-kit/core/dist/types";
 
 // Normally will Tile.draw() will only render tiles that are visible in the bounds
@@ -16,23 +21,26 @@ import { Coordinates } from "@dnd-kit/core/dist/types";
 const CONFIRM_OUT_OF_BOUND = false;
 
 export default class MapObject {
+  htmlImage: HTMLImageElement;
   pos: Pos;
   // Elevation from ground, in tile units
   elevation: number;
   dimensions: Dimensions;
-  htmlImage: HTMLImageElement;
+  objectId: EnviroObjectId | VillagerId | null;
 
   constructor(
     imgUrl: string,
     initCoords: Coordinates,
     elevation: number,
-    dimensions: Dimensions
+    dimensions: Dimensions,
+    objectId: EnviroObjectId | VillagerId | null
   ) {
     this.htmlImage = new Image();
     this.htmlImage.src = imgUrl;
     this.pos = initCoords;
     this.elevation = elevation;
     this.dimensions = dimensions;
+    this.objectId = objectId;
   }
 
   // Calculate final render position on screen using isometric projection
@@ -43,7 +51,7 @@ export default class MapObject {
   ): Coords {
     const botLeftTilePos = {
       x: pos.x - Math.floor(dimensions.dx / 2),
-      y: pos.y + Math.floor(dimensions.dy / 2),
+      y: pos.y + Math.ceil(dimensions.dy / 2) - 1,
     };
     const botLeftCoords = posToIsoCoords(originCoords, botLeftTilePos);
     // const renderX =
@@ -54,8 +62,8 @@ export default class MapObject {
     return botLeftCoords;
   }
 
-  updateCoords(newCoords: Coordinates) {
-    this.pos = newCoords;
+  updatePos(newPos: Pos) {
+    this.pos = newPos;
   }
 
   drawTile(ctx: CanvasRenderingContext2D, originPos: Coords): void {
@@ -88,17 +96,23 @@ export default class MapObject {
     // === If tile not visible, don't draw it ===
     const transformedCoordsTopLeft = getTransformedPoint(
       ctx.getTransform().inverse(),
-      boundingBoxTopLeft.x + (CONFIRM_OUT_OF_BOUND ? 0 : scaledWidth),
-      boundingBoxTopLeft.y + (CONFIRM_OUT_OF_BOUND ? 0 : scaledHeight)
+      {
+        x: boundingBoxTopLeft.x + (CONFIRM_OUT_OF_BOUND ? 0 : scaledWidth),
+        y: boundingBoxTopLeft.y + (CONFIRM_OUT_OF_BOUND ? 0 : scaledHeight),
+      }
     );
     const transformedCoordsBotRight = getTransformedPoint(
       ctx.getTransform().inverse(),
-      boundingBoxTopLeft.x +
-        scaledWidth -
-        (CONFIRM_OUT_OF_BOUND ? 0 : scaledWidth),
-      boundingBoxTopLeft.y +
-        scaledHeight -
-        (CONFIRM_OUT_OF_BOUND ? 0 : scaledHeight)
+      {
+        x:
+          boundingBoxTopLeft.x +
+          scaledWidth -
+          (CONFIRM_OUT_OF_BOUND ? 0 : scaledWidth),
+        y:
+          boundingBoxTopLeft.y +
+          scaledHeight -
+          (CONFIRM_OUT_OF_BOUND ? 0 : scaledHeight),
+      }
     );
 
     if (
