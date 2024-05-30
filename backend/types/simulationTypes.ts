@@ -184,7 +184,7 @@ export const checkGridCells = (
   cells: Cells,
   pos: Pos,
   dim: Dimensions,
-  object: EnviroObjectId | null,
+  objects: (EnviroObjectId | null)[],
   checkObject: boolean,
   owner: VillagerId | null,
   checkOwner: boolean
@@ -203,7 +203,7 @@ export const checkGridCells = (
       const curPosStr = serializePosStr(curPos);
       if (
         !cells.get(curPosStr) ||
-        (checkObject && cells.get(curPosStr).object !== object) ||
+        (checkObject && !objects.includes(cells.get(curPosStr).object)) ||
         (checkOwner && cells.get(curPosStr).owner !== owner)
       ) {
         console.log(`
