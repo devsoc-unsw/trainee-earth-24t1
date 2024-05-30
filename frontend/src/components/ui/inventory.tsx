@@ -2,8 +2,8 @@ import { AnimatedGradientBorder } from './animatedGradientBorder'; // Adjust the
 
 // Sample inventory items
 const inventoryItems = [
-  { id: 1, name: 'Iron', description: "Earth's silent strength, forged anew.", imgSrc: 'https://flatearth.b-cdn.net/production-2024-05-28T22:50:47.100Z/edges-cropped.png' },
-  { id: 2, name: 'Beer', description: 'Yummy yummy', imgSrc: 'https://flatearth.b-cdn.net/production-2024-05-28T22:57:44.145Z/edges-cropped.png' },
+  { id: 1, name: 'Iron', amount: 4, description: "Earth's silent strength, forged anew.", imgSrc: 'https://flatearth.b-cdn.net/production-2024-05-28T22:50:47.100Z/edges-cropped.png' },
+  { id: 2, name: 'Beer', amount: 3, description: 'Yummy yummy', imgSrc: 'https://flatearth.b-cdn.net/production-2024-05-28T22:57:44.145Z/edges-cropped.png' },
 ];
 
 export default function Inventory() {
@@ -24,7 +24,9 @@ export default function Inventory() {
                 >
                   {item && (
                     <div>
-                      <img src={`${item.imgSrc}`} />
+                      <div className='h-16 w-16'>
+                        <img src={`${item.imgSrc}`} className='h-16 w-16' />
+                      </div>
                     </div>
                   )}
                 </div>
