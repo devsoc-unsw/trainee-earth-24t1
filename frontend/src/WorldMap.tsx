@@ -1,10 +1,6 @@
 import { useCallback, useRef, useEffect } from "react";
 import Tile, { Coords } from "./components/map/tiles/tile";
 import {
-  assets1,
-  simulationState1,
-} from "@backend/sample-data/simulation_state/simulation_state_1";
-import {
   parsePosStr,
   serializePosStr,
   Dimensions,
@@ -14,22 +10,30 @@ import {
   PosStr,
   Pos,
   VillagerId,
+  checkGridCells,
+  clearGridCells,
+  fillGridCells,
+  EnviroObject,
 } from "@backend/types/simulationTypes";
 import { Asset, Assets } from "@backend/types/assetTypes";
 import { deserializeJSONToMap } from "@backend/utils/objectTyping";
 import grassTileImgPath from "@frontend/img/special-assets/grass-tile.png";
 import MapObject from "./components/map/tiles/MapObject";
 import { Coordinates } from "@dnd-kit/core/dist/types";
-import WSBox from "@frontend/src/reactUseWebsocket";
 import Interface from "./Interface";
+import {
+  ServerWebsocketMessage,
+  isSimStateAssetsServerMsg,
+  isPongMsg,
+  isServerWebsocketMessage,
+} from "@backend/types/wsTypes";
 
 const DEBUG1 = false;
+const DEBUG2 = true;
 export const DEBUG_MAP_VIS = false;
 
 // Number of frames for which the render loop runs, including first frame. -1 means run indefinitely.
 const FRAME_LIMIT: number = -1;
-
-export type MapProps = {};
 
 export interface IKeys {
   left: boolean;
@@ -71,6 +75,7 @@ const MAGIC_NUMBER_TO_ADJUST = 0;
 //     [11, 22, 22, 22, 22, 22, 22, 22, 22, 12],
 // ];
 
+// === Mouse cursor pan and zoom transform constants ===
 const DEFAULT_TRANSFORM_MATRIX = DOMMatrix.fromFloat64Array(
   new Float64Array([1, 0, 0, 1, 0, 0])
 );
@@ -83,7 +88,15 @@ const MIN_VEL = 0.005; // distance units per second
 const ACCEL = 0.016;
 const VEL_DAMPER = 0.94; // 0.9 means 90% of velocity is kept each frame
 
-const WorldMap = ({}: MapProps) => {
+// === Websocket constants ===
+const WS_URL = "ws://127.0.0.1:3000";
+const maxReconnectAttempts = -1; // -1 for infiinty
+
+const WorldMap = () => {
+  const messages = useRef<ServerWebsocketMessage[]>([]);
+  const socketRef = useRef<WebSocket | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+
   const frameCount = useRef(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -113,7 +126,8 @@ const WorldMap = ({}: MapProps) => {
   // Mainly for rendering an iso square perimeter around environment objects that
   // are being hovered over by the mouse cursor, or showing stats of villager
   // that is being hovered.
-  const mouseCollidingObjects = useRef<Set<MapObjectId>>(new Set());
+  // deprecated use worldmap.cells
+  // const mouseCollidingObjects = useRef<Set<MapObjectId>>(new Set());
 
   // const [simState, setTileMap] = React.useState(TILE_MAP);
   // const simState = useRef<Map<CoordStr, CellJSON>>(
@@ -137,7 +151,7 @@ const WorldMap = ({}: MapProps) => {
   // Order to visit map tile positions to render objects so that front objects are rendered
   // on top of back objects
   const posRenderOrder = useRef<Pos[]>(
-    calculateCoordsOrder(tileMapRange.current)
+    calculatePosRenderOrder(tileMapRange.current)
   );
 
   // const images = useRef<HTMLImageElement[]>(getTileImages());
@@ -165,17 +179,17 @@ const WorldMap = ({}: MapProps) => {
   const mapObjects = useRef<Map<MapObjectId, MapObject>>(new Map());
   const posToObjects = useRef<Map<PosStr, MapObjectId[]>>(new Map());
 
-  const handleReceiveAssets = useCallback((assets: Assets) => {
+  const handleReceiveAssetsServerMsg = useCallback((assets: Assets) => {
     assetsRef.current = assets;
   }, []);
 
-  const handleReceiveSimulationState = useCallback(
+  const handleReceiveSimStateServerMsg = useCallback(
     (simulationState: SimulationState) => {
       simStateRef.current = simulationState;
 
       tileMapRange.current = findRange(simStateRef.current.worldMap.cells);
 
-      posRenderOrder.current = calculateCoordsOrder(tileMapRange.current);
+      posRenderOrder.current = calculatePosRenderOrder(tileMapRange.current);
 
       mapObjects.current.clear();
       posToObjects.current.clear();
@@ -184,37 +198,63 @@ const WorldMap = ({}: MapProps) => {
       // TODO: calculate diff between old and new SimulationState.enviroObjects
       // and SimulationState.villagers and only update mapObjects and posToObjects
       // with the difference. So that we don't reload the same images.
-      for (
-        let tileX = tileMapRange.current.minX;
-        tileX <= tileMapRange.current.maxX;
-        ++tileX
-      ) {
-        for (
-          let tileY = tileMapRange.current.minY;
-          tileY <= tileMapRange.current.maxY;
-          ++tileY
-        ) {
-          const pos: Pos = { x: tileX, y: tileY };
-          const posStr = serializePosStr(pos);
-          const cell = simulationState.worldMap.cells.get(posStr);
-          const enviroObjectId = cell?.object;
-          const enviroObject =
-            enviroObjectId && simulationState.enviroObjects.get(enviroObjectId);
-          const asset =
-            enviroObject &&
-            enviroObject.asset !== null &&
-            assetsRef.current?.get(enviroObject.asset);
-          const finalRemoteImageUrl = asset && asset.remoteImages.at(-1)?.url;
+      // for (
+      //   let tileX = tileMapRange.current.minX;
+      //   tileX <= tileMapRange.current.maxX;
+      //   ++tileX
+      // ) {
+      //   for (
+      //     let tileY = tileMapRange.current.minY;
+      //     tileY <= tileMapRange.current.maxY;
+      //     ++tileY
+      //   ) {
+      //     const pos: Pos = { x: tileX, y: tileY };
+      //     const posStr = serializePosStr(pos);
+      //     const cell = simulationState.worldMap.cells.get(posStr);
+      //     const enviroObjectId = cell?.object;
+      //     const enviroObject =
+      //       enviroObjectId && simulationState.enviroObjects.get(enviroObjectId);
+      //     const asset =
+      //       enviroObject &&
+      //       enviroObject.asset !== null &&
+      //       assetsRef.current?.get(enviroObject.asset);
+      //     const finalRemoteImageUrl = asset && asset.remoteImages.at(-1)?.url;
+      //     if (finalRemoteImageUrl) {
+      //       const environObject: MapObject = new MapObject(
+      //         finalRemoteImageUrl,
+      //         pos,
+      //         0,
+      //         asset.dimensions,
+      //         enviroObjectId
+      //       );
+      //       mapObjects.current.set(enviroObjectId, environObject);
+      //       posToObjectsAdd(posToObjects.current, posStr, enviroObjectId);
+      //     }
+      //   }
+      // }
+
+      for (let [
+        enviroObjectId,
+        enviroObject,
+      ] of simulationState.enviroObjects.entries() ?? []) {
+        if (enviroObject.pos && enviroObject.asset) {
+          const posStr = serializePosStr(enviroObject.pos);
+          const asset = assetsRef.current?.get(enviroObject.asset);
+          const finalRemoteImageUrl = asset && asset?.remoteImages.at(-1)?.url;
           if (finalRemoteImageUrl) {
             const environObject: MapObject = new MapObject(
               finalRemoteImageUrl,
-              pos,
+              enviroObject.pos,
               0,
               asset.dimensions,
               enviroObjectId
             );
             mapObjects.current.set(enviroObjectId, environObject);
             posToObjectsAdd(posToObjects.current, posStr, enviroObjectId);
+          } else {
+            console.error(
+              ` enviro object with key ${enviroObjectId} has no asset or pos`
+            );
           }
         }
       }
@@ -250,10 +290,14 @@ const WorldMap = ({}: MapProps) => {
     []
   );
 
-  handleReceiveAssets(deserializeJSONToMap(assets1, Asset.deserialize));
+  // handleReceiveAssetsServerMsg(
+  //   deserializeJSONToMap(SAMPLE_ASSETS, Asset.deserialize)
+  // );
 
   // note: handleReceiveSimulationState depends on assets being initialised
-  handleReceiveSimulationState(SimulationState.deserialize(simulationState1));
+  // handleReceiveSimStateServerMsg(
+  //   SimulationState.deserialize(SAMPLE_SIMULATION_STATE)
+  // );
 
   const keyRef = useRef<IKeys>({
     left: false,
@@ -347,34 +391,81 @@ const WorldMap = ({}: MapProps) => {
       }
     }
 
-    // === Draw mouse cursor colliding object outlines ===
-    for (let mouseCollidingObject of mouseCollidingObjects.current) {
-      const mapObject = mapObjects.current.get(mouseCollidingObject);
-      if (mapObject) {
-        // Note: assumes mapObject.dimensions.dx and mapObject.dimensions.dy are
-        // same value ie mapObject is square. Shouldnt matter which you use.
-        const centerCoord = posToIsoCoords(originRaw, mapObject.pos);
-        const outlineMidTopCoord = {
-          x: centerCoord.x,
-          // Center coord y minus half of the diagonal length of the object
-          y:
-            centerCoord.y -
-            Math.floor(mapObject.dimensions.dy / 2) * Tile.TILE_HEIGHT,
-        };
+    for (let [posStr, cell] of simStateRef.current?.worldMap.cells.entries() ??
+      []) {
+      if (cell.object) {
+        // === DEBUG draw cell if has object
+        if (DEBUG2) {
+          const simPos = parsePosStr(posStr);
+          if (!simPos) {
+            continue;
+          }
+          // Note: assumes mapObject.dimensions.dx and mapObject.dimensions.dy are
+          // same value ie mapObject is square. Shouldnt matter which you use.
+          const centerCoord = posToIsoCoords(originRaw, simPos);
 
-        drawTileOutline(
-          ctx,
-          outlineMidTopCoord,
-          {
-            dx: mapObject.dimensions.dx * Tile.TILE_WIDTH,
-            dy: mapObject.dimensions.dy * Tile.TILE_HEIGHT,
-          },
-          "rgba(247, 217, 22, 0.7)",
-          "rgba(0,0,0,0)",
-          5,
-          []
-        );
+          drawTileOutline(
+            ctx,
+            centerCoord,
+            {
+              dx: Tile.TILE_WIDTH,
+              dy: Tile.TILE_HEIGHT,
+            },
+            "rgba(247, 203, 171, 0.5)",
+            "rgba(247, 203, 171,0.4)",
+            3,
+            []
+          );
+        }
       }
+    }
+
+    // === Draw mouse cursor colliding object outlines ===
+    const mouseCoordsTransformed = getTransformedPoint(
+      transformMat.current,
+      mouseCoords.current
+    );
+    const mouseTileMapPos = inputCoordsToTileMapPos(
+      getOriginRaw(getCanvasSize(ctx.canvas)),
+      mouseCoordsTransformed
+    );
+    // get enviroobject id collidign with mouse
+    const mouseCollidingEnviroObject = simStateRef.current?.worldMap.cells.get(
+      serializePosStr(mouseTileMapPos)
+    )?.object;
+    // get its center pos
+    const enviroObject =
+      mouseCollidingEnviroObject &&
+      simStateRef.current?.enviroObjects.get(mouseCollidingEnviroObject);
+    const enviroObjectPos =
+      enviroObject instanceof EnviroObject && enviroObject.pos;
+    const mapObject =
+      enviroObjectPos &&
+      mapObjects.current.get(serializePosStr(enviroObjectPos));
+    if (mapObject) {
+      // Note: assumes mapObject.dimensions.dx and mapObject.dimensions.dy are
+      // same value ie mapObject is square. Shouldnt matter which you use.
+      const centerCoord = posToIsoCoords(originRaw, mapObject.pos);
+      const outlineMidTopCoord = {
+        x: centerCoord.x,
+        // Center coord y minus half of the diagonal length of the object
+        y:
+          centerCoord.y -
+          Math.floor(mapObject.dimensions.dy / 2) * Tile.TILE_HEIGHT,
+      };
+
+      drawTileOutline(
+        ctx,
+        outlineMidTopCoord,
+        {
+          dx: mapObject.dimensions.dx * Tile.TILE_WIDTH,
+          dy: mapObject.dimensions.dy * Tile.TILE_HEIGHT,
+        },
+        "rgba(247, 217, 22, 0.7)",
+        "rgba(0,0,0,0)",
+        5,
+        []
+      );
     }
 
     // === Draw mouse hover tile ===
@@ -524,19 +615,19 @@ const WorldMap = ({}: MapProps) => {
         mouseCoordsTransformed
       );
 
-      if (
-        mouseTileMapPos.x === prevMouseTileMapPos.current?.x &&
-        mouseTileMapPos.y === prevMouseTileMapPos.current?.y
-      ) {
-      }
-      // Mouse cursor might have moved, but still on the same tile
-      else {
-        // Mouse cursor has moved to a new tile
-        mouseCollidingObjects.current = getCollidingObjects(
-          mouseTileMapPos,
-          mapObjects.current
-        );
-      }
+      // if (
+      //   mouseTileMapPos.x === prevMouseTileMapPos.current?.x &&
+      //   mouseTileMapPos.y === prevMouseTileMapPos.current?.y
+      // ) {
+      // }
+      // // Mouse cursor might have moved, but still on the same tile
+      // else {
+      //   // Mouse cursor has moved to a new tile
+      //   mouseCollidingObjects.current = getCollidingObjects(
+      //     mouseTileMapPos,
+      //     mapObjects.current
+      //   );
+      // }
 
       if (selectedEnviroObject.current !== null) {
         // === Move selected environment object with mouse movement ===
@@ -635,42 +726,70 @@ const WorldMap = ({}: MapProps) => {
         );
 
         if (selectedEnviroObject.current !== null) {
-          // Place down environment object wherever user clicked
-          // TODO: Need to validate the place down position
+          // Attempt place down environment object wherever user clicked
+          // DONE: Need to validate the place down position
+          const mapObject = mapObjects.current.get(
+            selectedEnviroObject.current
+          );
+          const objectDimensions = mapObject && mapObject.dimensions;
           if (
             // cell to place enviro object down is empty
-            clickedCell.object === null &&
+            // clickedCell.object === null &&
             // Only collidign object is the current selected object. Note that
             // the mouse might be "ahead" of the dragged position of the object,
             // in which case the mouse cursor is not colliding with the object
             // it is dragging. Thus check size === 0 too.
-            mouseCollidingObjects.current.size <= 1
+            // mouseCollidingObjects.current.size <= 1 &&
+            simStateRef.current &&
+            objectDimensions &&
+            // Check whether it is possible to place object at the clicked tile
+            // position, ie no other objects in the way and the object is completely
+            // within the bounds of the map
+            checkGridCells(
+              simStateRef.current.worldMap.cells,
+              clickedTileMapPos,
+              objectDimensions,
+              null,
+              true,
+              null,
+              false // TODO: Check place-down grid completely owned by this user's villager
+            )
           ) {
             // Place down object
-            clickedCell.object = selectedEnviroObject.current;
-            const mapObject = mapObjects.current.get(
-              selectedEnviroObject.current
+            console.log(
+              `Place down EnviroObject ${selectedEnviroObject.current} at ${clickedTileMapPos.x}, ${clickedTileMapPos.y}`
             );
-            if (mapObject !== undefined) {
-              console.log(
-                `Place down EnviroObject ${selectedEnviroObject.current} at ${clickedTileMapPos.x}, ${clickedTileMapPos.y}`
-              );
 
-              const prevMapObjectPos = { ...mapObject.pos };
-              mapObject.updatePos(clickedTileMapPos);
-              // posToObjects.current.delete(serializePosStr(prevMapObjectPos));
-              // posToObjects.current
-              //   .get(serializePosStr(clickedTileCoords))
-              //   ?.push(selectedEnviroObject.current);
-              posToObjectsUpdate(
-                posToObjects.current,
-                selectedEnviroObject.current,
-                serializePosStr(prevMapObjectPos),
-                serializePosStr(clickedTileMapPos)
-              );
-            }
+            fillGridCells(
+              simStateRef.current.worldMap.cells,
+              clickedTileMapPos,
+              objectDimensions,
+              selectedEnviroObject.current,
+              true,
+              null,
+              false
+            );
+
+            // clickedCell.object = selectedEnviroObject.current;
+
+            const prevMapObjectPos = { ...mapObject.pos };
+            mapObject.updatePos(clickedTileMapPos);
+            // posToObjects.current.delete(serializePosStr(prevMapObjectPos));
+            // posToObjects.current
+            //   .get(serializePosStr(clickedTileCoords))
+            //   ?.push(selectedEnviroObject.current);
+            posToObjectsUpdate(
+              posToObjects.current,
+              selectedEnviroObject.current,
+              serializePosStr(prevMapObjectPos),
+              serializePosStr(clickedTileMapPos)
+            );
             // TODO: Send this change to simserver
             selectedEnviroObject.current = null;
+          } else {
+            console.log(
+              `Cannot place object at ${clickedTileMapPos.x}, ${clickedTileMapPos.y}`
+            );
           }
         } else {
           const clickedTileRenderCoords = posToIsoCoords(
@@ -680,46 +799,75 @@ const WorldMap = ({}: MapProps) => {
           // do smthn with the clicked tile
 
           // Tile exists
-          if (mouseCollidingObjects.current.size > 0) {
-            // Set selected environment object to the first object that the
-            // mouse cursor is colliding with
-            for (let collidingObject of mouseCollidingObjects.current.values()) {
-              // Make sure the object is an environment object, not a villager
+          // if (mouseCollidingObjects.current.size > 0) {
+          const cellCollidingiWithClick =
+            simStateRef.current?.worldMap.cells.get(
+              serializePosStr(clickedTileMapPos)
+            );
+          const collidingObjectId = cellCollidingiWithClick?.object;
+          if (collidingObjectId) {
+            console.log(
+              `Mouse click collided with MapObjectId:`,
+              collidingObjectId
+            );
+          }
+          // Set selected environment object to the first object that the
+          // mouse cursor is colliding with
+          // for (let collidingObject of mouseCollidingObjects.current.values()) {
+          //   // Make sure the object is an environment object, not a villager
+
+          //   if (simStateRef.current?.enviroObjects.has(collidingObject)) {
+          //     console.log(`Selected MapObjectId`, collidingObject);
+          //     selectedEnviroObject.current = collidingObject;
+          //     break;
+          //   }
+          // }
+
+          //
+          const collidingEnviroObject =
+            collidingObjectId &&
+            simStateRef.current?.enviroObjects.get(collidingObjectId);
+          if (
+            collidingObjectId &&
+            collidingEnviroObject instanceof EnviroObject
+          ) {
+            // Can only select environment objects, not villagers
+            console.log(`Select MapObjectId`, collidingObjectId);
+            selectedEnviroObject.current = collidingObjectId;
+            const mapObject = mapObjects.current.get(
+              selectedEnviroObject.current
+            );
+            if (mapObject && simStateRef.current) {
+              // === Remove object from cells ===
               console.log(
-                `Mouse click collided with MapObjectId:`,
-                collidingObject
+                `Clear grid cells centerd at ${mapObject.pos}, dim ${mapObject.dimensions}`
               );
 
-              if (simStateRef.current?.enviroObjects.has(collidingObject)) {
-                console.log(`Selected MapObjectId`, collidingObject);
-                selectedEnviroObject.current = collidingObject;
-                break;
-              }
-            }
-            if (selectedEnviroObject.current !== null) {
-              const mapObject = mapObjects.current.get(
-                selectedEnviroObject.current
+              clearGridCells(
+                simStateRef.current.worldMap.cells,
+                mapObject.pos,
+                mapObject.dimensions,
+                true, // clear object from cell grid
+                false // dont clear owner from cell
               );
-              if (mapObject) {
-                // === Remove objectId from simstate cell ===
-                const cellOfEnviroObject =
-                  simStateRef.current?.worldMap.cells.get(
-                    serializePosStr(mapObject.pos)
-                  );
-                if (cellOfEnviroObject) {
-                  // Update simState cell object to null
-                  cellOfEnviroObject.object = null;
-                }
-                // === Update map object pos to clicked tile (teleport to mouse) ===
-                const prevSelectedObjectPos = { ...mapObject.pos };
-                mapObject.updatePos(clickedTileMapPos);
-                posToObjectsUpdate(
-                  posToObjects.current,
-                  selectedEnviroObject.current,
-                  serializePosStr(prevSelectedObjectPos),
-                  serializePosStr(clickedTileMapPos)
+              // === Remove objectId from simstate cell ===
+              const cellOfEnviroObject =
+                simStateRef.current?.worldMap.cells.get(
+                  serializePosStr(mapObject.pos)
                 );
+              if (cellOfEnviroObject) {
+                // Update simState cell object to null
+                cellOfEnviroObject.object = null;
               }
+              // === Update map object pos to clicked tile (teleport to mouse) ===
+              const prevSelectedObjectPos = { ...mapObject.pos };
+              mapObject.updatePos(clickedTileMapPos);
+              posToObjectsUpdate(
+                posToObjects.current,
+                selectedEnviroObject.current,
+                serializePosStr(prevSelectedObjectPos),
+                serializePosStr(clickedTileMapPos)
+              );
             }
           }
         }
@@ -799,8 +947,12 @@ const WorldMap = ({}: MapProps) => {
     document.addEventListener("mouseup", handleMouseUp);
 
     // TODO call these handles on receive ws event from simserver
-    handleReceiveAssets(deserializeJSONToMap(assets1, Asset.deserialize));
-    handleReceiveSimulationState(SimulationState.deserialize(simulationState1));
+    // handleReceiveAssetsServerMsg(
+    //   deserializeJSONToMap(SAMPLE_ASSETS, Asset.deserialize)
+    // );
+    // handleReceiveSimStateServerMsg(
+    //   SimulationState.deserialize(SAMPLE_SIMULATION_STATE)
+    // );
 
     // let animationFrameId: number
     const draw = (timestamp: DOMHighResTimeStamp) => {
@@ -911,6 +1063,99 @@ const WorldMap = ({}: MapProps) => {
       document.removeEventListener("keyup", handleKeyUp);
     };
     console.log(`Attached keydown and keyup event listeners to document`);
+  }, []);
+
+  const connectWebSocket = useCallback(() => {
+    // Create a WebSocket connection
+    socketRef.current = new WebSocket(WS_URL);
+    const socket = socketRef.current;
+
+    // Event listener for when the connection is opened
+    socket.onopen = () => {
+      console.log("WebSocket connection established");
+      socket.send(JSON.stringify({ type: "PING" }));
+      reconnectAttemptsRef.current = 0; // Reset reconnect attempts on successful connection
+    };
+
+    // Event listener for when a message is received
+    socket.onmessage = (event) => {
+      console.log("Received WS message:", event.data);
+
+      let message = {};
+      try {
+        message = JSON.parse(event.data);
+      } catch (error) {
+        console.error("Error parsing message:", error);
+        return;
+      }
+
+      if (!isServerWebsocketMessage(message)) {
+        console.error(
+          `Invalid message received; parsed message is not a valid websocket request`
+        );
+        return;
+      }
+
+      if (isPongMsg(message)) {
+        console.log("Server said PONG");
+      } else if (isSimStateAssetsServerMsg(message)) {
+        // NOte: must handle assets first before simstate, because simstate
+        // depends on assets
+        handleReceiveAssetsServerMsg(
+          deserializeJSONToMap(message.assets, Asset.deserialize)
+        );
+        handleReceiveSimStateServerMsg(
+          SimulationState.deserialize(message.simulationState)
+        );
+      } else {
+        console.error(`Unhandled WS message type:`, message.type);
+      }
+
+      messages.current.push(message);
+    };
+
+    // Event listener for when the connection is closed
+    socket.onclose = (event) => {
+      console.log("WebSocket connection closed");
+
+      if (
+        maxReconnectAttempts < 0 ||
+        reconnectAttemptsRef.current < maxReconnectAttempts
+      ) {
+        const reconnectDelay = Math.min(
+          1000 * 2 ** reconnectAttemptsRef.current,
+          6000
+        ); // Exponential backoff up to 6 seconds
+        reconnectAttemptsRef.current += 1;
+
+        console.log(
+          `Schedule attempt reconnect in ${reconnectDelay / 1000} seconds...`
+        );
+        setTimeout(() => {
+          if (socket.readyState === WebSocket.CLOSED) {
+            connectWebSocket();
+          }
+        }, reconnectDelay);
+      } else {
+        console.log("Max reconnect attempts reached");
+      }
+    };
+
+    // Event listener for when an error occurs
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+  }, []);
+
+  useEffect(() => {
+    connectWebSocket();
+
+    // Cleanup function to close the WebSocket connection when the component unmounts
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
+    };
   }, []);
 
   return (
@@ -1129,8 +1374,8 @@ export const drawSquare = (
   ctx.restore();
 };
 
-const calculateCoordsOrder = (coordsRange: IRange): Coordinates[] => {
-  const coordsOrder: Coords[] = [];
+const calculatePosRenderOrder = (coordsRange: IRange): Coordinates[] => {
+  const newPosRenderOrder: Coords[] = [];
   const minX = coordsRange.minX;
   const minY = coordsRange.minY;
   const maxX = coordsRange.maxX;
@@ -1139,7 +1384,7 @@ const calculateCoordsOrder = (coordsRange: IRange): Coordinates[] => {
     let curX = minX;
     let curY = startY;
     while (curY >= minY && curX <= maxX) {
-      coordsOrder.push({ x: curX, y: curY });
+      newPosRenderOrder.push({ x: curX, y: curY });
       curX += 1;
       curY -= 1;
     }
@@ -1148,12 +1393,12 @@ const calculateCoordsOrder = (coordsRange: IRange): Coordinates[] => {
     let curX = startX;
     let curY = maxY;
     while (curX <= maxX && curY >= minY) {
-      coordsOrder.push({ x: curX, y: curY });
+      newPosRenderOrder.push({ x: curX, y: curY });
       curX += 1;
       curY -= 1;
     }
   }
-  return coordsOrder;
+  return newPosRenderOrder;
 };
 
 export const posToIsoCoords = (

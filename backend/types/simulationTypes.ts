@@ -6,6 +6,7 @@ import {
   JSONCompatible,
   JSONObject,
   Serializable,
+  JSONValue,
 } from "@backend/utils/objectTyping.ts";
 import { IWorldMapDocument } from "@backend/types/databaseTypes.ts";
 import createId from "@backend/utils/createId.ts";
@@ -140,6 +141,168 @@ export type CellsJSON = { [key: PosStr]: CellJSON };
 
 export type Cells = Map<PosStr, Cell>;
 
+/**
+ * Check grid centered at pos with dim:
+ * - within bounds
+ * - completely overlaps with EnviroObjectId (null for empty tiles) if checkObject is true
+ * - completely owned by owner (null for no owner) if checkOwner is true
+ */
+export const checkGridCellsJSON = (
+  cells: CellsJSON,
+  pos: Pos,
+  dim: Dimensions,
+  object: EnviroObjectId | null,
+  checkObject: boolean,
+  owner: VillagerId | null,
+  checkOwner: boolean
+): boolean => {
+  for (
+    let x = pos.x - Math.floor(dim.dx / 2);
+    x < pos.x + Math.ceil(dim.dx / 2);
+    x++
+  ) {
+    for (
+      let y = pos.y - Math.floor(dim.dy / 2);
+      y < pos.y + Math.ceil(dim.dy / 2);
+      y++
+    ) {
+      const curPos = { x, y };
+      const curPosStr = serializePosStr(curPos);
+      if (
+        !cells[curPosStr] ||
+        (checkObject && cells[curPosStr].object !== object) ||
+        (checkOwner && cells[curPosStr].owner !== owner)
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
+export const checkGridCells = (
+  cells: Cells,
+  pos: Pos,
+  dim: Dimensions,
+  object: EnviroObjectId | null,
+  checkObject: boolean,
+  owner: VillagerId | null,
+  checkOwner: boolean
+): boolean => {
+  for (
+    let x = pos.x - Math.floor(dim.dx / 2);
+    x < pos.x + Math.ceil(dim.dx / 2);
+    x++
+  ) {
+    for (
+      let y = pos.y - Math.floor(dim.dy / 2);
+      y < pos.y + Math.ceil(dim.dy / 2);
+      y++
+    ) {
+      const curPos = { x, y };
+      const curPosStr = serializePosStr(curPos);
+      if (
+        !cells.get(curPosStr) ||
+        (checkObject && cells.get(curPosStr).object !== object) ||
+        (checkOwner && cells.get(curPosStr).owner !== owner)
+      ) {
+        console.log(`
+        curPos: ${curPosStr},
+        object: ${cells.get(curPosStr).object},
+        owner: ${cells.get(curPosStr).owner},
+        `);
+
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
+// Fill grid of cells centered at pos, with dimensions x,y, with the object
+export const fillGridCellsJSON = (
+  cells: CellsJSON,
+  pos: Pos,
+  dim: Dimensions,
+  object: EnviroObjectId | null,
+  setObject: boolean,
+  owner: VillagerId | null,
+  setOwner: boolean
+) => {
+  for (
+    let x = pos.x - Math.floor(dim.dx / 2);
+    x < pos.x + Math.ceil(dim.dx / 2);
+    x++
+  ) {
+    for (
+      let y = pos.y - Math.floor(dim.dy / 2);
+      y < pos.y + Math.ceil(dim.dy / 2);
+      y++
+    ) {
+      const curPos = { x, y };
+      const curPosStr = serializePosStr(curPos);
+      if (setObject) {
+        cells[curPosStr].object = object;
+      }
+      if (setOwner) {
+        cells[curPosStr].owner = owner;
+      }
+    }
+  }
+};
+
+export const fillGridCells = (
+  cells: Cells,
+  pos: Pos,
+  dim: Dimensions,
+  object: EnviroObjectId | null,
+  setObject: boolean,
+  owner: VillagerId | null,
+  setOwner: boolean
+) => {
+  for (
+    let x = pos.x - Math.floor(dim.dx / 2);
+    x < pos.x + Math.ceil(dim.dx / 2);
+    x++
+  ) {
+    for (
+      let y = pos.y - Math.floor(dim.dy / 2);
+      y < pos.y + Math.ceil(dim.dy / 2);
+      y++
+    ) {
+      const curPos = { x, y };
+      const curPosStr = serializePosStr(curPos);
+      if (setOwner) {
+        cells.get(curPosStr).owner = owner;
+      }
+      if (setObject) {
+        cells.get(curPosStr).object = object;
+      }
+    }
+  }
+};
+
+// Oposite of fillCellsGrid
+export const clearGridCellsJSON = (
+  cells: CellsJSON,
+  pos: Pos,
+  dim: Dimensions,
+  clearObject: boolean,
+  clearOwner: boolean
+) => {
+  fillGridCellsJSON(cells, pos, dim, null, clearObject, null, clearOwner);
+};
+
+export const clearGridCells = (
+  cells: Cells,
+  pos: Pos,
+  dim: Dimensions,
+  clearObject: boolean,
+  clearOwner: boolean
+) => {
+  fillGridCells(cells, pos, dim, null, clearObject, null, clearOwner);
+};
+
 export interface WorldMapJSON extends JSONObject {
   cells: CellsJSON;
 }
@@ -181,7 +344,7 @@ export class WorldMap implements Serializable<WorldMapJSON> {
 export interface CellJSON extends JSONObject {
   owner: VillagerId | null;
   object: EnviroObjectId | null;
-  coordinates?: Pos;
+  pos?: Pos;
 }
 
 export class Cell implements Serializable<CellJSON> {
@@ -210,24 +373,26 @@ export class Cell implements Serializable<CellJSON> {
 
   serialize(): JSONCompatible<CellJSON> {
     return {
-      coordinates: this.coordinates,
+      pos: this.coordinates,
       owner: this.owner,
       object: this.object,
     };
   }
 
   static deserialize(obj: JSONCompatible<CellJSON>): Cell {
-    const cell = new Cell({ ...obj.coordinates });
+    const cell = new Cell({ ...obj.pos });
     cell.owner = obj.owner;
     cell.object = obj.object;
     return cell;
   }
 }
 
-interface EnviroObjectJSON extends JSONObject {
+export interface EnviroObjectJSON extends JSONObject {
   _id: string;
   name: string;
   asset: AssetId | null;
+  pos: Pos | null;
+  enviroType: EnviroObjectType;
 }
 
 function isEnviroObjectJSON(obj: any): obj is EnviroObjectJSON {
@@ -239,6 +404,12 @@ function isEnviroObjectJSON(obj: any): obj is EnviroObjectJSON {
     "name" in obj &&
     typeof obj.name === "string"
   );
+}
+
+export enum EnviroObjectType {
+  HOUSE = "HOUSE",
+  COSMETIC = "COSMETIC",
+  PRODUCTION = "PRODUCTION",
 }
 
 export type EnviroObjectId = string; // uuid
@@ -256,15 +427,21 @@ export class EnviroObject implements Serializable<EnviroObjectJSON> {
   protected readonly _id: EnviroObjectId;
   public readonly name: string;
   public readonly asset: AssetId | null;
+  public pos: Pos | null;
+  public readonly enviroType: EnviroObjectType;
 
   constructor(
     name: string,
     _id: EnviroObjectId = createId(),
-    asset: AssetId | null = null
+    asset: AssetId | null = null,
+    pos: Pos | null = null,
+    enviroType: EnviroObjectType
   ) {
     this.name = name;
     this._id = _id;
     this.asset = asset;
+    this.pos = pos;
+    this.enviroType = enviroType;
   }
 
   serialize(): JSONCompatible<EnviroObjectJSON> {
@@ -272,18 +449,60 @@ export class EnviroObject implements Serializable<EnviroObjectJSON> {
       _id: this._id,
       name: this.name,
       asset: this.asset,
+      pos: this.pos,
+      enviroType: this.enviroType,
     };
   }
 
   static deserialize(obj: JSONCompatible<EnviroObjectJSON>): EnviroObject {
-    return new EnviroObject(obj.name, obj._id, obj.asset);
+    return new EnviroObject(
+      obj.name,
+      obj._id,
+      obj.asset,
+      obj.pos,
+      obj.enviroType
+    );
   }
 }
 
-export interface CosmeticObjectJSON extends EnviroObjectJSON {}
+export interface CosmeticObjectJSON extends EnviroObjectJSON {
+  owner: VillagerId | null;
+}
 export class CosmeticObject
   extends EnviroObject
-  implements Serializable<CosmeticObjectJSON> {}
+  implements Serializable<CosmeticObjectJSON>
+{
+  public readonly owner: VillagerId | null = null;
+  constructor(
+    name: string,
+    owner: VillagerId | null = null,
+    _id: EnviroObjectId = createId(),
+    asset: AssetId | null = null,
+    pos: Pos | null = null
+  ) {
+    super(name, _id, asset, pos, EnviroObjectType.COSMETIC);
+    this.owner = owner;
+  }
+
+  serialize(): JSONCompatible<CosmeticObjectJSON> {
+    return {
+      ...super.serialize(),
+      owner: this.owner,
+    };
+  }
+
+  static deserialize(obj: JSONCompatible<CosmeticObjectJSON>): CosmeticObject {
+    return new CosmeticObject(obj.name, obj.owner, obj._id, obj.asset, obj.pos);
+  }
+}
+
+export const isCosmeticObjectJSON = (
+  obj: JSONValue
+): obj is CosmeticObjectJSON => {
+  return (
+    isEnviroObjectJSON(obj) && obj.enviroType === EnviroObjectType.COSMETIC
+  );
+};
 
 export interface HouseObjectJSON extends EnviroObjectJSON {
   owner: VillagerId | null;
@@ -300,7 +519,7 @@ export class HouseObject
     _id: EnviroObjectId = createId(),
     asset: AssetId | null = null
   ) {
-    super(name, _id, asset);
+    super(name, _id, asset, null, EnviroObjectType.HOUSE);
     this.owner = owner;
   }
 
@@ -315,6 +534,10 @@ export class HouseObject
     return new HouseObject(obj.name, obj.owner, obj._id, obj.asset);
   }
 }
+
+export const isHouseObjectJSON = (obj: JSONValue): obj is HouseObjectJSON => {
+  return isEnviroObjectJSON(obj) && obj.enviroType === EnviroObjectType.HOUSE;
+};
 
 export type VillagerId = string;
 
@@ -367,6 +590,7 @@ export interface VillagerJSON extends JSONObject {
   } | null;
   readonly asset: AssetId | null;
   pos: Pos | null;
+  basePos: Pos;
 }
 
 export class Villager implements Serializable<VillagerJSON> {
@@ -422,6 +646,8 @@ export class Villager implements Serializable<VillagerJSON> {
 
   public pos: Pos | null;
 
+  public basePos: Pos;
+
   constructor(type: VillagerType, _id: VillagerId = createId()) {
     this.type = type;
     this._id = _id;
@@ -452,6 +678,7 @@ export class Villager implements Serializable<VillagerJSON> {
       assignment: this.assignment,
       asset: this.asset,
       pos: this.pos,
+      basePos: this.basePos,
     };
   }
 
@@ -483,6 +710,7 @@ export class Villager implements Serializable<VillagerJSON> {
     villager.assignment = obj.assignment;
     villager.asset = obj.asset;
     villager.pos = obj.pos;
+    villager.basePos = obj.basePos;
 
     return villager;
   }
@@ -823,6 +1051,14 @@ export interface ProductionObjectJSON extends EnviroObjectJSON {
   energyReserve: number;
 }
 
+export const isProductionObjectJSON = (
+  obj: JSONValue
+): obj is ProductionObjectJSON => {
+  return (
+    isEnviroObjectJSON(obj) && obj.enviroType === EnviroObjectType.PRODUCTION
+  );
+};
+
 export class ProductionObject
   extends EnviroObject
   implements Serializable<ProductionObjectJSON>
@@ -865,7 +1101,7 @@ export class ProductionObject
     _id: string = createId(),
     asset: AssetId | null = null
   ) {
-    super(name, _id, asset);
+    super(name, _id, asset, null, EnviroObjectType.PRODUCTION);
     this.resourceProductionProportions = resourceProductionProportions;
     this.workerCapacity = workerCapacity;
     this.energyReserve = energyReserve;

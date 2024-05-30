@@ -30,17 +30,27 @@ const buyQuantity = 3;
 const TICKS_PER_CYCLE = 10;
 import { UpdateFn } from "@backend/src/gameloopFramework.js";
 import { Assets } from "@backend/types/assetTypes.ts";
+import {
+  ServerMessageType,
+  SimStateAssetsServerMsg,
+  WebsocketClients,
+} from "@backend/types/wsTypes.ts";
+import { serializeMapToJSON } from "@backend/utils/objectTyping.ts";
+import { CommunicationServer } from "./clientsServer.ts";
 
 export class SimulationServer {
   private state: SimulationState;
   private assets: Assets;
+  private commServer: CommunicationServer;
 
   constructor(
     state: SimulationState = new SimulationState(),
-    assets: Assets = new Map()
+    assets: Assets = new Map(),
+    commServer: CommunicationServer
   ) {
     this.state = state;
     this.assets = assets;
+    this.commServer = commServer;
   }
 
   sendVillagerAssignment = (
@@ -129,6 +139,7 @@ export class SimulationServer {
       worker.resources[resourcesRandom[i]].sellPrice = price;
       increment++;
 
+      this.commServer.broadcastSimStateAssets(this.state, this.assets);
       this.sendVillagerAssignment(this.state, worker._id, resourcesRandom[i]);
     }
 
@@ -201,7 +212,7 @@ export class SimulationServer {
    * Gets called by the gameloop framework at its specified framerate e.g. 20fps.
    */
   simulationStep: UpdateFn = (delta: number, counter: number) => {
-    console.log(`Step simulation forward one timestep`);
+    console.log(`\n========\nStep simulation forward one timestep`);
     const jsonData = this.state.serialize();
 
     // const fs = require("fs");
@@ -759,6 +770,8 @@ export class SimulationServer {
        * end of consumption assignment
        */
     }
+
+    this.commServer.broadcastSimStateAssets(this.state, this.assets);
   };
 }
 

@@ -1,96 +1,53 @@
 import { AssetsJSON } from "@backend/types/assetTypes.ts";
 import {
   AttributeJSON,
+  CellJSON,
+  CellsJSON,
   CosmeticObjectJSON,
+  Dimensions,
+  EnviroObject,
+  EnviroObjectId,
+  EnviroObjectJSON,
+  EnviroObjectType,
   HouseObjectJSON,
+  Pos,
+  PosStr,
   ProductionObjectJSON,
   ResourceJSON,
   SimulationStateJSON,
   VillagerJSON,
   WorldMapJSON,
+  checkGridCellsJSON,
+  fillGridCellsJSON,
+  isCosmeticObjectJSON,
+  isHouseObjectJSON,
+  isProductionObjectJSON,
+  parsePosStr,
+  serializePosStr,
 } from "@backend/types/simulationTypes.ts";
-import { cells } from "./map_vis_cells_1.ts";
+import { Entries } from "@backend/utils/objectTyping.ts";
+
+const VILLAGER_PLOT_DIM = {
+  dx: 18,
+  dy: 18,
+};
+
+const cells: Record<PosStr, CellJSON> = {};
+
+// 100 x 100 centered at (0,0)
+for (let x = -50; x < 50; x++) {
+  for (let y = -50; y < 50; y++) {
+    const pos = { x, y };
+    cells[serializePosStr(pos)] = {
+      owner: null,
+      object: null,
+      pos: pos,
+    };
+  }
+}
 
 export const worldMap: WorldMapJSON = {
-  cells: {
-    ...cells,
-    "0,0": {
-      owner: "villager_1",
-      object: "house_1",
-    },
-    "18,4": {
-      owner: "villager_2",
-      object: "house_2",
-    },
-    "0,15": {
-      owner: "villager_3",
-      object: "house_3",
-    },
-    "-15,0": {
-      owner: "villager_4",
-      object: "house_4",
-    },
-    "0,-15": {
-      owner: "villager_5",
-      object: "house_5",
-    },
-    "-12, 20": {
-      owner: null,
-      object: "cosmetic_1",
-    },
-    "6,6": {
-      owner: null,
-      object: "cosmetic_2",
-    },
-    "-12,12": {
-      owner: null,
-      object: "cosmetic_3",
-    },
-    "-16,-10": {
-      owner: null,
-      object: "cosmetic_4",
-    },
-    "10,2": {
-      owner: null,
-      object: "cosmetic_5",
-    },
-    "-8,20": {
-      owner: null,
-      object: "cosmetic_6",
-    },
-    "-9,-12": {
-      owner: null,
-      object: "cosmetic_7",
-    },
-    "6,-22": {
-      owner: null,
-      object: "cosmetic_8",
-    },
-    "21,-7": {
-      owner: null,
-      object: "cosmetic_9",
-    },
-    "-18,-18": {
-      owner: null,
-      object: "production_1",
-    },
-    "-18,18": {
-      owner: null,
-      object: "production_2",
-    },
-    "18,-18": {
-      owner: null,
-      object: "production_3",
-    },
-    "13,18": {
-      owner: null,
-      object: "production_4",
-    },
-    "13,-10": {
-      owner: null,
-      object: "production_5",
-    },
-  },
+  cells: cells,
 };
 
 const villager1: VillagerJSON = {
@@ -116,6 +73,7 @@ const villager1: VillagerJSON = {
   assignment: null,
   asset: "villager_1_asset",
   pos: { x: 1, y: 5 }, // in front of house_1
+  basePos: { x: 0, y: 0 },
 };
 
 const villager2: VillagerJSON = {
@@ -141,6 +99,7 @@ const villager2: VillagerJSON = {
   assignment: null,
   asset: "villager_2_asset",
   pos: { x: 18, y: 8 },
+  basePos: { x: 36, y: 8 },
 };
 
 const villager3: VillagerJSON = {
@@ -166,6 +125,7 @@ const villager3: VillagerJSON = {
   assignment: null,
   asset: "villager_3_asset",
   pos: { x: -15, y: 4 },
+  basePos: { x: 0, y: 30 },
 };
 
 const villager4: VillagerJSON = {
@@ -191,6 +151,7 @@ const villager4: VillagerJSON = {
   assignment: null,
   asset: "villager_4_asset",
   pos: { x: 1, y: -11 },
+  basePos: { x: -30, y: 0 },
 };
 
 const villager5: VillagerJSON = {
@@ -216,6 +177,7 @@ const villager5: VillagerJSON = {
   assignment: null,
   asset: "villager_5_asset",
   pos: { x: 5, y: 1 },
+  basePos: { x: 0, y: -30 },
 };
 
 const villager6: VillagerJSON = {
@@ -241,6 +203,7 @@ const villager6: VillagerJSON = {
   assignment: null,
   asset: "villager_6_asset",
   pos: { x: -8, y: 1 },
+  basePos: { x: -34, y: 30 },
 };
 
 const villager7: VillagerJSON = {
@@ -266,6 +229,7 @@ const villager7: VillagerJSON = {
   assignment: null,
   asset: "villager_6_asset",
   pos: { x: -8, y: 3 },
+  basePos: { x: 38, y: -37 },
 };
 
 const villager8: VillagerJSON = {
@@ -291,6 +255,7 @@ const villager8: VillagerJSON = {
   assignment: null,
   asset: "villager_8_asset",
   pos: { x: -8, y: 5 },
+  basePos: { x: 38, y: 37 },
 };
 
 const attribute1: AttributeJSON = {
@@ -343,6 +308,8 @@ const house1: HouseObjectJSON = {
   name: "Villager 1's house",
   asset: "house_1_asset",
   owner: "villager_1",
+  pos: { x: 0, y: 0 },
+  enviroType: EnviroObjectType.HOUSE,
 };
 
 const house2: HouseObjectJSON = {
@@ -350,6 +317,8 @@ const house2: HouseObjectJSON = {
   name: "Villager 2's house",
   asset: "house_2_asset",
   owner: "villager_2",
+  pos: { x: 36, y: 8 },
+  enviroType: EnviroObjectType.HOUSE,
 };
 
 const house3: HouseObjectJSON = {
@@ -357,6 +326,8 @@ const house3: HouseObjectJSON = {
   name: "Villager 3's house",
   asset: "house_3_asset",
   owner: "villager_3",
+  pos: { x: 0, y: 30 },
+  enviroType: EnviroObjectType.HOUSE,
 };
 
 const house4: HouseObjectJSON = {
@@ -364,6 +335,8 @@ const house4: HouseObjectJSON = {
   name: "Villager 4's house",
   asset: "house_4_asset",
   owner: "villager_4",
+  pos: { x: -30, y: 0 },
+  enviroType: EnviroObjectType.HOUSE,
 };
 
 const house5: HouseObjectJSON = {
@@ -371,6 +344,8 @@ const house5: HouseObjectJSON = {
   name: "Villager 5's house",
   asset: "house_5_asset",
   owner: "villager_5",
+  pos: { x: 0, y: -30 },
+  enviroType: EnviroObjectType.HOUSE,
 };
 
 const house6: HouseObjectJSON = {
@@ -378,6 +353,8 @@ const house6: HouseObjectJSON = {
   name: "Villager 6's house",
   asset: "house_6_asset",
   owner: "villager_6",
+  pos: { x: -34, y: 30 },
+  enviroType: EnviroObjectType.HOUSE,
 };
 
 const house7: HouseObjectJSON = {
@@ -385,6 +362,8 @@ const house7: HouseObjectJSON = {
   name: "Villager 7's house",
   asset: "house_7_asset",
   owner: "villager_7",
+  pos: { x: 38, y: -37 },
+  enviroType: EnviroObjectType.HOUSE,
 };
 
 const house8: HouseObjectJSON = {
@@ -392,6 +371,8 @@ const house8: HouseObjectJSON = {
   name: "Villager 8's house",
   asset: "house_8_asset",
   owner: "villager_8",
+  pos: { x: 38, y: 37 },
+  enviroType: EnviroObjectType.HOUSE,
 };
 
 const production1: ProductionObjectJSON = {
@@ -407,6 +388,8 @@ const production1: ProductionObjectJSON = {
   // object which can be transformed into resources. Once this energy reserve
   // is depleted, the production object will stop producing resources until
   // it is replenished with more energy (through time).
+  pos: { x: -18, y: -18 },
+  enviroType: EnviroObjectType.PRODUCTION,
 };
 
 const production2: ProductionObjectJSON = {
@@ -419,6 +402,8 @@ const production2: ProductionObjectJSON = {
   },
   workerCapacity: 2,
   energyReserve: 1700,
+  pos: { x: -18, y: 18 },
+  enviroType: EnviroObjectType.PRODUCTION,
 };
 
 const production3: ProductionObjectJSON = {
@@ -431,6 +416,8 @@ const production3: ProductionObjectJSON = {
   },
   workerCapacity: 2,
   energyReserve: 1700,
+  pos: { x: 18, y: -18 },
+  enviroType: EnviroObjectType.PRODUCTION,
 };
 
 const production4: ProductionObjectJSON = {
@@ -443,6 +430,8 @@ const production4: ProductionObjectJSON = {
   },
   workerCapacity: 2,
   energyReserve: 1700,
+  pos: { x: 13, y: 18 },
+  enviroType: EnviroObjectType.PRODUCTION,
 };
 
 const production5: ProductionObjectJSON = {
@@ -455,53 +444,82 @@ const production5: ProductionObjectJSON = {
   },
   workerCapacity: 2,
   energyReserve: 1700,
+  pos: { x: 13, y: -10 },
+  enviroType: EnviroObjectType.PRODUCTION,
 };
 
 const cosmetic1: CosmeticObjectJSON = {
   _id: "cosmetic_1",
   name: "Statue of Light",
   asset: "cosmetic_1_asset",
+  pos: { x: 0, y: 7 },
+  enviroType: EnviroObjectType.COSMETIC,
+  owner: "villager_1",
 };
 
 const cosmetic2: CosmeticObjectJSON = {
   _id: "cosmetic_2",
   name: "Bell Tower",
   asset: "cosmetic_2_asset",
+  pos: { x: 36, y: 15 },
+  enviroType: EnviroObjectType.COSMETIC,
+  owner: "villager_2",
 };
 const cosmetic3: CosmeticObjectJSON = {
   _id: "cosmetic_3",
   name: "Garden Swing",
   asset: "cosmetic_3_asset",
+  pos: { x: 0, y: 37 },
+  enviroType: EnviroObjectType.COSMETIC,
+  owner: "villager_3",
 };
 const cosmetic4: CosmeticObjectJSON = {
   _id: "cosmetic_4",
   name: "Flower Tree",
   asset: "cosmetic_4_asset",
+  pos: { x: -30, y: 7 },
+  enviroType: EnviroObjectType.COSMETIC,
+  owner: "villager_4",
 };
 const cosmetic5: CosmeticObjectJSON = {
   _id: "cosmetic_5",
   name: "Grocer",
   asset: "cosmetic_5_asset",
+  pos: { x: 0, y: -23 },
+  enviroType: EnviroObjectType.COSMETIC,
+  owner: "villager_5",
 };
 const cosmetic6: CosmeticObjectJSON = {
   _id: "cosmetic_6",
   name: "Water Well",
   asset: "cosmetic_6_asset",
+  pos: { x: -34, y: 37 },
+  enviroType: EnviroObjectType.COSMETIC,
+  owner: "villager_6",
 };
 const cosmetic7: CosmeticObjectJSON = {
   _id: "cosmetic_7",
   name: "Crystal Lamp",
   asset: "cosmetic_7_asset",
+  pos: { x: 45, y: -37 },
+  enviroType: EnviroObjectType.COSMETIC,
+  owner: "villager_7",
 };
 const cosmetic8: CosmeticObjectJSON = {
   _id: "cosmetic_8",
   name: "Log Bench",
   asset: "cosmetic_8_asset",
+  pos: { x: 38, y: 44 },
+  enviroType: EnviroObjectType.COSMETIC,
+  owner: "villager_8",
 };
 const cosmetic9: CosmeticObjectJSON = {
   _id: "cosmetic_9",
   name: "Flower Garden",
   asset: "cosmetic_9_asset",
+  pos: { x: 21, y: -7 },
+  enviroType: EnviroObjectType.COSMETIC,
+  owner: null,
 };
 
 const resource1: ResourceJSON = {
@@ -699,6 +717,8 @@ export const simulationState1: SimulationStateJSON = {
     house_4: house4,
     house_5: house5,
     house_6: house6,
+    house_7: house7,
+    house_8: house8,
     production_1: production1,
     production_2: production2,
     production_3: production3,
@@ -830,12 +850,42 @@ export const assets1: AssetsJSON = {
     type: "png",
     remoteImages: [
       {
-        name: "original.png",
-        url: "https://flatearth.b-cdn.net/house-2024-05-18T14:15:16.436Z/original.png",
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/house-2024-05-23T03:28:11.539Z/edges-cropped2.png",
       },
+    ],
+    dimensions: {
+      dx: 8,
+      dy: 8,
+    },
+  },
+  house_7_asset: {
+    _id: "house_7_asset",
+    name: "Villager 7 House asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "...",
+    type: "png",
+    remoteImages: [
       {
         name: "final.png",
-        url: "https://flatearth.b-cdn.net/house-2024-05-18T14:15:16.436Z/edges-cropped2.png",
+        url: "https://flatearth.b-cdn.net/house-2024-05-23T03:28:11.539Z/edges-cropped2.png",
+      },
+    ],
+    dimensions: {
+      dx: 8,
+      dy: 8,
+    },
+  },
+  house_8_asset: {
+    _id: "house_8_asset",
+    name: "Villager 8 House asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "...",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/house-2024-05-23T03:28:11.539Z/edges-cropped2.png",
       },
     ],
     dimensions: {
@@ -1507,3 +1557,204 @@ export const assets1: AssetsJSON = {
     },
   },
 };
+
+// Fill CellsJson with correct owner
+for (const [villagerId, villager] of Object.entries(
+  simulationState1.villagers
+)) {
+  if (
+    checkGridCellsJSON(
+      simulationState1.worldMap.cells,
+      villager.basePos,
+      VILLAGER_PLOT_DIM,
+      null,
+      false, // not checking objects
+      null, // make sure not owned by anyone currently
+      true
+    )
+  ) {
+    fillGridCellsJSON(
+      simulationState1.worldMap.cells,
+      villager.basePos,
+      VILLAGER_PLOT_DIM,
+      null,
+      false,
+      villagerId,
+      true
+    );
+  } else {
+    throw Error(
+      `Villager plot centered at ${villager.basePos.x},${villager.basePos.y} overlaps with another plot`
+    );
+  }
+}
+
+// Manually defined cells. Will be automatically filled into the worldmap cells
+// const manualCells: CellsJSON = {
+//   "0,0": {
+//     // prefereably center of villager's plot
+//     owner: "villager_1",
+//     object: "house_1",
+//   },
+//   "36,8": {
+//     owner: "villager_2",
+//     object: "house_2",
+//   },
+//   "0,30": {
+//     owner: "villager_3",
+//     object: "house_3",
+//   },
+//   "-30,0": {
+//     owner: "villager_4",
+//     object: "house_4",
+//   },
+//   "0,-30": {
+//     owner: "villager_5",
+//     object: "house_5",
+//   },
+//   "-34,30": {
+//     owner: "villager_6",
+//     object: "house_6",
+//   },
+//   "38,-37": {
+//     owner: "villager_7",
+//     object: "house_7",
+//   },
+//   "38,37": {
+//     owner: "villager_8",
+//     object: "house_8",
+//   },
+//   "0, 7": {
+//     owner: "villager_1",
+//     object: "cosmetic_1",
+//   },
+//   "36,15": {
+//     owner: "villager_2",
+//     object: "cosmetic_2",
+//   },
+//   "0,37": {
+//     owner: "villager_3",
+//     object: "cosmetic_3",
+//   },
+//   "-30,7": {
+//     owner: "villager_4",
+//     object: "cosmetic_4",
+//   },
+//   "0,-23": {
+//     owner: "villager_5",
+//     object: "cosmetic_5",
+//   },
+//   "-34,37": {
+//     owner: "villager_6",
+//     object: "cosmetic_6",
+//   },
+//   "45,-37": {
+//     owner: "villager_7",
+//     object: "cosmetic_7",
+//   },
+//   "38,44": {
+//     owner: "villager_8",
+//     object: "cosmetic_8",
+//   },
+//   "21,-7": {
+//     owner: null,
+//     object: "cosmetic_9",
+//   },
+//   "-18,-18": {
+//     owner: null,
+//     object: "production_1",
+//   },
+//   "-18,18": {
+//     owner: null,
+//     object: "production_2",
+//   },
+//   "18,-18": {
+//     owner: null,
+//     object: "production_3",
+//   },
+//   "13,18": {
+//     owner: null,
+//     object: "production_4",
+//   },
+//   "13,-10": {
+//     owner: null,
+//     object: "production_5",
+//   },
+// };
+
+// Fill the worldmap cells with the envrionemnt objects
+for (const [enviroObjectId, enviroObjectJson] of Object.entries(
+  simulationState1.enviroObjects
+) as Entries<Record<EnviroObjectId, EnviroObjectJSON>>) {
+  const pos = enviroObjectJson.pos;
+  console.log(
+    `Check and fill worldmap cells at ${pos.x},${pos.y} with enviroobject ${enviroObjectId}`
+  );
+
+  const assetId = enviroObjectJson.asset;
+  const dim = assets1[assetId].dimensions;
+
+  // Check manual cell owner corresponds to actual owner
+  if (
+    isHouseObjectJSON(enviroObjectJson) ||
+    isCosmeticObjectJSON(enviroObjectJson)
+  ) {
+    if (
+      !checkGridCellsJSON(
+        simulationState1.worldMap.cells,
+        pos,
+        dim,
+        null,
+        false,
+        enviroObjectJson.owner,
+        true
+      )
+    ) {
+      throw Error(
+        `House/Cosmetic object owned by ${enviroObjectJson.owner} cannot be placed at ${pos.x},${pos.y} the surroding plot is not owned by that owner`
+      );
+    }
+  } else if (isProductionObjectJSON(enviroObjectJson)) {
+    if (
+      !checkGridCellsJSON(
+        simulationState1.worldMap.cells,
+        pos,
+        dim,
+        null,
+        false,
+        null,
+        true // production object must be placed where nobodyowns the land
+      )
+    ) {
+      throw Error(
+        `Production object cannot be placed at ${pos.x},${pos.y} which the plot surroudning overlaps with owned land`
+      );
+    }
+  }
+
+  if (
+    checkGridCellsJSON(
+      simulationState1.worldMap.cells,
+      pos,
+      dim,
+      null,
+      true, // make sure no object is there
+      null,
+      false // already check that the plot of land for object is owned by correct owner (or unowned)
+    )
+  ) {
+    fillGridCellsJSON(
+      simulationState1.worldMap.cells,
+      pos,
+      dim,
+      enviroObjectId,
+      true,
+      null,
+      false
+    );
+  } else {
+    throw Error(
+      `Failed to fill grid cells json for enviro object ${enviroObjectId} at ${pos.x},${pos.y} with dimensions ${dim.dx},${dim.dy} as it overlaps with another object`
+    );
+  }
+}
