@@ -4,6 +4,7 @@ import { IconDots } from "@tabler/icons-react";
 import HabitForm from "./habitForm";
 import Habit from "./habit";
 import { useEffect, useState } from "react";
+import { Alert } from "./alert";
 
 interface HabitType {
   id: string;
@@ -75,6 +76,7 @@ export default function HabitCounter({
     };
     setColorNum((colorNum + 1) % 7);
     setHabits([...habits, newHabit]);
+    Alert('Success', 'Habbit Counter Widget', 'Habit successfully added!');
   };
 
   const handleIncrement = (id: string) => {
@@ -106,6 +108,7 @@ export default function HabitCounter({
   };
 
   const handleRemove = (id: string) => {
+    Alert('Success', 'Habbit Counter Widget', 'Habit successfully deleted!');
     setHabits(habits.filter((habit) => habit.id !== id));
   };
 
