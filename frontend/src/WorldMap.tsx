@@ -193,8 +193,8 @@ const WorldMap = () => {
 
       posRenderOrder.current = calculatePosRenderOrder(tileMapRange.current);
 
-      mapObjects.current.clear();
-      posToObjects.current.clear();
+      // mapObjects.current.clear();
+      // posToObjects.current.clear();
 
       // === Update mapObjects and posToObjects ===
       // TODO: calculate diff between old and new SimulationState.enviroObjects
@@ -239,9 +239,9 @@ const WorldMap = () => {
       for (let [
         enviroObjectId,
         enviroObject,
-      ] of simulationState.enviroObjects.entries() ?? []) {
+      ] of simulationState.enviroObjects) {
         if (
-          !(enviroObjectId in mapObjects) &&
+          !mapObjects.current.has(enviroObjectId) &&
           enviroObject.pos &&
           enviroObject.asset
         ) {
@@ -256,6 +256,9 @@ const WorldMap = () => {
               asset.dimensions,
               enviroObjectId
             );
+            console.log(
+              `Adding enviro object with key ${enviroObjectId} to mapObjects and posToObjects`
+            );
             mapObjects.current.set(enviroObjectId, environObject);
             posToObjectsAdd(posToObjects.current, posStr, enviroObjectId);
           } else {
@@ -266,31 +269,29 @@ const WorldMap = () => {
         }
       }
 
-      // Remove map objects that are not in the new simulation state
-      for (let [enviroObjectId, mapObject] of mapObjects.current) {
-        if (
-          !simulationState.enviroObjects.has(enviroObjectId) ||
-          !simulationState.enviroObjects.get(enviroObjectId)?.pos
-        ) {
-          mapObjects.current.delete(enviroObjectId);
-          posToObjectsDelete(posToObjects.current, enviroObjectId);
-        }
-      }
-
+      // Add villagers that are not in the current map objects
       for (let [villagerId, villager] of simulationState.villagers) {
-        if (villager.pos && villager.asset) {
+        if (
+          !mapObjects.current.has(villagerId) &&
+          villager.pos &&
+          villager.asset
+        ) {
           const asset = assetsRef.current?.get(villager.asset);
           if (asset !== undefined) {
             const finalRemoteImage = asset.remoteImages.at(-1);
             if (finalRemoteImage !== undefined) {
-              const environObject: MapObject = new MapObject(
+              const villagerObject: MapObject = new MapObject(
                 finalRemoteImage.url,
                 villager.pos,
                 0,
                 asset.dimensions,
                 villagerId
               );
-              mapObjects.current.set(villagerId, environObject);
+              console.log(
+                `Adding villager ${villagerId} at ${villager.pos.x},${villager.pos.y} to mapObjects and posToObjects`
+              );
+
+              mapObjects.current.set(villagerId, villagerObject);
               posToObjectsAdd(
                 posToObjects.current,
                 serializePosStr(villager.pos),
@@ -302,6 +303,21 @@ const WorldMap = () => {
               `Asset of villager with key ${villagerId} not found in assets`
             );
           }
+        }
+      }
+
+      // Remove map objects that are not in the new simulation state
+      for (let [mapObjectId, mapObject] of mapObjects.current) {
+        if (
+          !simulationState.villagers.has(mapObjectId) &&
+          !simulationState.enviroObjects.has(mapObjectId)
+        ) {
+          console.log(
+            `Removing map object with key ${mapObjectId} from mapObjects and posToObjects`
+          );
+
+          mapObjects.current.delete(mapObjectId);
+          posToObjectsDelete(posToObjects.current, mapObjectId);
         }
       }
     },
@@ -849,7 +865,6 @@ const WorldMap = () => {
           //   }
           // }
 
-          //
           const collidingEnviroObject =
             collidingObjectId &&
             simStateRef.current?.enviroObjects.get(collidingObjectId);
@@ -943,6 +958,59 @@ const WorldMap = () => {
         y: vel.current.y * delta,
       };
       transformMat.current.translateSelf(displacement.x, displacement.y);
+
+      // === Update position of villagers ===
+      for (let [villagerId, villager] of simStateRef.current?.villagers ?? []) {
+        if (villager.pos && villager.asset) {
+          const mapObject = mapObjects.current.get(villagerId);
+          if (mapObject) {
+            const prevPos = { ...mapObject.pos };
+            const targetPos = villager.path.at(0);
+            if (targetPos) {
+              const displacement = {
+                x: targetPos.x - mapObject.pos.x,
+                y: targetPos.y - mapObject.pos.y,
+              };
+              const vel = {
+                x: displacement.x * 0.1,
+                y: displacement.y * 0.1,
+              };
+              // mapObject.setAcc(acc);
+              mapObject.setVel(vel);
+              mapObject.update(delta); // will update pos
+              posToObjectsUpdate(
+                posToObjects.current,
+                villagerId,
+                serializePosStr(prevPos),
+                serializePosStr(mapObject.pos)
+              );
+
+              // after updating position, check if villager has reached target
+              const newDisplacementFromTarget = {
+                x: targetPos.x - mapObject.pos.x,
+                y: targetPos.y - mapObject.pos.y,
+              };
+              const newDisplacementFromTargetMag = Math.sqrt(
+                newDisplacementFromTarget.x * newDisplacementFromTarget.x +
+                  newDisplacementFromTarget.y * newDisplacementFromTarget.y
+              );
+              if (newDisplacementFromTargetMag < 0.4) {
+                // Villager has reached target, remove target from path
+                villager.path.shift();
+                const villagerReachedPathPointClientMsg = {
+                  type: ClientMessageType.VILLAGER_REACHED_PATH_POINT,
+                  villagerId: villagerId,
+                };
+                socketRef.current?.send(
+                  JSON.stringify(villagerReachedPathPointClientMsg)
+                );
+              }
+            }
+          }
+        } else {
+          console.error(`Villager with key ${villagerId} has no pos or asset`);
+        }
+      }
     },
     []
   );
@@ -1102,11 +1170,15 @@ const WorldMap = () => {
       const pingClientMsg: PingMsg = { type: ClientMessageType.PING };
       socket.send(JSON.stringify(pingClientMsg));
       reconnectAttemptsRef.current = 0; // Reset reconnect attempts on successful connection
+
+      simStateRef.current = new SimulationState();
+      mapObjects.current.clear();
+      posToObjects.current.clear();
     };
 
     // Event listener for when a message is received
     socket.onmessage = (event) => {
-      console.log("Received WS message:", event.data);
+      console.log("Received WS message");
 
       let message = {};
       try {
@@ -1126,6 +1198,8 @@ const WorldMap = () => {
       if (isPongMsg(message)) {
         console.log("Server said PONG");
       } else if (isSimStateAssetsServerMsg(message)) {
+        console.log("Received simstate and assets from server");
+
         // NOte: must handle assets first before simstate, because simstate
         // depends on assets
         handleReceiveAssetsServerMsg(
@@ -1428,6 +1502,10 @@ const calculatePosRenderOrder = (coordsRange: IRange): Coordinates[] => {
   return newPosRenderOrder;
 };
 
+export const floatPosToIntPos = (pos: Pos): Pos => {
+  return { x: Math.floor(pos.x), y: Math.floor(pos.y) };
+};
+
 export const posToIsoCoords = (
   originCoords: Coords,
   pos: Coordinates
@@ -1440,14 +1518,15 @@ export const posToIsoCoords = (
 
 const posToObjectsAdd = (
   posToObjects: Map<PosStr, string[]>,
-  pos: PosStr,
+  posStr: PosStr,
   mapObjectId: MapObjectId
 ) => {
-  if (!posToObjects.has(pos)) {
-    posToObjects.set(pos, []);
+  posStr = serializePosStr(floatPosToIntPos(parsePosStr(posStr)));
+  if (!posToObjects.has(posStr)) {
+    posToObjects.set(posStr, []);
   }
 
-  posToObjects.get(pos)?.push(mapObjectId);
+  posToObjects.get(posStr)?.push(mapObjectId);
 };
 
 const posToObjectsUpdate = (
@@ -1456,6 +1535,8 @@ const posToObjectsUpdate = (
   oldPosStr: PosStr,
   newPosStr: PosStr
 ) => {
+  oldPosStr = serializePosStr(floatPosToIntPos(parsePosStr(oldPosStr)));
+  newPosStr = serializePosStr(floatPosToIntPos(parsePosStr(newPosStr)));
   if (posToObjects.has(oldPosStr)) {
     const mapObjectIds = posToObjects.get(oldPosStr);
     if (mapObjectIds !== undefined) {
@@ -1476,6 +1557,12 @@ const posToObjectsDelete = (
     const idx = mapObjectIds.indexOf(mapObjectId);
     if (idx >= 0) {
       mapObjectIds.splice(idx, 1);
+      console.log(
+        `Deleted MapObjectId ${mapObjectId} from posToObjects ${posStr}`
+      );
+      if (mapObjectIds.length === 0) {
+        posToObjects.delete(posStr);
+      }
     }
   }
 };
@@ -1491,7 +1578,7 @@ const pointInBounds = (point: Pos, objPos: Pos, objDim: Dimensions) => {
 
 const DEDUB_COLLISIONS = false;
 /**
- *
+ * @deprecated
  * @param mousePos Tile map position of point to check colliding e.g. (3, 4)
  * @param mapObjects
  */

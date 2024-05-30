@@ -7,6 +7,7 @@ import {
   PlayerVisitMsg,
   ServerMessageType,
   SimStateAssetsServerMsg,
+  VillagerReachedPathPointClientMsg,
   WebsocketClients,
   WelcomeServerMsg,
   assertWSReqType,
@@ -14,6 +15,7 @@ import {
   isMoveEnviroObjectClientMsg,
   isPingMsg,
   isPlayerVisitMsg,
+  isVillagerReachedPathPointClientMsg,
 } from "@backend/types/wsTypes.ts";
 import createId from "@backend/utils/createId.ts";
 import { serializeMapToJSON } from "@backend/utils/objectTyping.ts";
@@ -153,6 +155,20 @@ export class CommunicationServer {
 
                 this.simulationState.enviroObjects.get(enviroObjectId).pos =
                   newPos;
+                this.broadcastSimStateAssets(this.simulationState, this.assets);
+              }
+              break;
+            case ClientMessageType.VILLAGER_REACHED_PATH_POINT:
+              console.log(`Handle wsreq as VILLAGER_REACHED_PATH_POINT`);
+              if (
+                assertWSReqType<VillagerReachedPathPointClientMsg>(
+                  message,
+                  isVillagerReachedPathPointClientMsg
+                )
+              ) {
+                const { villagerId } = message;
+                console.log(`Villager ${villagerId} reached path point`);
+                this.simulationState.villagers.get(villagerId).path.shift();
                 this.broadcastSimStateAssets(this.simulationState, this.assets);
               }
               break;

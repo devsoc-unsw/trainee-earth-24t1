@@ -591,6 +591,7 @@ export interface VillagerJSON extends JSONObject {
   readonly asset: AssetId | null;
   pos: Pos | null;
   basePos: Pos;
+  path: Pos[];
 }
 
 export class Villager implements Serializable<VillagerJSON> {
@@ -648,6 +649,9 @@ export class Villager implements Serializable<VillagerJSON> {
 
   public basePos: Pos;
 
+  // Path of points that the villager intends to walk through
+  public path: Pos[] = [];
+
   constructor(type: VillagerType, _id: VillagerId = createId()) {
     this.type = type;
     this._id = _id;
@@ -679,6 +683,8 @@ export class Villager implements Serializable<VillagerJSON> {
       asset: this.asset,
       pos: this.pos,
       basePos: this.basePos,
+      // deepcopy this.path
+      path: [...this.path.map((pos) => ({ ...pos }))],
     };
   }
 
@@ -711,6 +717,7 @@ export class Villager implements Serializable<VillagerJSON> {
     villager.asset = obj.asset;
     villager.pos = obj.pos;
     villager.basePos = obj.basePos;
+    villager.path = [...obj.path.map((pos) => ({ ...pos }))];
 
     return villager;
   }

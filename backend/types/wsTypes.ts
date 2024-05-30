@@ -1,7 +1,12 @@
 import { CustomError } from "@backend/utils/customError.ts";
 import { WebSocket } from "ws";
 import { Assets, AssetsJSON } from "./assetTypes.ts";
-import { EnviroObjectId, Pos, SimulationStateJSON } from "./simulationTypes.ts";
+import {
+  EnviroObjectId,
+  Pos,
+  SimulationStateJSON,
+  VillagerId,
+} from "./simulationTypes.ts";
 
 /**
  * Maps clientIds (created by server) to WebSocket objects which represent a
@@ -13,6 +18,7 @@ export enum ClientMessageType {
   PING = "PING",
   PLAYER_VISIT = "PLAYER_VISIT",
   MOVE_ENVIRO_OBJECT = "MOVE_ENVIRO_OBJECT",
+  VILLAGER_REACHED_PATH_POINT = "VILLAGER_REACHED_PATH_POINT",
 }
 
 export enum ServerMessageType {
@@ -84,6 +90,20 @@ export function isMoveEnviroObjectClientMsg(
     obj.type === ClientMessageType.MOVE_ENVIRO_OBJECT &&
     (obj as MoveEnviroObjectClientMsg).enviroObjectId !== undefined &&
     (obj as MoveEnviroObjectClientMsg).newPos !== undefined
+  );
+}
+
+export interface VillagerReachedPathPointClientMsg
+  extends ClientWebsocketMessage {
+  type: ClientMessageType.VILLAGER_REACHED_PATH_POINT;
+  villagerId: VillagerId;
+}
+export function isVillagerReachedPathPointClientMsg(
+  obj: ClientWebsocketMessage
+): obj is VillagerReachedPathPointClientMsg {
+  return (
+    obj.type === ClientMessageType.VILLAGER_REACHED_PATH_POINT &&
+    (obj as VillagerReachedPathPointClientMsg).villagerId !== undefined
   );
 }
 

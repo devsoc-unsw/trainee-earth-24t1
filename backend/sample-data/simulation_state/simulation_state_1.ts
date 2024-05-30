@@ -74,6 +74,7 @@ const villager1: VillagerJSON = {
   asset: "villager_1_asset",
   pos: { x: 1, y: 5 }, // in front of house_1
   basePos: { x: 0, y: 0 },
+  path: [],
 };
 
 const villager2: VillagerJSON = {
@@ -100,6 +101,7 @@ const villager2: VillagerJSON = {
   asset: "villager_2_asset",
   pos: { x: 18, y: 8 },
   basePos: { x: 36, y: 8 },
+  path: [],
 };
 
 const villager3: VillagerJSON = {
@@ -126,6 +128,7 @@ const villager3: VillagerJSON = {
   asset: "villager_3_asset",
   pos: { x: -15, y: 4 },
   basePos: { x: 0, y: 30 },
+  path: [],
 };
 
 const villager4: VillagerJSON = {
@@ -152,6 +155,7 @@ const villager4: VillagerJSON = {
   asset: "villager_4_asset",
   pos: { x: 1, y: -11 },
   basePos: { x: -30, y: 0 },
+  path: [],
 };
 
 const villager5: VillagerJSON = {
@@ -178,6 +182,7 @@ const villager5: VillagerJSON = {
   asset: "villager_5_asset",
   pos: { x: 5, y: 1 },
   basePos: { x: 0, y: -30 },
+  path: [],
 };
 
 const villager6: VillagerJSON = {
@@ -204,6 +209,7 @@ const villager6: VillagerJSON = {
   asset: "villager_6_asset",
   pos: { x: -8, y: 1 },
   basePos: { x: -34, y: 30 },
+  path: [],
 };
 
 const villager7: VillagerJSON = {
@@ -230,6 +236,7 @@ const villager7: VillagerJSON = {
   asset: "villager_6_asset",
   pos: { x: -8, y: 3 },
   basePos: { x: 38, y: -37 },
+  path: [],
 };
 
 const villager8: VillagerJSON = {
@@ -256,6 +263,7 @@ const villager8: VillagerJSON = {
   asset: "villager_8_asset",
   pos: { x: -8, y: 5 },
   basePos: { x: 38, y: 37 },
+  path: [],
 };
 
 const attribute1: AttributeJSON = {
