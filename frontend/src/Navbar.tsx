@@ -19,6 +19,7 @@ import {
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
 import { ReactNode } from "react";
+import VillagerGenButton from "./components/ui/VillagerGenButton";
 
 interface NavbarProps {
   children: ReactNode;
@@ -36,6 +37,8 @@ const Navbar = ({ children }: NavbarProps) => {
         <Button onClick={() => localStorage.clear()}>
           Reset Local Storage
         </Button>
+
+        {/* <VillagerGenButton></VillagerGenButton> */}
 
         {children}
 

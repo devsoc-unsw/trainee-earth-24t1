@@ -7,6 +7,7 @@ import CalendarWidget from "@frontend/src/components/ui/calendarWidget";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useEffect, useState } from "react";
 import WorldMap from "@frontend/src/WorldMap";
+import VillagerGenButton from "./components/ui/VillagerGenButton";
 import HabitCounter from "./components/ui/habitCounter";
 import { Button } from "./components/ui/button";
 import {
@@ -137,6 +138,9 @@ export default function Interface() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <div className="absolute left-16 top-1/2">
+        <VillagerGenButton></VillagerGenButton>
+      </div>
       <DndContext onDragEnd={handleDragEnd}>
         {widgets.map((widget) => {
           switch (widget.type) {
