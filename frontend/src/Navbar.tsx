@@ -19,6 +19,7 @@ import {
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
 import { ReactNode } from "react";
+import { Alert } from "./components/ui/alert";
 
 interface NavbarProps {
   children: ReactNode;

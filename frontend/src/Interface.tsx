@@ -6,18 +6,19 @@ import GithubWidget from "@frontend/src/components/ui/github";
 import CalendarWidget from "@frontend/src/components/ui/calendarWidget";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { useEffect, useState } from "react";
-import WorldMap from "@frontend/src/WorldMap";
 import HabitCounter from "./components/ui/habitCounter";
 import { Button } from "./components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@frontend/@/components/ui/dialog";
+import Inventory from "./components/ui/inventory";
+import { Alert } from "./components/ui/alert";
+import { Toaster } from "sonner";
 
 /**
  * Default widget positions calculated relative to middle
@@ -103,15 +104,9 @@ export default function Interface() {
     setWidgets(_widgets);
   }
 
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-
-  const handleOpenProfile = (isOpen: boolean) => {
-    setIsProfileOpen(isOpen);
-  };
-
   return (
     <>
-      <Dialog onOpenChange={handleOpenProfile}>
+      <Dialog>
         <header className="header">
           <Navbar>
             <DialogTrigger asChild>
@@ -121,22 +116,19 @@ export default function Interface() {
             </DialogTrigger>
           </Navbar>
         </header>
-        <DialogContent className="sm:max-w-[1000px] h-[500px] bg-white rounded-md fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <DialogHeader>
-            <DialogTitle>Edit profile</DialogTitle>
-            <DialogDescription>
-              Make changes to your profile here. Click save when you're done.
+        <DialogContent className="sm:max-w-[1000px] h-[450px] border-zinc-900 bg-[url('https://img.freepik.com/free-vector/gradient-black-background-with-wavy-lines_23-2149151738.jpg?t=st=1717068845~exp=1717072445~hmac=30a1204deb840c5d47051110f36b534cd6c67d21cf97fa5dca8b06eeb13d5bb3&w=996')] rounded-2xl fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <DialogHeader className="">
+            <DialogTitle className="text-4xl text-white">Inventory</DialogTitle>
+            <DialogDescription className="text-xl text-white">
+              Check out your resources and inventory items.
             </DialogDescription>
+            <div className="grid gap-4 py-4 h-[330px]">
+              <Inventory />
+            </div>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4"></div>
-            <div className="grid grid-cols-4 items-center gap-4"></div>
-          </div>
-          <DialogFooter>
-            <Button type="submit">Save changes</Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Toaster richColors visibleToasts={4} closeButton />
       <DndContext onDragEnd={handleDragEnd}>
         {widgets.map((widget) => {
           switch (widget.type) {
@@ -185,7 +177,7 @@ export default function Interface() {
                   draggableId={widget.id}
                 />
               );
-          }
+            }
         })}
       </DndContext>
     </>
