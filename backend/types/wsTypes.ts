@@ -1,7 +1,7 @@
 import { CustomError } from "@backend/utils/customError.ts";
 import { WebSocket } from "ws";
 import { Assets, AssetsJSON } from "./assetTypes.ts";
-import { SimulationStateJSON } from "./simulationTypes.ts";
+import { EnviroObjectId, Pos, SimulationStateJSON } from "./simulationTypes.ts";
 
 /**
  * Maps clientIds (created by server) to WebSocket objects which represent a
@@ -13,18 +13,21 @@ export enum ClientMessageType {
   PING = "PING",
   PLAYER_VISIT = "PLAYER_VISIT",
   CREATE_VILLAGER = "CREATE_VILLAGER",
+  MOVE_ENVIRO_OBJECT = "MOVE_ENVIRO_OBJECT",
 }
 
 export enum ServerMessageType {
   PONG = "PONG",
-  SIM_STATE_ASSETS = "ASSETS",
+  SIM_STATE_ASSETS = "SIM_STATE_ASSETS",
   WELCOME = "WELCOME",
 }
 
+// ==========================
+// === Base Message types ===
+// ==========================
 export interface ClientWebsocketMessage {
   type: ClientMessageType;
 }
-
 export function isClientWebsocketMessage(
   obj: Object
 ): obj is ClientWebsocketMessage {
@@ -39,10 +42,10 @@ export function isServerWebsocketMessage(
   return (obj as ServerWebsocketMessage).type !== undefined;
 }
 
-/**
- * Types of messages that the client will send to the server.
-*/
-export type MessageTypes = PingMsg | PlayerVisitMsg | CreateVillagerWSReq;
+// =======================
+// === Client Messages ===
+// =======================
+
 export interface PingMsg extends ClientWebsocketMessage {
   type: ClientMessageType.PING;
 }
@@ -88,6 +91,24 @@ export function isCreateVillagerWSReq(
   );
 }
 
+export interface MoveEnviroObjectClientMsg extends ClientWebsocketMessage {
+  type: ClientMessageType.MOVE_ENVIRO_OBJECT;
+  enviroObjectId: EnviroObjectId;
+  newPos: Pos;
+}
+export function isMoveEnviroObjectClientMsg(
+  obj: ClientWebsocketMessage
+): obj is MoveEnviroObjectClientMsg {
+  return (
+    obj.type === ClientMessageType.MOVE_ENVIRO_OBJECT &&
+    (obj as MoveEnviroObjectClientMsg).enviroObjectId !== undefined &&
+    (obj as MoveEnviroObjectClientMsg).newPos !== undefined
+  );
+}
+
+// =======================
+// === Server Messages ===
+// =======================
 export interface WelcomeServerMsg extends ServerWebsocketMessage {
   type: ServerMessageType.WELCOME;
   text: string;
@@ -119,6 +140,9 @@ export function isSimStateAssetsServerMsg(
     (obj as SimStateAssetsServerMsg).assets !== undefined
   );
 }
+
+// ===========================
+// ===========================
 
 /**
  * Asserts that a WebSocketRequest object is of a certain type. Else throws an error.

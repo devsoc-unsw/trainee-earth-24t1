@@ -26,6 +26,8 @@ import {
   isSimStateAssetsServerMsg,
   isPongMsg,
   isServerWebsocketMessage,
+  ClientMessageType,
+  PingMsg,
 } from "@backend/types/wsTypes";
 
 const DEBUG1 = false;
@@ -233,11 +235,16 @@ const WorldMap = () => {
       //   }
       // }
 
+      // Add map objects that are not in the current map objects
       for (let [
         enviroObjectId,
         enviroObject,
       ] of simulationState.enviroObjects.entries() ?? []) {
-        if (enviroObject.pos && enviroObject.asset) {
+        if (
+          !(enviroObjectId in mapObjects) &&
+          enviroObject.pos &&
+          enviroObject.asset
+        ) {
           const posStr = serializePosStr(enviroObject.pos);
           const asset = assetsRef.current?.get(enviroObject.asset);
           const finalRemoteImageUrl = asset && asset?.remoteImages.at(-1)?.url;
@@ -256,6 +263,17 @@ const WorldMap = () => {
               ` enviro object with key ${enviroObjectId} has no asset or pos`
             );
           }
+        }
+      }
+
+      // Remove map objects that are not in the new simulation state
+      for (let [enviroObjectId, mapObject] of mapObjects.current) {
+        if (
+          !simulationState.enviroObjects.has(enviroObjectId) ||
+          !simulationState.enviroObjects.get(enviroObjectId)?.pos
+        ) {
+          mapObjects.current.delete(enviroObjectId);
+          posToObjectsDelete(posToObjects.current, enviroObjectId);
         }
       }
 
@@ -391,6 +409,7 @@ const WorldMap = () => {
       }
     }
 
+    // === Draw highlighted cells on environment objects
     for (let [posStr, cell] of simStateRef.current?.worldMap.cells.entries() ??
       []) {
       if (cell.object) {
@@ -749,7 +768,7 @@ const WorldMap = () => {
               simStateRef.current.worldMap.cells,
               clickedTileMapPos,
               objectDimensions,
-              null,
+              [selectedEnviroObject.current, null],
               true,
               null,
               false // TODO: Check place-down grid completely owned by this user's villager
@@ -769,6 +788,13 @@ const WorldMap = () => {
               null,
               false
             );
+
+            const moveEnviroObjectClientMsg = {
+              type: ClientMessageType.MOVE_ENVIRO_OBJECT,
+              enviroObjectId: selectedEnviroObject.current,
+              newPos: clickedTileMapPos,
+            };
+            socketRef.current?.send(JSON.stringify(moveEnviroObjectClientMsg));
 
             // clickedCell.object = selectedEnviroObject.current;
 
@@ -1073,7 +1099,8 @@ const WorldMap = () => {
     // Event listener for when the connection is opened
     socket.onopen = () => {
       console.log("WebSocket connection established");
-      socket.send(JSON.stringify({ type: "PING" }));
+      const pingClientMsg: PingMsg = { type: ClientMessageType.PING };
+      socket.send(JSON.stringify(pingClientMsg));
       reconnectAttemptsRef.current = 0; // Reset reconnect attempts on successful connection
     };
 
@@ -1437,6 +1464,18 @@ const posToObjectsUpdate = (
         mapObjectIds.splice(idx, 1);
         posToObjectsAdd(posToObjects, newPosStr, mapObjectId);
       }
+    }
+  }
+};
+
+const posToObjectsDelete = (
+  posToObjects: Map<PosStr, string[]>,
+  mapObjectId: MapObjectId
+) => {
+  for (const [posStr, mapObjectIds] of posToObjects.entries()) {
+    const idx = mapObjectIds.indexOf(mapObjectId);
+    if (idx >= 0) {
+      mapObjectIds.splice(idx, 1);
     }
   }
 };
