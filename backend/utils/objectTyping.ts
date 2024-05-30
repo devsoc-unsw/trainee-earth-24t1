@@ -1,4 +1,41 @@
-import { JSONCompatible, JSONObject, Serializable } from "src/db.ts";
+export interface Serializable<JSONType extends JSONObject> {
+  serialize(): JSONCompatible<JSONType>;
+}
+
+export type JSONPrimitive = string | number | boolean | null | undefined;
+export type JSONObject = { [key: string]: JSONValue };
+export type JSONArray = JSONValue[];
+export type JSONValue = JSONPrimitive | JSONArray | JSONObject;
+
+export type JSONCompatible<T> = unknown extends T
+  ? never
+  : {
+      [P in keyof T]: T[P] extends JSONValue
+        ? T[P]
+        : T[P] extends NotAssignableToJson
+        ? never
+        : JSONCompatible<T[P]>;
+    };
+
+type NotAssignableToJson = bigint | symbol | Function;
+
+/**
+ * Don't use this interface. It's just for reference when making deserialize
+ * functions for classes that you want to instantiate from serialized JSON.
+ * Make the method static.
+ *
+ * Example:
+ * class MyClass {
+ *    constructor(public f1: string, public f2: number) {}
+ *
+ *    static deserialize(obj: { f1: string, f2: number }): MyClass {
+ *      return new MyClass(obj.f1, obj.f2);
+ *    }
+ * }
+ */
+// export interface Deserializer {
+//   deserialize: (obj: JSONValue) => Object;
+// }
 
 /**
  * Creates a new copied object and transforms the object's values using a

@@ -1,6 +1,5 @@
 import axios from "axios";
 import FormData from "form-data";
-import { ButtonGroup } from "semantic-ui-react";
 import sharp from "sharp";
 import fs from "node:fs";
 import { Readable } from "node:stream";
@@ -153,16 +152,16 @@ export async function cutImage(
   imageData: ArrayBuffer
 ): Promise<ArrayBuffer | null> {
   try {
-    const metadata = await sharp(imageData).metadata()
+    const metadata = await sharp(imageData).metadata();
 
     const width = metadata.width;
     const height = metadata.height;
 
     const length = await getNonAlphaPixel(imageData, width, height);
-    
+
     const adjacent = width - length;
     const opposite = adjacent * Math.tan((60 * Math.PI) / 180);
-    const m = adjacent/opposite;
+    const m = adjacent / opposite;
     const padding = 20;
 
     // i know its fat just trust the process
@@ -170,15 +169,15 @@ export async function cutImage(
       .ensureAlpha()
       .raw()
       .toBuffer({ resolveWithObject: true })
-      .then( async ({ data, info }) => {
+      .then(async ({ data, info }) => {
         const { width, height, channels } = info;
 
         let currIndex = 0;
         for (let y = 0; y < height; y++) {
-          // y = mx + length ; 
+          // y = mx + length ;
           for (let x = 0; x < width; x++) {
             // NOTE: threshold is left
-            const threshold = m*x + length - padding;
+            const threshold = m * x + length - padding;
             // Pixel falls under the line
             if (y > threshold) {
               data[currIndex] = 0;
@@ -190,10 +189,15 @@ export async function cutImage(
           }
         }
 
-        const buffer = (await sharp(data, { raw: { width, height, channels } }).toFormat('png').toBuffer());
-        const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+        const buffer = await sharp(data, { raw: { width, height, channels } })
+          .toFormat("png")
+          .toBuffer();
+        const arrayBuffer = buffer.buffer.slice(
+          buffer.byteOffset,
+          buffer.byteOffset + buffer.byteLength
+        );
         return arrayBuffer;
-      })
+      });
 
     return editedImage;
   } catch (error) {
@@ -205,7 +209,7 @@ export async function cutImage(
 export async function getNonAlphaPixel(
   imageData: ArrayBuffer,
   width: number,
-  height: number,
+  height: number
 ): Promise<number | null> {
   let length = 0;
 
@@ -230,11 +234,14 @@ export async function flopImage(
 ): Promise<ArrayBuffer | null> {
   try {
     const editedImage = await sharp(imageData)
-    .flop()
-    .toFormat('png')
-    .toBuffer()
+      .flop()
+      .toFormat("png")
+      .toBuffer();
 
-    const arrayBuffer = editedImage.buffer.slice(editedImage.byteOffset, editedImage.byteOffset + editedImage.byteLength)
+    const arrayBuffer = editedImage.buffer.slice(
+      editedImage.byteOffset,
+      editedImage.byteOffset + editedImage.byteLength
+    );
     return arrayBuffer;
   } catch (error) {
     console.error(error);

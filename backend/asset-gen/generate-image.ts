@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { generateText } from "./generate-text.ts";
-import { isImageFileTypeType } from "src/types/imageFileTypes.ts";
+import { isImageFileTypeType } from "@backend/types/imageFileTypes.ts";
 import axios from "axios";
 import FormData from "form-data";
 import fs from "node:fs";
@@ -149,7 +149,7 @@ export async function generateVillagerImage(): Promise<undefined> {
 export async function generateResourceImage() {
   for (const item in productionList) {
     // create image
-    const textGenerationMessages = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Create an image of ${item} for my village game. It is an icon to represent the resource produced by a production plant. Create the image in a simple style, and do not create any other elements, just make the ${item} only. Place the item against a plain white background.`,
+    const textGenerationMessages = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Create an image of ${item} for my village game. It is an icon to represent the resource produced by a production plant. Create the image in a simple style, and do not create any other elements, just make the ${item} only. Place the item against a plain white background.`
 
     return await generateImage(textGenerationMessages)
   }
