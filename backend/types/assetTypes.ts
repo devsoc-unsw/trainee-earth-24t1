@@ -19,6 +19,8 @@ export type AssetId = string;
 export type AssetsJSON = { [key: AssetId]: AssetJSON };
 export type Assets = Map<AssetId, Asset>;
 
+// Note: Use serializeMapToJSON and deserializeJSONToMap from objectTyping.ts
+
 export interface AssetJSON extends JSONObject {
   _id: AssetId;
   name: string;

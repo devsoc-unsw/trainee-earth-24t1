@@ -1,33 +1,39 @@
 import { WebSocket } from "ws";
 import {
-  isWebSocketRequest,
+  isClientWebsocketMessage,
   InvalidWSRequestTypeError,
   InvalidWSRequestSubTypeError,
-  WebSocketRequest,
-  isPingWSReq,
-  isPlayerVisitWSReq,
-  ClientRequestType,
+  ClientWebsocketMessage,
+  isPingMsg,
+  isPlayerVisitMsg,
+  ClientMessageType,
   assertWSReqType,
-  PingWSReq,
-  PlayerVisitWSReq,
-  WSClients,
+  PingMsg,
+  PlayerVisitMsg,
+  WebsocketClients,
+  PongMsg,
+  ServerMessageType,
+  WelcomeServerMsg,
 } from "@backend/types/wsTypes.ts";
 
 /**
  * Handles a WebSocket request by parsing the request and performing the appropriate action.
  *
- * @param {WebSocketRequest} request - The WebSocket request (JSON object).
+ * @param {ClientWebsocketMessage} request - The WebSocket request (JSON object).
  * @param {WebSocket} ws - The WebSocket connection.
  * @throws {SyntaxError} If the request is not in the expected format.
  * @throws {InvalidWSRequestTypeError} If the request type is not recognized.
  */
-export const handleWSRequest = (request: WebSocketRequest, ws: WebSocket) => {
+export const handleClientMessage = (
+  request: ClientWebsocketMessage,
+  ws: WebSocket
+) => {
   /**
    * Ensures the request provided by the client is in the format:
    * { "type": "something" }
    * Subject to change - consult WebSocketRequest type.
    */
-  if (!isWebSocketRequest(request)) {
+  if (!isClientWebsocketMessage(request)) {
     throw new InvalidWSRequestTypeError();
   }
 
@@ -38,17 +44,22 @@ export const handleWSRequest = (request: WebSocketRequest, ws: WebSocket) => {
    * the client wants from the server and send back the response.
    */
   switch (request.type) {
-    case ClientRequestType.PING:
+    case ClientMessageType.PING:
       console.log(`Handle wsreq as PING`);
-      if (assertWSReqType<PingWSReq>(request, isPingWSReq)) {
-        ws.send(JSON.stringify({ res: "PONG" }));
+      if (assertWSReqType<PingMsg>(request, isPingMsg)) {
+        ws.send(JSON.stringify({ type: "PONG" }));
       }
       break;
-    case ClientRequestType.PLAYER_VISIT:
+    case ClientMessageType.PLAYER_VISIT:
       console.log(`Handle wsreq as PLAYER_VISIT`);
-      if (assertWSReqType<PlayerVisitWSReq>(request, isPlayerVisitWSReq)) {
+      if (assertWSReqType<PlayerVisitMsg>(request, isPlayerVisitMsg)) {
         const playerId = request.playerId;
-        ws.send(JSON.stringify({ res: `Welcome back ${playerId}` }));
+        ws.send(
+          JSON.stringify({
+            type: ServerMessageType.WELCOME,
+            text: `Welcome ${playerId}`,
+          } as WelcomeServerMsg)
+        );
       }
       break;
     // ADD NEW WEBSOCKET REQUEST TYPES HERE
@@ -57,7 +68,7 @@ export const handleWSRequest = (request: WebSocketRequest, ws: WebSocket) => {
   }
 };
 
-export const handleDisconnect = (userId: string, clients: WSClients) => {
+export const handleDisconnect = (userId: string, clients: WebsocketClients) => {
   console.log(`${userId} disconnected.`);
-  delete clients[userId];
+  clients.delete(userId);
 };

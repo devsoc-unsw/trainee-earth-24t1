@@ -8,14 +8,20 @@ import {
 } from "../types/simulationTypes.ts";
 import { run as runDB } from "@backend/src/db.ts";
 import { WebSocketServer, WebSocket } from "ws";
-import { handleDisconnect, handleWSRequest } from "@backend/src/wsHandler.ts";
+import {
+  handleDisconnect,
+  handleClientMessage,
+} from "@backend/src/wsHandler.ts";
 import { GameLoop } from "./gameloopFramework.js";
 import {
-  assets1,
-  simulationState1,
+  assets1 as ASSETS,
+  simulationState1 as SIMULATION_STATE,
 } from "@backend/sample-data/simulation_state/simulation_state_1.ts";
 import { SimulationServer } from "./simulationServer.js";
-import { deserializeJSONToMap } from "../utils/objectTyping.ts";
+import {
+  deserializeJSONToMap,
+  serializeMapToJSON,
+} from "../utils/objectTyping.ts";
 import {
   generateHouseAsset,
   generateVillagerAsset,
@@ -30,8 +36,13 @@ import { cropImage } from "@backend/asset-gen/edit-image.ts";
 import fs from "fs";
 import { storeImageIntoBunny } from "@backend/asset-gen/store-image.ts";
 import { Asset } from "@backend/types/assetTypes.ts";
-import { WSClients } from "@backend/types/wsTypes.ts";
+import {
+  ServerMessageType,
+  SimStateAssetsServerMsg,
+  WebsocketClients,
+} from "@backend/types/wsTypes.ts";
 import createId from "@backend/utils/createId.ts";
+import { CommunicationServer } from "./clientsServer.ts";
 
 const EXPRESS_PORT = 3000;
 
@@ -216,69 +227,26 @@ app.get("/edit/resource", async (req, res) => {
   }
 });
 
-const clients: WSClients = new Map();
+// =====================================
+// === Load initial simulation state ===
+// =====================================
+const simulationState = SimulationState.deserialize(SIMULATION_STATE);
+const assets = deserializeJSONToMap(ASSETS, Asset.deserialize);
 
-/**
- * Instantiates a new WebSocketServer.
- * Runs on the same server and port as Express (3000).
- */
-const wss = new WebSocketServer({ server: server });
+// ========================
+// === WebSocket server ===
+// ========================
 
-/**
- * Handle a new client connecting to the WebSocket server.
- */
-wss.on("connection", (connection: WebSocket) => {
-  const userId = createId();
-  console.log(`New WS connection opened. Assigned userId ${userId}`);
-  clients.set(userId, connection);
+const commServer = new CommunicationServer(server, simulationState, assets);
 
-  connection.on("error", console.error);
-
-  /**
-   * Executes when a message is received from the client.
-   */
-  connection.on("message", (msg) => {
-    console.log(`Received ws message`);
-
-    try {
-      const message = JSON.parse(msg.toString("utf-8"));
-      // handleWSRequest takes care of replying to the client
-      // in wsHandler.ts
-      handleWSRequest(message, connection);
-    } catch (e) {
-      console.error(e);
-      let clientErrorMsg = e.message;
-      if (e.name === "InvalidWSRequestTypeError") {
-        // tidies up the error message to explain more clearly why
-        // a message may have failed because the JSON couldn't parse
-        clientErrorMsg = `invalid message; please ensure it's in the format { "type": "PING" }. don't forget - json only supports double quotes`;
-      } else {
-        console.log(e.name);
-      }
-      // sends the error back to the client
-      connection.send(
-        JSON.stringify({
-          err: {
-            name: e.name,
-            message: clientErrorMsg,
-          },
-        })
-      );
-    }
-  });
-
-  /**
-   * Executes when a client closes.
-   */
-  connection.on("close", () => {
-    console.log(`WS connection to ${userId} closed`);
-    handleDisconnect(userId, clients);
-  });
-});
-
-const simulationState = SimulationState.deserialize(simulationState1);
-const assets = deserializeJSONToMap(assets1, Asset.deserialize);
-const simulationServer = new SimulationServer(simulationState, assets);
+// =================
+// === Game Loop ===
+// =================
+const simulationServer = new SimulationServer(
+  simulationState,
+  assets,
+  commServer
+);
 simulationServer.simulationInit();
 const myGameLoop = new GameLoop(simulationServer.simulationStep);
 myGameLoop.startGameLoop();
