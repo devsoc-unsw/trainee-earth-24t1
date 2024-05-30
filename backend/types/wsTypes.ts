@@ -1,73 +1,133 @@
 import { CustomError } from "@backend/utils/customError.ts";
 import { WebSocket } from "ws";
+import { Assets, AssetsJSON } from "./assetTypes.ts";
+import { SimulationStateJSON } from "./simulationTypes.ts";
 
 /**
  * Maps clientIds (created by server) to WebSocket objects which represent a
  * connection to a client.
  */
-export type WSClients = Map<string, WebSocket>;
+export type WebsocketClients = Map<string, WebSocket>;
 
-export enum ClientRequestType {
+export enum ClientMessageType {
   PING = "PING",
   PLAYER_VISIT = "PLAYER_VISIT",
   CREATE_VILLAGER = "CREATE_VILLAGER",
 }
 
-export interface WebSocketRequest {
-  type: ClientRequestType;
+export enum ServerMessageType {
+  PONG = "PONG",
+  SIM_STATE_ASSETS = "ASSETS",
+  WELCOME = "WELCOME",
 }
 
-export interface PingWSReq extends WebSocketRequest {
-  type: ClientRequestType.PING;
+export interface ClientWebsocketMessage {
+  type: ClientMessageType;
 }
 
-export interface PlayerVisitWSReq extends WebSocketRequest {
-  type: ClientRequestType.PLAYER_VISIT;
+export function isClientWebsocketMessage(
+  obj: Object
+): obj is ClientWebsocketMessage {
+  return (obj as ClientWebsocketMessage).type !== undefined;
+}
+export interface ServerWebsocketMessage {
+  type: ServerMessageType;
+}
+export function isServerWebsocketMessage(
+  obj: Object
+): obj is ServerWebsocketMessage {
+  return (obj as ServerWebsocketMessage).type !== undefined;
+}
+
+/**
+ * Types of messages that the client will send to the server.
+*/
+export type MessageTypes = PingMsg | PlayerVisitMsg | CreateVillagerWSReq;
+export interface PingMsg extends ClientWebsocketMessage {
+  type: ClientMessageType.PING;
+}
+export function isPingMsg(obj: ClientWebsocketMessage): obj is PingMsg {
+  return (obj as ClientWebsocketMessage).type === ClientMessageType.PING;
+}
+
+export interface PongMsg extends ServerWebsocketMessage {
+  type: ServerMessageType.PONG;
+}
+export function isPongMsg(obj: ServerWebsocketMessage): obj is PongMsg {
+  return (obj as ServerWebsocketMessage).type === ServerMessageType.PONG;
+}
+
+export interface PlayerVisitMsg extends ClientWebsocketMessage {
+  type: ClientMessageType.PLAYER_VISIT;
   playerId: string | null;
 }
+export function isPlayerVisitMsg(
+  obj: ClientWebsocketMessage
+): obj is PlayerVisitMsg {
+  return (
+    obj.type === ClientMessageType.PLAYER_VISIT &&
+    (obj as PlayerVisitMsg).playerId !== undefined
+  );
+}
 
-export interface CreateVillagerWSReq extends WebSocketRequest {
-  type: ClientRequestType.CREATE_VILLAGER;
+export interface CreateVillagerWSReq extends ClientWebsocketMessage {
+  type: ClientMessageType.CREATE_VILLAGER;
   eye: string;
   hair: string;
   outfit: string;
 }
 
-/**
- * Types of messages that the client will send to the server.
- */
-export type MessageTypes = PingWSReq | PlayerVisitWSReq | CreateVillagerWSReq;
-
-export function isWebSocketRequest(obj: Object): obj is WebSocketRequest {
-  return (obj as WebSocketRequest).type !== undefined;
-}
-
-export function isPingWSReq(obj: WebSocketRequest): obj is PingWSReq {
-  return (obj as WebSocketRequest).type === ClientRequestType.PING;
-}
-
-export function isPlayerVisitWSReq(
-  obj: WebSocketRequest
-): obj is PlayerVisitWSReq {
-  return (
-    obj.type === ClientRequestType.PLAYER_VISIT &&
-    (obj as PlayerVisitWSReq).playerId !== undefined
-  );
-}
-
 export function isCreateVillagerWSReq(
-  obj: WebSocketRequest
+  obj: ClientWebsocketMessage
 ): obj is CreateVillagerWSReq {
   return (
-    obj.type === ClientRequestType.CREATE_VILLAGER &&
+    obj.type === ClientMessageType.CREATE_VILLAGER &&
     (obj as CreateVillagerWSReq).eye !== undefined &&
     (obj as CreateVillagerWSReq).hair !== undefined &&
     (obj as CreateVillagerWSReq).outfit !== undefined
   );
 }
 
-export function assertWSReqType<T extends WebSocketRequest>(
-  request: WebSocketRequest,
+export interface WelcomeServerMsg extends ServerWebsocketMessage {
+  type: ServerMessageType.WELCOME;
+  text: string;
+}
+export function isWelcomeServerMsg(
+  obj: ServerWebsocketMessage
+): obj is WelcomeServerMsg {
+  return (
+    obj.type === ServerMessageType.WELCOME &&
+    (obj as WelcomeServerMsg).text !== undefined
+  );
+}
+
+/**
+ * Server send simulation state and assets
+ */
+export interface SimStateAssetsServerMsg extends ServerWebsocketMessage {
+  type: ServerMessageType.SIM_STATE_ASSETS;
+  simulationState: SimulationStateJSON;
+  assets: AssetsJSON;
+}
+
+export function isSimStateAssetsServerMsg(
+  obj: ServerWebsocketMessage
+): obj is SimStateAssetsServerMsg {
+  return (
+    obj.type === ServerMessageType.SIM_STATE_ASSETS &&
+    (obj as SimStateAssetsServerMsg).simulationState !== undefined &&
+    (obj as SimStateAssetsServerMsg).assets !== undefined
+  );
+}
+
+/**
+ * Asserts that a WebSocketRequest object is of a certain type. Else throws an error.
+ * @param request
+ * @param WSReqTypeGuard
+ * @returns
+ */
+export function assertWSReqType<T extends ClientWebsocketMessage>(
+  request: ClientWebsocketMessage,
   WSReqTypeGuard: (obj: Object) => obj is T
 ): request is T {
   if (WSReqTypeGuard(request)) {

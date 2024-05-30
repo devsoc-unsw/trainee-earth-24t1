@@ -30,17 +30,27 @@ const buyQuantity = 3;
 const TICKS_PER_CYCLE = 10;
 import { UpdateFn } from "@backend/src/gameloopFramework.js";
 import { Assets } from "@backend/types/assetTypes.ts";
+import {
+  ServerMessageType,
+  SimStateAssetsServerMsg,
+  WebsocketClients,
+} from "@backend/types/wsTypes.ts";
+import { serializeMapToJSON } from "@backend/utils/objectTyping.ts";
+import { CommunicationServer } from "./clientsServer.ts";
 
 export class SimulationServer {
   private state: SimulationState;
   private assets: Assets;
+  private commServer: CommunicationServer;
 
   constructor(
     state: SimulationState = new SimulationState(),
-    assets: Assets = new Map()
+    assets: Assets = new Map(),
+    commServer: CommunicationServer
   ) {
     this.state = state;
     this.assets = assets;
+    this.commServer = commServer;
   }
 
   sendVillagerAssignment = (
@@ -129,6 +139,7 @@ export class SimulationServer {
       worker.resources[resourcesRandom[i]].sellPrice = price;
       increment++;
 
+      this.commServer.broadcastSimStateAssets(this.state, this.assets);
       this.sendVillagerAssignment(this.state, worker._id, resourcesRandom[i]);
     }
 
@@ -173,8 +184,25 @@ export class SimulationServer {
     //   }
     // });
     //const fs = require("fs");
-    let jsonData = this.state.serialize();
-    fs.writeFileSync("output_test2.json", JSON.stringify(jsonData));
+    fs.appendFileSync(
+      "output_test2.json",
+      "Step simulation forward one timestep, production\n"
+    );
+    this.state.villagers.forEach((villagers, villagerId) => {
+      let print: string = ``;
+      if (villagers.assignment === null) {
+        print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: null\n`;
+      } else {
+        print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: ${villagers.assignment.resource}\n`;
+      }
+      fs.appendFileSync("output_test2.json", print);
+      this.state.resources.forEach((reousrce, resourceId) => {
+        const resourceDetails = villagers.resources[resourceId];
+
+        const printRes: string = `${resourceId}, total: ${resourceDetails.total}, buyPrice: ${resourceDetails.buyPrice}, isSelling: ${resourceDetails.isSelling}, sellPrice: ${resourceDetails.sellPrice}\n`;
+        fs.appendFileSync("output_test2.json", printRes);
+      });
+    });
     //console.dir(this.state.villagers, { depth: null });
     // this.state.show();
   };
@@ -184,7 +212,7 @@ export class SimulationServer {
    * Gets called by the gameloop framework at its specified framerate e.g. 20fps.
    */
   simulationStep: UpdateFn = (delta: number, counter: number) => {
-    console.log(`Step simulation forward one timestep`);
+    console.log(`\n========\nStep simulation forward one timestep`);
     const jsonData = this.state.serialize();
 
     // const fs = require("fs");
@@ -195,12 +223,29 @@ export class SimulationServer {
     /**
      * making trades
      */
+
+    
     if (counter % TICKS_PER_CYCLE === 0) {
-      fs.writeFileSync(
-        "output_test1.json",
-        "Step simulation forward one timestep\n"
+       fs.appendFileSync(
+        "output_test2.json",
+        "Step simulation forward one timestep, production\n"
       );
-      fs.writeFileSync("output_test2.json", JSON.stringify(jsonData));
+      this.state.villagers.forEach((villagers, villagerId) => {
+        let print: string = ``;
+        if (villagers.assignment === null) {
+          print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: null\n`;
+        } else {
+          print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: ${villagers.assignment.resource}\n`;
+        }
+        fs.appendFileSync("output_test2.json", print);
+        this.state.resources.forEach((reousrce, resourceId) => {
+          const resourceDetails = villagers.resources[resourceId];
+
+          const printRes: string = `${resourceId}, total: ${resourceDetails.total}, buyPrice: ${resourceDetails.buyPrice}, isSelling: ${resourceDetails.isSelling}, sellPrice: ${resourceDetails.sellPrice}\n`;
+          fs.appendFileSync("output_test2.json", printRes);
+        });
+      });
+
       this.state.transactions = [];
 
       let buyList: BuyInfo[] = [];
@@ -313,10 +358,25 @@ export class SimulationServer {
 
     if ((counter + Math.floor(TICKS_PER_CYCLE / 2)) % TICKS_PER_CYCLE === 0) {
       fs.appendFileSync(
-        "output_test1.json",
-        "Step simulation forward one timestep\n"
+        "output_test2.json",
+        "Step simulation forward one timestep, production\n"
       );
-      fs.appendFileSync("output_test2.json", JSON.stringify(jsonData));
+      this.state.villagers.forEach((villagers, villagerId) => {
+        let print: string = ``;
+        if (villagers.assignment === null) {
+          print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: null \n`;
+        } else {
+          print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: ${villagers.assignment.resource} items made: ${villagers.assignment.nItemsMade}\n`;
+        }
+
+        fs.appendFileSync("output_test2.json", print);
+        this.state.resources.forEach((reousrce, resourceId) => {
+          const resourceDetails = villagers.resources[resourceId];
+
+          const printRes: string = `${resourceId}, total: ${resourceDetails.total}\n`;
+          fs.appendFileSync("output_test2.json", printRes);
+        });
+      });
       // print stuff out in a readable way
 
       this.state.villagers.forEach((villager, villagerId) => {
@@ -656,13 +716,20 @@ export class SimulationServer {
           //  console.log(i);
           const id = resourcesAvailable[i].resource;
           if (resourcesAvailable.length < 3) {
-            while (worker.resources[id].total > 0) {
+            while (worker.resources[id].total > 0 && itemsConsumed > 0) {
               consumeResource(
                 worker,
                 id,
                 resourcesAvailable,
                 i,
                 consumedResources
+              );
+              console.log(
+                worker._id,
+                worker.energy,
+                worker.resources[id].total,
+                "i: ",
+                i
               );
               itemsConsumed--;
             }
@@ -703,6 +770,8 @@ export class SimulationServer {
        * end of consumption assignment
        */
     }
+
+    this.commServer.broadcastSimStateAssets(this.state, this.assets);
   };
 }
 
