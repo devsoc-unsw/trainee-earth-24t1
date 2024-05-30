@@ -569,6 +569,7 @@ export type villagerAssignType = {
 } | null;
 
 export interface VillagerJSON extends JSONObject {
+  name: string;
   _id: string;
   type: VillagerType;
   friends: VillagerId[];
@@ -591,9 +592,11 @@ export interface VillagerJSON extends JSONObject {
   readonly asset: AssetId | null;
   pos: Pos | null;
   basePos: Pos;
+  villagerPath: PosStr[] | null;
 }
 
 export class Villager implements Serializable<VillagerJSON> {
+  public readonly name: string;
   public readonly _id: VillagerId;
   public readonly type: VillagerType;
   public friends: VillagerId[];
@@ -648,13 +651,17 @@ export class Villager implements Serializable<VillagerJSON> {
 
   public basePos: Pos;
 
-  constructor(type: VillagerType, _id: VillagerId = createId()) {
+  public villagerPath: PosStr[] | null;
+
+  constructor(type: VillagerType, name: string, _id: VillagerId = createId()) {
     this.type = type;
     this._id = _id;
+    this.name = name;
   }
 
   serialize(): JSONCompatible<VillagerJSON> {
     return {
+      name: this.name,
       _id: this._id,
       type: this.type,
       friends: this.friends,
@@ -679,12 +686,12 @@ export class Villager implements Serializable<VillagerJSON> {
       asset: this.asset,
       pos: this.pos,
       basePos: this.basePos,
+      villagerPath: this.villagerPath,
     };
   }
 
   static deserialize(obj: JSONCompatible<VillagerJSON>): Villager {
-    const villager = new Villager(obj.type, obj._id);
-
+    const villager = new Villager(obj.type, obj.name, obj._id);
     villager.friends = obj.friends;
     villager.enemies = obj.enemies;
     villager._interactingWith = obj.interactingWith;
@@ -711,6 +718,7 @@ export class Villager implements Serializable<VillagerJSON> {
     villager.asset = obj.asset;
     villager.pos = obj.pos;
     villager.basePos = obj.basePos;
+    villager.villagerPath = obj.villagerPath;
 
     return villager;
   }
