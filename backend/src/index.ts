@@ -8,10 +8,6 @@ import {
 } from "../types/simulationTypes.ts";
 import { run as runDB } from "@backend/src/db.ts";
 import { WebSocketServer, WebSocket } from "ws";
-import {
-  handleDisconnect,
-  handleClientMessage,
-} from "@backend/src/wsHandler.ts";
 import { GameLoop } from "./gameloopFramework.js";
 import {
   assets1 as ASSETS,
