@@ -19,6 +19,7 @@ import {
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
 import { ReactNode } from "react";
+import { Alert } from "./components/ui/alert";
 
 interface NavbarProps {
   children: ReactNode;
@@ -34,7 +35,7 @@ const Navbar = ({ children }: NavbarProps) => {
       {/* Add navigation links here */}
       <div className="flex justify-end space-x-8">
         <Button onClick={() => localStorage.clear()}>
-          Reset Local Storage
+          Reset Data
         </Button>
 
         {children}
