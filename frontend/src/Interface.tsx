@@ -6,7 +6,7 @@ import TodoWidget from "@frontend/src/components/ui/todo";
 import GithubWidget from "@frontend/src/components/ui/github";
 import CalendarWidget from "@frontend/src/components/ui/calendarWidget";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { useEffect, useState } from "react";
+import { MutableRefObject, useEffect, useState } from "react";
 import HabitCounter from "./components/ui/habitCounter";
 import { Button } from "./components/ui/button";
 import {
@@ -22,6 +22,7 @@ import { Alert } from "./components/ui/alert";
 import { Toaster } from "sonner";
 import { Separator } from "./components/ui/separator";
 import { IconArrowDown, IconArrowLeft, IconArrowRight, IconArrowUp, IconDots, IconMouse } from "@tabler/icons-react";
+import { SimulationState } from "@backend/types/simulationTypes";
 
 /**
  * Default widget positions calculated relative to middle
@@ -83,7 +84,7 @@ type widgetType =
   | "github"
   | "habitCounter";
 
-export default function Interface() {
+export default function Interface({simState}: {simState: SimulationState}) {
   const [widgets, setWidgets] = useState<widgetDataType>(() => {
     const savedWidgetsData = localStorage.getItem("widgetsData");
     return savedWidgetsData ? JSON.parse(savedWidgetsData) : defaultWidgetsData;
@@ -213,7 +214,7 @@ export default function Interface() {
               Check out your resources and inventory items.
             </DialogDescription>
             <div className="grid gap-4 py-4 h-[330px]">
-              <Inventory />
+              <Inventory simState={simState} />
             </div>
           </DialogHeader>
         </DialogContent>
