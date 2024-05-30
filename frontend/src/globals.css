@@ -69,14 +69,14 @@
 @layer base {
   /* Colours: Text: White, 
   *          Background: #A7C7E7, 
-  *          Primary:  #87AE73 , 
+  *          Primary:  #055c9d , 
   *          Secondary #CAD6E9,
   *          Accent: #9ECCE6
   *          */
   :root {
     --clr-light: White;
     --clr-dark: #1a1a1e;
-    --clr-primary: #87ae73;
+    --clr-primary: #055c9d;
     --clr-secondary: #cad6e9;
     --clr-accent: #9ecce6;
     --clr-button: #ffed88;

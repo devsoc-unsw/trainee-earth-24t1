@@ -3,11 +3,13 @@ import {
   mapToObject,
   serializeMapToJSON,
   deserializeJSONToMap,
-} from "src/utils/objectTyping.ts";
-import { IWorldMapDocument } from "./databaseTypes.ts";
-import { JSONCompatible, JSONObject, JSONValue, Serializable } from "src/db.ts";
-import createId from "src/utils/createId.ts";
-import { Asset, AssetId, AssetJSON } from "asset-gen/generate-asset.ts";
+  JSONCompatible,
+  JSONObject,
+  Serializable,
+} from "@backend/utils/objectTyping.ts";
+import { IWorldMapDocument } from "@backend/types/databaseTypes.ts";
+import createId from "@backend/utils/createId.ts";
+import { AssetId } from "./assetTypes.ts";
 
 export interface SimulationStateJSON extends JSONObject {
   _id: string;
@@ -109,36 +111,58 @@ export interface TradeInfo {
 
 export type TransactionsType = Array<TradeInfo>;
 
-export type Coordinates = {
+export type Dimensions = {
+  dx: number; // x-axis
+  dy: number; // y-axis
+};
+
+export type PosStr = `${number},${number}`;
+
+export const isPosStr = (str: string): str is PosStr => {
+  return /^-?\d+,-?\d+$/.test(str);
+};
+
+// expects x and y to be integers
+export const serializePosStr = ({ x, y }: { x: number; y: number }): PosStr =>
+  `${x},${y}`;
+
+export const parsePosStr = (coordStr: PosStr): Pos => {
+  const [x, y] = coordStr.split(",").map((str) => parseInt(str));
+  return { x, y };
+};
+
+export type Pos = {
   x: number;
   y: number;
 };
 
+export type CellsJSON = { [key: PosStr]: CellJSON };
+
+export type Cells = Map<PosStr, Cell>;
+
 export interface WorldMapJSON extends JSONObject {
-  cells: CellJSON[];
+  cells: CellsJSON;
 }
 
 export class WorldMap implements Serializable<WorldMapJSON> {
-  readonly cells: Map<Coordinates, Cell> = new Map();
+  cells: Cells = new Map();
 
-  constructor() {}
+  constructor(cells: Cells = new Map()) {
+    this.cells = cells;
+  }
 
-  addCell(coordinates: Coordinates, cell: Cell): void {
-    this.cells.set(coordinates, cell);
+  addCell(coordStr: PosStr, cell: Cell): void {
+    this.cells.set(coordStr, cell);
   }
 
   serialize(): JSONCompatible<WorldMapJSON> {
     return {
-      cells: Object.values(this.cells).map((cell) => cell.serialize()),
+      cells: serializeMapToJSON(this.cells),
     };
   }
 
   static deserialize(obj: JSONCompatible<WorldMapJSON>): WorldMap {
-    const map = new WorldMap();
-    obj.cells.forEach((cell) => {
-      map.addCell(cell.coordinates, Cell.deserialize(cell));
-    });
-    return map;
+    return new WorldMap(deserializeJSONToMap(obj.cells, Cell.deserialize));
   }
 }
 // const map: WorldMap = {
@@ -155,13 +179,13 @@ export class WorldMap implements Serializable<WorldMapJSON> {
 // }
 
 export interface CellJSON extends JSONObject {
-  coordinates: Coordinates;
   owner: VillagerId | null;
   object: EnviroObjectId | null;
+  coordinates?: Pos;
 }
 
 export class Cell implements Serializable<CellJSON> {
-  public readonly coordinates: Coordinates;
+  public readonly coordinates?: Pos;
 
   /**
    * VillagerId if the cell is owned by a villager. null if the cell is
@@ -180,8 +204,8 @@ export class Cell implements Serializable<CellJSON> {
    */
   public object: EnviroObjectId | null = null;
 
-  constructor(x: number, y: number) {
-    this.coordinates = { x, y };
+  constructor(coordinates: Pos) {
+    this.coordinates = { ...coordinates };
   }
 
   serialize(): JSONCompatible<CellJSON> {
@@ -193,7 +217,7 @@ export class Cell implements Serializable<CellJSON> {
   }
 
   static deserialize(obj: JSONCompatible<CellJSON>): Cell {
-    const cell = new Cell(obj.coordinates.x, obj.coordinates.y);
+    const cell = new Cell({ ...obj.coordinates });
     cell.owner = obj.owner;
     cell.object = obj.object;
     return cell;
@@ -341,6 +365,8 @@ export interface VillagerJSON extends JSONObject {
     nItemsMade: number;
     energyCost: number;
   } | null;
+  readonly asset: AssetId | null;
+  pos: Pos | null;
 }
 
 export class Villager implements Serializable<VillagerJSON> {
@@ -392,6 +418,10 @@ export class Villager implements Serializable<VillagerJSON> {
 
   public assignment: villagerAssignType;
 
+  public asset: AssetId | null;
+
+  public pos: Pos | null;
+
   constructor(type: VillagerType, _id: VillagerId = createId()) {
     this.type = type;
     this._id = _id;
@@ -420,6 +450,8 @@ export class Villager implements Serializable<VillagerJSON> {
       ),
       houseObject: this.houseObject,
       assignment: this.assignment,
+      asset: this.asset,
+      pos: this.pos,
     };
   }
 
@@ -449,6 +481,8 @@ export class Villager implements Serializable<VillagerJSON> {
 
     villager.houseObject = obj.houseObject;
     villager.assignment = obj.assignment;
+    villager.asset = obj.asset;
+    villager.pos = obj.pos;
 
     return villager;
   }
@@ -482,12 +516,7 @@ const RESOURCES_ARRAY = [
  */
 type ResourceType = (typeof RESOURCES_ARRAY)[number];
 
-const RESOURCE_TYPES_ARRAY = [
-  "edible",
-  "tool",
-  "building material",
-  "luxury",
-] as const;
+const RESOURCE_TYPES_ARRAY = ["edible", "tool", "material", "luxury"] as const;
 
 export type ResourceTypeType = (typeof RESOURCE_TYPES_ARRAY)[number];
 
@@ -869,20 +898,20 @@ export interface SpecialItemJSON extends JSONObject {
   _id: string;
   name: string;
   description: string;
-  asset: AssetJSON | null;
+  asset: AssetId | null;
 }
 
 export class SpecialItem implements Serializable<SpecialItemJSON> {
   public readonly _id: string;
   public readonly name: string;
   public readonly description: string;
-  public readonly asset: Asset | null;
+  public readonly asset: AssetId | null;
 
   constructor(
     name: string,
     description: string,
     _id: string = createId(),
-    asset: Asset | null = null
+    asset: AssetId | null = null
   ) {
     this.name = name;
     this.description = description;
@@ -895,16 +924,11 @@ export class SpecialItem implements Serializable<SpecialItemJSON> {
       _id: this._id,
       name: this.name,
       description: this.description,
-      asset: this.asset?.serialize() ?? null,
+      asset: this.asset,
     };
   }
 
   static deserialize(obj: JSONCompatible<SpecialItemJSON>): SpecialItem {
-    return new SpecialItem(
-      obj.name,
-      obj.description,
-      obj._id,
-      obj.asset ? Asset.deserialize(obj.asset) : null
-    );
+    return new SpecialItem(obj.name, obj.description, obj._id, obj.asset);
   }
 }

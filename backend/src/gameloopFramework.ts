@@ -2,8 +2,6 @@
  * Adapted from https://github.com/timetocode/node-game-loop
  */
 
-import assert from "assert";
-
 export type UpdateFn = (delta: number, counter: number) => void;
 type GameLoopFn = () => void;
 
@@ -22,9 +20,10 @@ type GameLoopFn = () => void;
 export class GameLoop {
   /**
    * Length of a tick in milliseconds. The denominator is your desired framerate.
-   * e.g. 1000 / 20 = 20 fps,  1000 / 60 = 60 fps
+   * e.g. 1000 / 20 = 20 fps,  1000 / 60 = 60 fps,
+   * 1000 / (1/8) = 1/8th frames per second ie 8 seconds per frame
    */
-  readonly frameLengthMs = 1000 / 1;
+  readonly frameLengthMs = 1000 / (1 / 8);
 
   /**
    * Period of time right before the next frame is intended to begin,

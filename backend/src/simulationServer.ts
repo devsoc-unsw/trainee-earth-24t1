@@ -1,5 +1,3 @@
-import { Asset, AssetId } from "asset-gen/generate-asset.ts";
-import { UpdateFn } from "./gameloopFramework.js";
 import {
   SimulationState,
   Villager,
@@ -7,16 +5,13 @@ import {
   SellInfo,
   ResourceId,
   VillagerId,
-  EnviroObjectId,
   buyPref,
   villagerAssignType,
   TradeInfo,
   TransactionsType,
   resourceOrigin,
   AttributeValue,
-  Resource,
-} from "src/types/simulationTypes.ts";
-import { ResourceLimits } from "worker_threads";
+} from "@backend/types/simulationTypes.ts";
 
 import fs from "fs";
 
@@ -32,14 +27,17 @@ const normalMaxPrice = 25;
 const normalPriceRange = normalMaxPrice - normalMinPrice;
 const maxPrice = 35;
 const buyQuantity = 3;
+const TICKS_PER_CYCLE = 10;
+import { UpdateFn } from "@backend/src/gameloopFramework.js";
+import { Assets } from "@backend/types/assetTypes.ts";
 
 export class SimulationServer {
   private state: SimulationState;
-  private assets: Map<AssetId, Asset>;
+  private assets: Assets;
 
   constructor(
     state: SimulationState = new SimulationState(),
-    assets: Map<AssetId, Asset> = new Map()
+    assets: Assets = new Map()
   ) {
     this.state = state;
     this.assets = assets;
@@ -214,8 +212,10 @@ export class SimulationServer {
     /**
      * making trades
      */
-    if (counter % 10 === 0) {
-      fs.appendFileSync(
+
+    
+    if (counter % TICKS_PER_CYCLE === 0) {
+       fs.appendFileSync(
         "output_test2.json",
         "Step simulation forward one timestep, production\n"
       );
@@ -234,6 +234,7 @@ export class SimulationServer {
           fs.appendFileSync("output_test2.json", printRes);
         });
       });
+
       this.state.transactions = [];
 
       let buyList: BuyInfo[] = [];
@@ -344,7 +345,7 @@ export class SimulationServer {
      * Production assignment
      */
 
-    if ((counter + 5) % 10 === 0) {
+    if ((counter + Math.floor(TICKS_PER_CYCLE / 2)) % TICKS_PER_CYCLE === 0) {
       fs.appendFileSync(
         "output_test2.json",
         "Step simulation forward one timestep, production\n"
