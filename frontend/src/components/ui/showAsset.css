@@ -1,0 +1,279 @@
+@keyframes shining {
+  from {
+    transform: scale(1.0, 1.0);
+    opacity: 1;
+  }
+  20% {
+    transform: scale(1.2, 1.2);
+    opacity: 0.75;
+  }
+  40% {
+    transform: scale(1.4, 1.4);
+    opacity: 0.5;
+  }
+  60% {
+    transform: scale(1.6, 1.6);
+    opacity: 0.25;
+  }
+  80% {
+    transform: scale(1.8, 1.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(2, 2);
+    opacity: 0;
+  }
+}
+
+@keyframes spin1 {
+  from {
+    transform: rotateX(10deg) rotateZ(0deg);
+  }
+  to {
+    transform: rotateX(10deg) rotateZ(360deg);
+  }
+}
+
+@keyframes spin2 {
+  from {
+    transform: rotateX(10deg) rotateZ(0deg);
+  }
+  to {
+    transform: rotateX(10deg) rotateZ(360deg);
+  }
+}
+
+@keyframes spin3 {
+  from {
+    transform: rotateX(10deg) rotateZ(0deg);
+  }
+  to {
+    transform: rotateX(10deg) rotateZ(360deg);
+  }
+}
+
+@keyframes spin4 {
+  from {
+    transform: rotateX(10deg) rotateZ(0deg);
+  }
+  to {
+    transform: rotateX(10deg) rotateZ(360deg);
+  }
+}
+
+body {
+  position: relative;
+}
+
+.container {
+  position: relative;
+  display: flex;
+  flex-wrap: no-wrap;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  width: 100vw;
+  height: 100vh;
+  background-color: #323232;
+}
+
+.sun-area {
+  position: relative;
+  margin: auto;
+  width: 200px;
+  height: 200px;
+}
+
+.sun-shine {
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  background-color: #ebb471;
+  width: 100px;
+  height: 100px;
+  border-radius: 200px;
+  animation-name: shining;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+
+.sun-shine:nth-of-type(1) {
+  transform: scale(0.9, 0.9);
+  opacity: 1;
+  display: block;
+  animation-name: none;
+}
+
+.sun-shine:nth-of-type(2) {
+  animation-delay: -1.5s;
+}
+
+.sun-shine:nth-of-type(3) {
+  animation-delay: -1s;
+}
+
+.sun-shine:nth-of-type(4) {
+  animation-delay: -0.5s;
+}
+
+.sun-shine:nth-of-type(5) {
+  animation-delay: 0s;
+}
+
+.shining-area {
+  position: relative;
+  margin: auto;
+  width: 360px;
+  height: 280px;
+}
+
+.sa-position {
+  position: absolute;
+  top: 25%;
+  left: -50%;
+  border-radius: 300px;
+}
+
+.sa-1 {
+  width: 200%;
+  height: 80px;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(249, 191, 69, 0),
+    rgba(249, 191, 69, 0) 35%,
+    rgba(249, 191, 69, 0.1) 50%,
+    rgba(249, 191, 69, 0.15) 65%,
+    rgba(249, 191, 69, 0.15) 75%,
+    rgba(249, 191, 69, 0.025) 90%,
+    rgba(249, 191, 69, 0) 100%
+  );
+  transform-style: preserve-3d;
+  animation: spin1 10s linear infinite;
+  animation-duration: 4s;
+}
+
+.sa-2 {
+  width: 200%;
+  height: 80px;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(249, 191, 69, 0),
+    rgba(249, 191, 69, 0) 35%,
+    rgba(249, 191, 69, 0.1) 50%,
+    rgba(249, 191, 69, 0.15) 65%,
+    rgba(249, 191, 69, 0.15) 75%,
+    rgba(249, 191, 69, 0.025) 90%,
+    rgba(249, 191, 69, 0) 100%
+  );
+  transform-style: preserve-3d;
+  animation: spin2 10s linear infinite;
+  animation-duration: 5s;
+}
+
+.sa-3 {
+  width: 200%;
+  height: 80px;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(249, 191, 69, 0),
+    rgba(249, 191, 69, 0) 35%,
+    rgba(249, 191, 69, 0.1) 50%,
+    rgba(249, 191, 69, 0.15) 65%,
+    rgba(249, 191, 69, 0.15) 75%,
+    rgba(249, 191, 69, 0.025) 90%,
+    rgba(249, 191, 69, 0) 100%
+  );
+  transform-style: preserve-3d;
+  animation: spin3 10s linear infinite;
+  animation-duration: 6s;
+}
+
+.sa-4 {
+  width: 200%;
+  height: 80px;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(249, 191, 69, 0),
+    rgba(249, 191, 69, 0) 35%,
+    rgba(249, 191, 69, 0.1) 50%,
+    rgba(249, 191, 69, 0.15) 65%,
+    rgba(249, 191, 69, 0.15) 75%,
+    rgba(249, 191, 69, 0.025) 90%,
+    rgba(249, 191, 69, 0) 100%
+  );
+  transform-style: preserve-3d;
+  animation: spin4 10s linear infinite;
+  animation-duration: 7s;
+}
+
+.sa-5 {
+  width: 200%;
+  height: 80px;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(249, 191, 69, 0),
+    rgba(249, 191, 69, 0) 35%,
+    rgba(249, 191, 69, 0.1) 50%,
+    rgba(249, 191, 69, 0.15) 65%,
+    rgba(249, 191, 69, 0.15) 75%,
+    rgba(249, 191, 69, 0.025) 90%,
+    rgba(249, 191, 69, 0) 100%
+  );
+  transform-style: preserve-3d;
+  animation: spin4 10s linear infinite;
+  animation-duration: 8s;
+}
+
+.sa-6 {
+  width: 200%;
+  height: 80px;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(249, 191, 69, 0),
+    rgba(249, 191, 69, 0) 35%,
+    rgba(249, 191, 69, 0.1) 50%,
+    rgba(249, 191, 69, 0.15) 65%,
+    rgba(249, 191, 69, 0.15) 75%,
+    rgba(249, 191, 69, 0.025) 90%,
+    rgba(249, 191, 69, 0) 100%
+  );
+  transform-style: preserve-3d;
+  animation: spin4 10s linear infinite;
+  animation-duration: 9s;
+}
+
+.sa-7 {
+  width: 200%;
+  height: 80px;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(249, 191, 69, 0),
+    rgba(249, 191, 69, 0) 35%,
+    rgba(249, 191, 69, 0.1) 50%,
+    rgba(249, 191, 69, 0.15) 65%,
+    rgba(249, 191, 69, 0.15) 75%,
+    rgba(249, 191, 69, 0.025) 90%,
+    rgba(249, 191, 69, 0) 100%
+  );
+  transform-style: preserve-3d;
+  animation: spin4 10s linear infinite;
+  animation-duration: 10s;
+}
+
+.sa-8 {
+  width: 200%;
+  height: 80px;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(249, 191, 69, 0),
+    rgba(249, 191, 69, 0) 35%,
+    rgba(249, 191, 69, 0.1) 50%,
+    rgba(249, 191, 69, 0.15) 65%,
+    rgba(249, 191, 69, 0.15) 75%,
+    rgba(249, 191, 69, 0.025) 90%,
+    rgba(249, 191, 69, 0) 100%
+  );
+  transform-style: preserve-3d;
+  animation: spin4 10s linear infinite;
+  animation-duration: 11s;
+}
