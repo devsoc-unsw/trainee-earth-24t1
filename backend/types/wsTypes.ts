@@ -20,6 +20,7 @@ export enum ServerMessageType {
   PONG = "PONG",
   SIM_STATE_ASSETS = "SIM_STATE_ASSETS",
   WELCOME = "WELCOME",
+  NEW_VILLAGER_CREATED = "NEW_VILLAGER_CREATED",
 }
 
 // ==========================
@@ -120,6 +121,19 @@ export function isWelcomeServerMsg(
     obj.type === ServerMessageType.WELCOME &&
     (obj as WelcomeServerMsg).text !== undefined
   );
+}
+export interface NewVillagerMsg extends ServerWebsocketMessage {
+  type: ServerMessageType.NEW_VILLAGER_CREATED;
+  text: string;
+}
+
+export function isNewVillagerMsg(
+  obj: ServerWebsocketMessage
+): obj is NewVillagerMsg {
+  return (
+    obj.type === ServerMessageType.NEW_VILLAGER_CREATED &&
+    (obj as NewVillagerMsg).text !== undefined
+  )
 }
 
 /**

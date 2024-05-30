@@ -23,12 +23,27 @@ import { Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { Assets } from "@backend/types/assetTypes.ts";
 import {
+  Cells,
+  EnviroObjectType,
+  HouseObject,
+  HouseObjectJSON,
   SimulationState,
+  Villager,
+  VillagerJSON,
+  checkGridCells,
+  checkGridCellsJSON,
   clearGridCells,
   fillGridCells,
+  parsePosStr,
 } from "@backend/types/simulationTypes.ts";
 import { generateVillagerAsset } from "@backend/asset-gen/generate-asset.ts";
-
+import { simulationState1 } from "@backend/sample-data/simulation_state/simulation_state_1.ts";
+interface IRange {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
 /**
  * Wrapper for WebSocket server. Handles communications between server and
  * clients. I would call this WebSocketServer but that is already taken by
@@ -174,9 +189,36 @@ export class CommunicationServer {
                   hair,
                   outfit
                 ).then((villagerAsset) => {
-                  // 1. Create the villager and put into simulation state
+                  // 1. Create the villager and put into simulation state (simulation state 1)
+                  const newVillager = new Villager("farmer");
+                  const newHouse = new HouseObject(newVillager._id);
 
-                  // 2. Create the asset and put into assets
+                  const newHouseJSON: HouseObjectJSON = {
+                    _id: newHouse.name,
+                    name: newHouse.name,
+                    asset: newHouse.asset,
+                    ownder: newHouse.owner,
+                    pos: newHouse.pos,
+                    enviroType: EnviroObjectType.HOUSE,
+                  }
+                  
+                  const { minX, minY, maxX, maxY } = findRange(this.simulationState.worldMap.cells)
+                  for (let x = minX; x < maxX; x += 1) {
+                    for (let y = minY; y < maxY; y += 1) {
+                      if (checkGridCells(this.simulationState.worldMap.cells,
+                        { x, y },
+                        { dx: 9, dy: 9},
+                        null,
+                        true,
+                        null,
+                        true
+                      )) {
+                        
+                      }
+                    }
+                  }
+
+                  // 2. Create the asset and put into assets (assets1)
 
                   // 3. Broadcast the new simstate and assets to all clients
                   this.broadcastSimStateAssets(
@@ -187,12 +229,12 @@ export class CommunicationServer {
                   // 4. Wait for a bit then Inform the client that the villager was created
                   setTimeout(() => {
                     // 5. Inform the client that the villager was created
-                    // connection.send(
-                    //   JSON.stringify({
-                    //     type: ServerMessageType.NEW_VILLAGER_CREATED,
-                    //     payload: villagerAsset.getRemoteImages().at(-1).url,
-                    //   })
-                    // );
+                    connection.send(
+                      JSON.stringify({
+                        type: ServerMessageType.NEW_VILLAGER_CREATED,
+                        payload: villagerAsset.getRemoteImages().at(-1).url,
+                      })
+                    );
                   }, 100000);
                 });
               }
@@ -248,4 +290,21 @@ export class CommunicationServer {
 const handleDisconnect = (userId: string, clients: WebsocketClients) => {
   console.log(`${userId} disconnected.`);
   clients.delete(userId);
+};
+
+export const findRange = (cells: Cells): IRange => {
+  let minX = Number.MAX_SAFE_INTEGER;
+  let minY = Number.MAX_SAFE_INTEGER;
+  let maxX = Number.MIN_SAFE_INTEGER;
+  let maxY = Number.MIN_SAFE_INTEGER;
+
+  for (const coordStr of cells.keys()) {
+    const { x, y } = parsePosStr(coordStr);
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+  }
+
+  return { minX, minY, maxX, maxY };
 };
