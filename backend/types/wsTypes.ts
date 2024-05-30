@@ -10,6 +10,7 @@ export type WSClients = Map<string, WebSocket>;
 export enum ClientRequestType {
   PING = "PING",
   PLAYER_VISIT = "PLAYER_VISIT",
+  CREATE_VILLAGER = "CREATE_VILLAGER",
 }
 
 export interface WebSocketRequest {
@@ -25,10 +26,17 @@ export interface PlayerVisitWSReq extends WebSocketRequest {
   playerId: string | null;
 }
 
+export interface CreateVillagerWSReq extends WebSocketRequest {
+  type: ClientRequestType.CREATE_VILLAGER;
+  eye: string;
+  hair: string;
+  outfit: string;
+}
+
 /**
  * Types of messages that the client will send to the server.
  */
-export type MessageTypes = PingWSReq | PlayerVisitWSReq;
+export type MessageTypes = PingWSReq | PlayerVisitWSReq | CreateVillagerWSReq;
 
 export function isWebSocketRequest(obj: Object): obj is WebSocketRequest {
   return (obj as WebSocketRequest).type !== undefined;
@@ -44,6 +52,17 @@ export function isPlayerVisitWSReq(
   return (
     obj.type === ClientRequestType.PLAYER_VISIT &&
     (obj as PlayerVisitWSReq).playerId !== undefined
+  );
+}
+
+export function isCreateVillagerWSReq(
+  obj: WebSocketRequest
+): obj is CreateVillagerWSReq {
+  return (
+    obj.type === ClientRequestType.CREATE_VILLAGER &&
+    (obj as CreateVillagerWSReq).eye !== undefined &&
+    (obj as CreateVillagerWSReq).hair !== undefined &&
+    (obj as CreateVillagerWSReq).outfit !== undefined
   );
 }
 

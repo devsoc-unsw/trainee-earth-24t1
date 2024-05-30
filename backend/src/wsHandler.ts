@@ -11,6 +11,8 @@ import {
   PingWSReq,
   PlayerVisitWSReq,
   WSClients,
+  CreateVillagerWSReq,
+  isCreateVillagerWSReq,
 } from "@backend/types/wsTypes.ts";
 
 /**
@@ -51,6 +53,15 @@ export const handleWSRequest = (request: WebSocketRequest, ws: WebSocket) => {
         ws.send(JSON.stringify({ res: `Welcome back ${playerId}` }));
       }
       break;
+    case ClientRequestType.CREATE_VILLAGER:
+      console.log(`Handle wsrequest was CREATE_VILLAGER`);
+      if (assertWSReqType<CreateVillagerWSReq>(request, isCreateVillagerWSReq)) {
+        const { eye, hair, outfit } = request;
+
+        const villagerAsset = {
+          // getRemoteImages: () => [{ url: `${wsurl}/gen/villager?eye=${eye}&hair=${hair}&outfit=${outfit}` }]
+        }
+      }
     // ADD NEW WEBSOCKET REQUEST TYPES HERE
     default:
       throw new InvalidWSRequestSubTypeError();

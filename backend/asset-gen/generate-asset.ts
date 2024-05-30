@@ -314,8 +314,8 @@ export async function generateHouseAsset(): Promise<Asset | null> {
   return newAsset;
 }
 
-export async function generateAssetVillagerImage(assetType: AssetType): Promise<Asset | null> {
-  const generatedImage = await generateStableImage();
+export async function generateAssetVillagerImage(assetType: AssetType, eye, hair, outfit): Promise<Asset | null> {
+  const generatedImage = await generateStableImage(eye, hair, outfit);
 
   // make new asset class
   if (generatedImage == null) {
@@ -370,10 +370,10 @@ export async function generateResourceItemAsset() {
   const generatedImage = generateResourceImage();
 }
 
-export async function generateVillagerAsset(): Promise<Asset | null> {
+export async function generateVillagerAsset(eye, hair, outfit): Promise<Asset | null> {
   // TODO: Implement this in a specialised way rather than delegate to
   // generateAsset()
-  return await generateAssetVillagerImage(AssetType.VILLAGER);
+  return await generateAssetVillagerImage(AssetType.VILLAGER, eye, hair, outfit);
 }
 
 export async function generateProductionObjectAsset(): Promise<Asset | null> {

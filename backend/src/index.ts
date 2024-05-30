@@ -115,7 +115,8 @@ app.get("/gen/house", async (req, res) => {
 // Create a new villager asset
 app.get("/gen/villager", async (req, res) => {
   try {
-    const asset = await generateVillagerAsset();
+    const {eye, hair, outfit} = req.query;
+    const asset = await generateVillagerAsset(eye, hair, outfit);
     res.send(
       `<html><body><img src="${
         asset.getRemoteImages().at(-1).url

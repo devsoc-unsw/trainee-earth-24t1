@@ -143,7 +143,7 @@ function randomInt(min, max) {
 }
 
 export async function generateVillagerImage(): Promise<undefined> {
-  return await generateStableImage();
+  return await generateStableImage('brown', 'blonde', 'shiny metal armour');
 }
 
 export async function generateResourceImage() {
@@ -155,11 +155,11 @@ export async function generateResourceImage() {
   }
 }
 
-export async function generateStableImage() {
+export async function generateStableImage(eye, hair, outfit) {
   try {
     const formData = {
       image: fs.createReadStream("./stableDudePerfect.png"),
-      prompt: "a fun cute human for a village game, character only, 8 bit pixel style, white background. The villager has brown eyes, blond wavy hair and a shiny metal armour.",
+      prompt: `a fun cute human for a village game, character only, 8 bit pixel style, white background. The villager has ${eye} eyes, ${hair} hair and a ${outfit}.`,
       control_strength: 0.6,
       output_format: "webp",
       negative_prompt: "background, additional props, shadows, ground, grass, floor"
