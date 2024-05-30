@@ -109,6 +109,10 @@ export default function Interface({
   }, [simulationState]);
 
   useEffect(() => {
+    console.log(`simulationState`, simulationState);
+  }, [simulationState]);
+
+  useEffect(() => {
     localStorage.setItem("widgetsData", JSON.stringify(widgets));
   }, [widgets]);
 
