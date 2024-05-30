@@ -23,7 +23,7 @@ export class GameLoop {
    * e.g. 1000 / 20 = 20 fps,  1000 / 60 = 60 fps,
    * 1000 / (1/8) = 1/8th frames per second ie 8 seconds per frame
    */
-  readonly frameLengthMs = 1000 / (1 / 8);
+  readonly frameLengthMs = 1000 / (1 / 5);
 
   /**
    * Period of time right before the next frame is intended to begin,

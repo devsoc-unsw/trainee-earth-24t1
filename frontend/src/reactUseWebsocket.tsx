@@ -1,12 +1,15 @@
-import { MessageTypes } from "@backend/types/wsTypes.ts";
+import { ClientMessageType } from "@backend/types/wsTypes";
 import { useEffect } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 
 const WS_URL = "ws://127.0.0.1:3000";
 
+/**
+ * @deprecated We are using plain WebSocket browser API. See WorldMap.tsx
+ */
 const WSBox = () => {
   const { sendJsonMessage, lastJsonMessage, readyState } =
-    useWebSocket<MessageTypes>(WS_URL, {
+    useWebSocket<ClientMessageType>(WS_URL, {
       share: true,
       shouldReconnect: () => true,
       reconnectInterval: 3000,
@@ -35,6 +38,6 @@ const WSBox = () => {
     console.log(`readyState changed to: ${readyState}`);
   }, [readyState]);
 
-  return <div>WebSocket Box{lastJsonMessage?.type ?? "none"}</div>;
+  return <div>WebSocket Box</div>;
 };
 export default WSBox;
