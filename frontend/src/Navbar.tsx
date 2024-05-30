@@ -35,7 +35,7 @@ const Navbar = ({ children }: NavbarProps) => {
       {/* Add navigation links here */}
       <div className="flex justify-end space-x-8">
         <Button onClick={() => localStorage.clear()}>
-          Reset Local Storage
+          Reset Data
         </Button>
 
         {children}
