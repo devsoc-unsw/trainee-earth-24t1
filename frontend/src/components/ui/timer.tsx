@@ -15,6 +15,7 @@ import {
 import { useState, useEffect } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { IconDots } from "@tabler/icons-react";
+import { Alert } from "./alert";
 
 export default function TimerWidget({
   draggableId,
@@ -73,6 +74,11 @@ export default function TimerWidget({
       if (!isPaused) {
         setSecondsLeft((prevSeconds) => {
           if (prevSeconds === 0) {
+            if (mode === "focus") {
+              Alert('Info', 'Pomodoro Timer Widget', 'Break time has started!');
+            } else {
+              Alert('Info', 'Pomodoro Timer Widget', 'Focus time has started!');
+            }
             switchMode();
             return mode === "focus" ? focusMinutes * 60 : breakMinutes * 60;
           }
