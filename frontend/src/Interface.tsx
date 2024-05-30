@@ -6,7 +6,7 @@ import TodoWidget from "@frontend/src/components/ui/todo";
 import GithubWidget from "@frontend/src/components/ui/github";
 import CalendarWidget from "@frontend/src/components/ui/calendarWidget";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { MutableRefObject, useEffect, useState } from "react";
+import { MutableRefObject, ReactNode, useEffect, useState } from "react";
 import HabitCounter from "./components/ui/habitCounter";
 import { Button } from "./components/ui/button";
 import {
@@ -21,7 +21,14 @@ import Inventory from "./components/ui/inventory";
 import { Alert } from "./components/ui/alert";
 import { Toaster } from "sonner";
 import { Separator } from "./components/ui/separator";
-import { IconArrowDown, IconArrowLeft, IconArrowRight, IconArrowUp, IconDots, IconMouse } from "@tabler/icons-react";
+import {
+  IconArrowDown,
+  IconArrowLeft,
+  IconArrowRight,
+  IconArrowUp,
+  IconDots,
+  IconMouse,
+} from "@tabler/icons-react";
 import { SimulationState } from "@backend/types/simulationTypes";
 
 /**
@@ -84,11 +91,22 @@ type widgetType =
   | "github"
   | "habitCounter";
 
-export default function Interface({simState}: {simState: SimulationState}) {
+export default function Interface({
+  simulationState,
+}: {
+  simulationState: SimulationState;
+}) {
   const [widgets, setWidgets] = useState<widgetDataType>(() => {
     const savedWidgetsData = localStorage.getItem("widgetsData");
     return savedWidgetsData ? JSON.parse(savedWidgetsData) : defaultWidgetsData;
   });
+
+  const [inventoryComponent, setInventoryComponent] = useState<ReactNode>(null);
+
+  useEffect(() => {
+    console.log(`simulationState`, simulationState);
+    setInventoryComponent(<Inventory simState={simulationState} />);
+  }, [simulationState]);
 
   useEffect(() => {
     localStorage.setItem("widgetsData", JSON.stringify(widgets));
@@ -127,14 +145,15 @@ export default function Interface({simState}: {simState: SimulationState}) {
               <img className="logo-gif h-[90px] mr-2" src={logo} alt="Logo" />
               <div className="text-5xl font-bold">
                 Welcome to Groveify!
-                <p className="text-lg">Lovingly brought to you by: Dylan, Catelyn, Sarah, Gordon and Lachlan ♡</p>
+                <p className="text-lg">
+                  Lovingly brought to you by: Dylan, Catelyn, Sarah, Gordon and
+                  Lachlan ♡
+                </p>
               </div>
             </DialogTitle>
             <DialogDescription className="flex text-2xl h-full p-4 items-center justify-around">
               <div className="font-medium pr-6 h-full w-full">
-                <div className="font-bold text-3xl">
-                  Controls:
-                </div>
+                <div className="font-bold text-3xl">Controls:</div>
                 <div className="flex justify-evenly items-center text-2xl font-medium">
                   Use
                   <div>
@@ -155,21 +174,23 @@ export default function Interface({simState}: {simState: SimulationState}) {
                 to move move the map.
                 <div className="font-medium flex justify-evenly items-center pt-6">
                   Click and move your
-                    <div>
-                      <IconMouse size={35} />
-                    </div>
+                  <div>
+                    <IconMouse size={35} />
+                  </div>
                 </div>
                 <div className="font-medium flex-col justify-center items-center">
-                  <p className="font-medium flex justify-center">to move placeables on</p>
-                  <p className="font-medium flex justify-center">the interactive island.</p>
+                  <p className="font-medium flex justify-center">
+                    to move placeables on
+                  </p>
+                  <p className="font-medium flex justify-center">
+                    the interactive island.
+                  </p>
                 </div>
               </div>
 
-              <Separator orientation="vertical" className="w-[2px]"/>
+              <Separator orientation="vertical" className="w-[2px]" />
               <div className="font-medium pl-6 h-full w-full">
-                <div className="font-bold text-3xl">
-                  Widgets:
-                </div>
+                <div className="font-bold text-3xl">Widgets:</div>
                 <div className="flex justify-evenly items-center text-2xl font-medium">
                   Use
                   <div>
@@ -179,7 +200,7 @@ export default function Interface({simState}: {simState: SimulationState}) {
                   <IconDots />
                 </div>
                 <div className="flex justify-center items-center font-medium text-2xl">
-                  on the widgets to move 
+                  on the widgets to move
                 </div>
                 <div className="flex justify-center items-center font-medium text-2xl">
                   them around.
@@ -188,8 +209,12 @@ export default function Interface({simState}: {simState: SimulationState}) {
                   You can also sign in with
                 </div>
                 <div className="font-medium flex-col justify-center items-center">
-                  <p className="font-medium flex justify-center">the button at the top</p>
-                  <p className="font-medium flex justify-center">right of the screen.</p>
+                  <p className="font-medium flex justify-center">
+                    the button at the top
+                  </p>
+                  <p className="font-medium flex justify-center">
+                    right of the screen.
+                  </p>
                 </div>
               </div>
             </DialogDescription>
@@ -214,7 +239,7 @@ export default function Interface({simState}: {simState: SimulationState}) {
               Check out your resources and inventory items.
             </DialogDescription>
             <div className="grid gap-4 py-4 h-[330px]">
-              <Inventory simState={simState} />
+              {inventoryComponent}
             </div>
           </DialogHeader>
         </DialogContent>
@@ -268,7 +293,7 @@ export default function Interface({simState}: {simState: SimulationState}) {
                   draggableId={widget.id}
                 />
               );
-            }
+          }
         })}
       </DndContext>
     </>

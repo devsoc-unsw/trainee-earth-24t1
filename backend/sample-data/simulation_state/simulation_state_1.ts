@@ -51,6 +51,7 @@ export const worldMap: WorldMapJSON = {
 };
 
 const villager1: VillagerJSON = {
+  name: "Sarah",
   _id: "villager_1",
   type: "farmer",
   friends: ["villager_2"],
@@ -74,9 +75,11 @@ const villager1: VillagerJSON = {
   asset: "villager_1_asset",
   pos: { x: 1, y: 5 }, // in front of house_1
   basePos: { x: 0, y: 0 },
+  villagerPath: [],
 };
 
 const villager2: VillagerJSON = {
+  name: "Dylan",
   _id: "villager_2",
   type: "miner",
   friends: ["villager_1"],
@@ -100,9 +103,11 @@ const villager2: VillagerJSON = {
   asset: "villager_2_asset",
   pos: { x: 18, y: 8 },
   basePos: { x: 36, y: 8 },
+  villagerPath: [],
 };
 
 const villager3: VillagerJSON = {
+  name: "Caitlyn",
   _id: "villager_3",
   type: "miner",
   friends: ["villager_1"],
@@ -126,9 +131,11 @@ const villager3: VillagerJSON = {
   asset: "villager_3_asset",
   pos: { x: -15, y: 4 },
   basePos: { x: 0, y: 30 },
+  villagerPath: [],
 };
 
 const villager4: VillagerJSON = {
+  name: "Gordon",
   _id: "villager_4",
   type: "miner",
   friends: ["villager_1"],
@@ -152,9 +159,11 @@ const villager4: VillagerJSON = {
   asset: "villager_4_asset",
   pos: { x: 1, y: -11 },
   basePos: { x: -30, y: 0 },
+  villagerPath: [],
 };
 
 const villager5: VillagerJSON = {
+  name: "Lachlan",
   _id: "villager_5",
   type: "miner",
   friends: ["villager_1"],
@@ -178,9 +187,11 @@ const villager5: VillagerJSON = {
   asset: "villager_5_asset",
   pos: { x: 5, y: 1 },
   basePos: { x: 0, y: -30 },
+  villagerPath: [],
 };
 
 const villager6: VillagerJSON = {
+  name: "Nicole",
   _id: "villager_6",
   type: "miner",
   friends: ["villager_1"],
@@ -204,9 +215,11 @@ const villager6: VillagerJSON = {
   asset: "villager_6_asset",
   pos: { x: -8, y: 1 },
   basePos: { x: -34, y: 30 },
+  villagerPath: [],
 };
 
 const villager7: VillagerJSON = {
+  name: "Jess",
   _id: "villager_7",
   type: "miner",
   friends: ["villager_1"],
@@ -230,9 +243,11 @@ const villager7: VillagerJSON = {
   asset: "villager_6_asset",
   pos: { x: -8, y: 3 },
   basePos: { x: 38, y: -37 },
+  villagerPath: [],
 };
 
 const villager8: VillagerJSON = {
+  name: "Dylan H",
   _id: "villager_8",
   type: "miner",
   friends: ["villager_1"],
@@ -256,6 +271,7 @@ const villager8: VillagerJSON = {
   asset: "villager_8_asset",
   pos: { x: -8, y: 5 },
   basePos: { x: 38, y: 37 },
+  villagerPath: [],
 };
 
 const attribute1: AttributeJSON = {
