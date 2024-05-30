@@ -4,6 +4,7 @@ import TaskForm from "./taskForm";
 import Task from "./task";
 import { useDraggable } from "@dnd-kit/core";
 import { IconDots } from "@tabler/icons-react";
+import { Alert } from "./alert";
 
 interface TaskType {
   name: string;
@@ -53,6 +54,7 @@ export default function TodoWidget({
   }, []);
 
   function addTask(name: string) {
+    Alert('Success', "To-Do Widget", 'Task successfully added!');
     setTasks((prev) => {
       return [...prev, { name: name, done: false }];
     });
@@ -67,6 +69,7 @@ export default function TodoWidget({
   }
 
   function removeTask(taskIndex: number) {
+    Alert('Success', "To-Do Widget", 'Task successfully deleted!');
     setTasks((prev) => {
       return prev.filter((_, index) => index !== taskIndex);
     });
