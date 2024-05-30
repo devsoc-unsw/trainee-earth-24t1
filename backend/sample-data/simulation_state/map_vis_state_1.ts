@@ -1,6 +1,9 @@
+/**
+ * @deprecated Use simulation_state_1.ts instead
+ */
+
 import { AssetsJSON } from "@backend/types/assetTypes.ts";
 import {
-  AttributeJSON,
   CosmeticObjectJSON,
   HouseObjectJSON,
   ProductionObjectJSON,
@@ -11,7 +14,7 @@ import {
 } from "@backend/types/simulationTypes.ts";
 import { cells } from "./map_vis_cells_1.ts";
 
-export const worldMap: WorldMapJSON = {
+const worldMap: WorldMapJSON = {
   cells: {
     ...cells,
     "0,0": {
@@ -99,11 +102,49 @@ const villager1: VillagerJSON = {
   friends: ["villager_2"],
   enemies: [],
   interactingWith: null,
-  energy: 100,
-  coins: 90,
-  resources: {},
+  energy: 3000,
+  coins: 24000,
+  resources: {
+    resource_1: {
+      total: 48,
+      isSelling: 12,
+      buyPrice: 7, // $7 per unit
+    },
+    resource_2: {
+      total: 64,
+      isSelling: 12,
+      buyPrice: 2, // $7 per unit
+    },
+    resource_3: {
+      total: 64,
+      isSelling: 12,
+      buyPrice: 3, // $7 per unit
+    },
+  },
   cosmeticEnvironmentObjects: ["cosmetic_1"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
-  characterAttributes: {},
+  characterAttributes: {
+    attribute_1: {
+      _id: "attribute_value_1",
+      base: 10,
+      boosts: [],
+    },
+    attribute_2: {
+      _id: "attribute_value_2",
+      base: 5,
+      boosts: [
+        {
+          value: 2,
+          duration: 3600,
+          expiration: Date.now() + 3600,
+        },
+        {
+          value: 3,
+          duration: 7200,
+          expiration: Date.now() + 7200,
+        },
+      ],
+    },
+  },
   resourceProductionEnergyCostMultipliers: {
     resource_1: 1.3,
     resource_2: 0.9,
@@ -113,22 +154,48 @@ const villager1: VillagerJSON = {
     resource_2: 0.8,
   },
   houseObject: "house_1",
-  assignment: null,
   asset: "villager_1_asset",
   pos: { x: 1, y: 5 }, // in front of house_1
 };
 
 const villager2: VillagerJSON = {
   _id: "villager_2",
-  type: "miner",
-  friends: ["villager_1"],
+  type: "merchant",
+  friends: [],
   enemies: [],
   interactingWith: null,
-  energy: 100,
-  coins: 90,
-  resources: {},
-  cosmeticEnvironmentObjects: ["cosmetic_2"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
-  characterAttributes: {},
+  energy: 3000,
+  coins: 24000,
+  resources: {
+    resource_1: {
+      total: 48,
+      isSelling: 12,
+      buyPrice: 7, // $7 per unit
+    },
+    resource_2: {
+      total: 64,
+      isSelling: 12,
+      buyPrice: 2, // $7 per unit
+    },
+    resource_3: {
+      total: 64,
+      isSelling: 12,
+      buyPrice: 3, // $7 per unit
+    },
+  },
+  cosmeticEnvironmentObjects: [],
+  characterAttributes: {
+    attribute_1: {
+      _id: "attribute_value_1",
+      base: 5,
+      boosts: [],
+    },
+    attribute_2: {
+      _id: "attribute_value_2",
+      base: 8,
+      boosts: [],
+    },
+  },
   resourceProductionEnergyCostMultipliers: {
     resource_1: 1.3,
     resource_2: 0.9,
@@ -138,22 +205,48 @@ const villager2: VillagerJSON = {
     resource_2: 0.8,
   },
   houseObject: "house_2",
-  assignment: null,
   asset: "villager_2_asset",
   pos: { x: 18, y: 8 },
 };
 
 const villager3: VillagerJSON = {
   _id: "villager_3",
-  type: "miner",
-  friends: ["villager_1"],
+  type: "merchant",
+  friends: [],
   enemies: [],
   interactingWith: null,
-  energy: 100,
-  coins: 90,
-  resources: {},
-  cosmeticEnvironmentObjects: ["cosmetic_3"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
-  characterAttributes: {},
+  energy: 3000,
+  coins: 24000,
+  resources: {
+    resource_1: {
+      total: 48,
+      isSelling: 12,
+      buyPrice: 7, // $7 per unit
+    },
+    resource_2: {
+      total: 64,
+      isSelling: 12,
+      buyPrice: 2, // $7 per unit
+    },
+    resource_3: {
+      total: 64,
+      isSelling: 12,
+      buyPrice: 3, // $7 per unit
+    },
+  },
+  cosmeticEnvironmentObjects: [],
+  characterAttributes: {
+    attribute_1: {
+      _id: "attribute_value_1",
+      base: 5,
+      boosts: [],
+    },
+    attribute_2: {
+      _id: "attribute_value_2",
+      base: 8,
+      boosts: [],
+    },
+  },
   resourceProductionEnergyCostMultipliers: {
     resource_1: 1.3,
     resource_2: 0.9,
@@ -163,22 +256,48 @@ const villager3: VillagerJSON = {
     resource_2: 0.8,
   },
   houseObject: "house_3",
-  assignment: null,
   asset: "villager_3_asset",
   pos: { x: -15, y: 4 },
 };
 
 const villager4: VillagerJSON = {
   _id: "villager_4",
-  type: "miner",
-  friends: ["villager_1"],
+  type: "merchant",
+  friends: [],
   enemies: [],
   interactingWith: null,
-  energy: 100,
-  coins: 90,
-  resources: {},
-  cosmeticEnvironmentObjects: ["cosmetic_4"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
-  characterAttributes: {},
+  energy: 3000,
+  coins: 24000,
+  resources: {
+    resource_1: {
+      total: 48,
+      isSelling: 12,
+      buyPrice: 7, // $7 per unit
+    },
+    resource_2: {
+      total: 64,
+      isSelling: 12,
+      buyPrice: 2, // $7 per unit
+    },
+    resource_3: {
+      total: 64,
+      isSelling: 12,
+      buyPrice: 3, // $7 per unit
+    },
+  },
+  cosmeticEnvironmentObjects: [],
+  characterAttributes: {
+    attribute_1: {
+      _id: "attribute_value_1",
+      base: 5,
+      boosts: [],
+    },
+    attribute_2: {
+      _id: "attribute_value_2",
+      base: 8,
+      boosts: [],
+    },
+  },
   resourceProductionEnergyCostMultipliers: {
     resource_1: 1.3,
     resource_2: 0.9,
@@ -188,154 +307,125 @@ const villager4: VillagerJSON = {
     resource_2: 0.8,
   },
   houseObject: "house_4",
-  assignment: null,
   asset: "villager_4_asset",
   pos: { x: 1, y: -11 },
 };
 
 const villager5: VillagerJSON = {
   _id: "villager_5",
-  type: "miner",
-  friends: ["villager_1"],
+  type: "lumberjack",
+  friends: [],
   enemies: [],
   interactingWith: null,
-  energy: 100,
-  coins: 90,
-  resources: {},
-  cosmeticEnvironmentObjects: ["cosmetic_5"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
-  characterAttributes: {},
+  energy: 3000,
+  coins: 24000,
+  resources: {
+    resource_1: {
+      total: 48,
+      isSelling: 12,
+      buyPrice: 7,
+    },
+    resource_2: {
+      total: 64,
+      isSelling: 12,
+      buyPrice: 2,
+    },
+    resource_3: {
+      total: 64,
+      isSelling: 12,
+      buyPrice: 3,
+    },
+  },
+  cosmeticEnvironmentObjects: [],
+  characterAttributes: {
+    attribute_1: {
+      _id: "attribute_value_1",
+      base: 3,
+      boosts: [],
+    },
+    attribute_2: {
+      _id: "attribute_value_2",
+      base: 6,
+      boosts: [],
+    },
+  },
   resourceProductionEnergyCostMultipliers: {
+    resource_1: 1.2,
+    resource_2: 1.1,
+  },
+  resourceConsumptionEnergyGainMultipliers: {
     resource_1: 1.3,
     resource_2: 0.9,
   },
-  resourceConsumptionEnergyGainMultipliers: {
-    resource_1: 1.5,
-    resource_2: 0.8,
-  },
   houseObject: "house_5",
-  assignment: null,
   asset: "villager_5_asset",
   pos: { x: 5, y: 1 },
 };
 
 const villager6: VillagerJSON = {
   _id: "villager_6",
-  type: "miner",
-  friends: ["villager_1"],
+  type: "lumberjack",
+  friends: [],
   enemies: [],
   interactingWith: null,
-  energy: 100,
-  coins: 90,
-  resources: {},
-  cosmeticEnvironmentObjects: ["cosmetic_6"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
-  characterAttributes: {},
+  energy: 3000,
+  coins: 24000,
+  resources: {
+    resource_1: {
+      total: 48,
+      isSelling: 12,
+      buyPrice: 7,
+    },
+    resource_2: {
+      total: 64,
+      isSelling: 12,
+      buyPrice: 2,
+    },
+    resource_3: {
+      total: 64,
+      isSelling: 12,
+      buyPrice: 3,
+    },
+  },
+  cosmeticEnvironmentObjects: [],
+  characterAttributes: {
+    attribute_1: {
+      _id: "attribute_value_1",
+      base: 3,
+      boosts: [],
+    },
+    attribute_2: {
+      _id: "attribute_value_2",
+      base: 6,
+      boosts: [],
+    },
+  },
   resourceProductionEnergyCostMultipliers: {
+    resource_1: 1.2,
+    resource_2: 1.1,
+  },
+  resourceConsumptionEnergyGainMultipliers: {
     resource_1: 1.3,
     resource_2: 0.9,
   },
-  resourceConsumptionEnergyGainMultipliers: {
-    resource_1: 1.5,
-    resource_2: 0.8,
-  },
   houseObject: "house_6",
-  assignment: null,
   asset: "villager_6_asset",
   pos: { x: -8, y: 1 },
 };
 
-const villager7: VillagerJSON = {
-  _id: "villager_7",
-  type: "miner",
-  friends: ["villager_1"],
-  enemies: [],
-  interactingWith: null,
-  energy: 100,
-  coins: 90,
-  resources: {},
-  cosmeticEnvironmentObjects: ["cosmetic_7"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
-  characterAttributes: {},
-  resourceProductionEnergyCostMultipliers: {
-    resource_1: 1.3,
-    resource_2: 0.9,
-  },
-  resourceConsumptionEnergyGainMultipliers: {
-    resource_1: 1.5,
-    resource_2: 0.8,
-  },
-  houseObject: "house_7",
-  assignment: null,
-  asset: "villager_6_asset",
-  pos: { x: -8, y: 3 },
-};
-
-const villager8: VillagerJSON = {
-  _id: "villager_8",
-  type: "miner",
-  friends: ["villager_1"],
-  enemies: [],
-  interactingWith: null,
-  energy: 100,
-  coins: 90,
-  resources: {},
-  cosmeticEnvironmentObjects: ["cosmetic_8"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
-  characterAttributes: {},
-  resourceProductionEnergyCostMultipliers: {
-    resource_1: 1.3,
-    resource_2: 0.9,
-  },
-  resourceConsumptionEnergyGainMultipliers: {
-    resource_1: 1.5,
-    resource_2: 0.8,
-  },
-  houseObject: "house_8",
-  assignment: null,
-  asset: "villager_8_asset",
-  pos: { x: -8, y: 5 },
-};
-
-const attribute1: AttributeJSON = {
-  _id: "Strength",
+const attribute1 = {
+  _id: "attribute_1",
   name: "Strength",
 };
 
-const attribute2: AttributeJSON = {
-  _id: "Speed",
+const attribute2 = {
+  _id: "attribute_2",
   name: "Speed",
 };
 
-const attribute3: AttributeJSON = {
-  _id: "Stamina",
-  name: "Stamina",
-};
-
-const attribute4: AttributeJSON = {
-  _id: "Intelligence",
+const attribute3 = {
+  _id: "attribute_3",
   name: "Intelligence",
-};
-
-const attribute5: AttributeJSON = {
-  _id: "Charisma",
-  name: "Charisma",
-};
-
-const attribute6: AttributeJSON = {
-  _id: "Dexterity",
-  name: "Dexterity",
-};
-
-const attribute7: AttributeJSON = {
-  _id: "Perception",
-  name: "Perception",
-};
-
-const attribute8: AttributeJSON = {
-  _id: "Negotation",
-  name: "Negotation",
-};
-
-const attribute9: AttributeJSON = {
-  _id: "Luck",
-  name: "Luck",
 };
 
 const house1: HouseObjectJSON = {
@@ -378,20 +468,6 @@ const house6: HouseObjectJSON = {
   name: "Villager 6's house",
   asset: "house_6_asset",
   owner: "villager_6",
-};
-
-const house7: HouseObjectJSON = {
-  _id: "house_7",
-  name: "Villager 7's house",
-  asset: "house_7_asset",
-  owner: "villager_7",
-};
-
-const house8: HouseObjectJSON = {
-  _id: "house_8",
-  name: "Villager 8's house",
-  asset: "house_8_asset",
-  owner: "villager_8",
 };
 
 const production1: ProductionObjectJSON = {
@@ -510,98 +586,69 @@ const resource1: ResourceJSON = {
   productionEnergyCostBasic: 7,
   consumptionEnergyGainBasic: 11,
   type: "edible",
-  attirbuteAffinity: ["Speed", "Dexterity", "Perception"],
-  productionObject: "production_1",
 };
-
 const resource2: ResourceJSON = {
   _id: "resource_2",
   name: "Iron Ore",
   productionEnergyCostBasic: 8,
   consumptionEnergyGainBasic: 15,
   type: "edible",
-  attirbuteAffinity: ["Speed", "Charisma", "Stamina"],
-  productionObject: "production_2",
 };
-
 const resource3: ResourceJSON = {
   _id: "resource_3",
   name: "Beer",
   productionEnergyCostBasic: 2,
   consumptionEnergyGainBasic: 13,
   type: "edible",
-  attirbuteAffinity: ["Speed", "Strength", "Negotiation"],
-  productionObject: "production_3",
 };
-
 const resource4: ResourceJSON = {
   _id: "resource_4",
   name: "Bread",
   productionEnergyCostBasic: 15,
   consumptionEnergyGainBasic: 5,
   type: "edible",
-  attirbuteAffinity: ["Speed", "Intelligence", "Dexterity"],
-  productionObject: "production_4",
 };
-
 const resource5: ResourceJSON = {
   _id: "resource_5",
   name: "RoundWool",
   productionEnergyCostBasic: 9,
   consumptionEnergyGainBasic: 9,
-  type: "material",
-  attirbuteAffinity: ["Speed", "Negotiation", "Luck"],
-  productionObject: "production_5",
+  type: "edible",
 };
-
 const resource6: ResourceJSON = {
   _id: "resource_6",
   name: "Sugar Cane",
   productionEnergyCostBasic: 6,
   consumptionEnergyGainBasic: 1,
   type: "edible",
-  attirbuteAffinity: ["Stamina", "Strength", "Perception"],
-  productionObject: "production_1",
 };
-
 const resource7: ResourceJSON = {
   _id: "resource_7",
   name: "Coal Ore",
   productionEnergyCostBasic: 15,
   consumptionEnergyGainBasic: 4,
-  type: "material",
-  attirbuteAffinity: ["Strength", "Charisma", "Luck"],
-  productionObject: "production_2",
+  type: "edible",
 };
-
 const resource8: ResourceJSON = {
   _id: "resource_8",
   name: "Beef",
   productionEnergyCostBasic: 5,
   consumptionEnergyGainBasic: 13,
   type: "edible",
-  attirbuteAffinity: ["Strength", "Luck", "Dexterity"],
-  productionObject: "production_3",
 };
-
 const resource9: ResourceJSON = {
   _id: "resource_9",
   name: "Bacon",
   productionEnergyCostBasic: 13,
   consumptionEnergyGainBasic: 2,
   type: "edible",
-  attirbuteAffinity: ["Strength", "Speed", "Intelligence"],
-  productionObject: "production_4",
 };
-
 const resource10: ResourceJSON = {
   _id: "resource_10",
   name: "Glass",
   productionEnergyCostBasic: 1,
   consumptionEnergyGainBasic: 15,
   type: "edible",
-  attirbuteAffinity: ["Speed", "Intelligence", "Dexterity"],
-  productionObject: "production_5",
 };
 const resource11: ResourceJSON = {
   _id: "resource_11",
@@ -609,8 +656,6 @@ const resource11: ResourceJSON = {
   productionEnergyCostBasic: 2,
   consumptionEnergyGainBasic: 12,
   type: "edible",
-  attirbuteAffinity: ["Speed", "Negotiation", "Luck"],
-  productionObject: "production_1",
 };
 const resource12: ResourceJSON = {
   _id: "resource_12",
@@ -618,8 +663,6 @@ const resource12: ResourceJSON = {
   productionEnergyCostBasic: 3,
   consumptionEnergyGainBasic: 9,
   type: "edible",
-  attirbuteAffinity: ["Stamina", "Strength", "Perception"],
-  productionObject: "production_2",
 };
 const resource13: ResourceJSON = {
   _id: "resource_13",
@@ -627,8 +670,6 @@ const resource13: ResourceJSON = {
   productionEnergyCostBasic: 13,
   consumptionEnergyGainBasic: 10,
   type: "edible",
-  attirbuteAffinity: ["Strength", "Charisma", "Luck"],
-  productionObject: "production_3",
 };
 const resource14: ResourceJSON = {
   _id: "resource_14",
@@ -636,8 +677,6 @@ const resource14: ResourceJSON = {
   productionEnergyCostBasic: 2,
   consumptionEnergyGainBasic: 5,
   type: "edible",
-  attirbuteAffinity: ["Strength", "Luck", "Dexterity"],
-  productionObject: "production_4",
 };
 const resource15: ResourceJSON = {
   _id: "resource_15",
@@ -645,9 +684,6 @@ const resource15: ResourceJSON = {
   productionEnergyCostBasic: 9,
   consumptionEnergyGainBasic: 14,
   type: "edible",
-  attirbuteAffinity: ["Stamina", "Strength", "Perception"],
-
-  productionObject: "production_5",
 };
 const resource16: ResourceJSON = {
   _id: "resource_16",
@@ -655,8 +691,6 @@ const resource16: ResourceJSON = {
   productionEnergyCostBasic: 8,
   consumptionEnergyGainBasic: 4,
   type: "edible",
-  attirbuteAffinity: ["Strength", "Speed", "Intelligence"],
-  productionObject: "production_1",
 };
 const resource17: ResourceJSON = {
   _id: "resource_17",
@@ -664,11 +698,9 @@ const resource17: ResourceJSON = {
   productionEnergyCostBasic: 8,
   consumptionEnergyGainBasic: 9,
   type: "edible",
-  attirbuteAffinity: ["Speed", "Intelligence", "Dexterity"],
-  productionObject: "production_2",
 };
 
-export const simulationState1: SimulationStateJSON = {
+const simulationState1: SimulationStateJSON = {
   _id: "simulation_server_state",
   worldMap: worldMap,
   villagers: {
@@ -678,19 +710,11 @@ export const simulationState1: SimulationStateJSON = {
     villager_4: villager4,
     villager_5: villager5,
     villager_6: villager6,
-    villager_7: villager7,
-    villager_8: villager8,
   },
   attributes: {
-    Strength: attribute1,
-    Speed: attribute2,
-    Stamina: attribute3,
-    Intelligence: attribute4,
-    Charisma: attribute5,
-    Dexterity: attribute6,
-    Perception: attribute7,
-    Negotiation: attribute8,
-    Luck: attribute9,
+    attribute_1: attribute1,
+    attribute_2: attribute2,
+    attribute_3: attribute3,
   },
   enviroObjects: {
     house_1: house1,
@@ -735,7 +759,7 @@ export const simulationState1: SimulationStateJSON = {
   },
 };
 
-export const assets1: AssetsJSON = {
+const assets1: AssetsJSON = {
   house_1_asset: {
     _id: "house_1_asset",
     name: "Villager 1 House asset",
@@ -1167,42 +1191,8 @@ export const assets1: AssetsJSON = {
     },
   },
   villager_6_asset: {
-    _id: "villager_6_asset",
-    name: "Villager 6 asset",
-    date: "2024-05-21T18:23:42.555+10:00",
-    description: "..........",
-    type: "png",
-    remoteImages: [
-      {
-        name: "final.png",
-        url: "https://flatearth.b-cdn.net/VILLAGER-2024-05-25T20:40/farid-removebg-preview.png",
-      }, //TODO: change this dupliacte
-    ],
-    dimensions: {
-      dx: 1,
-      dy: 1,
-    },
-  },
-  villager_7_asset: {
-    _id: "villager_7_asset",
-    name: "Villager 7 asset",
-    date: "2024-05-21T18:23:42.555+10:00",
-    description: "..........",
-    type: "png",
-    remoteImages: [
-      {
-        name: "final.png",
-        url: "https://flatearth.b-cdn.net/VILLAGER-2024-05-25T20:40/farid-removebg-preview.png",
-      }, // TODO: change this dupliacte
-    ],
-    dimensions: {
-      dx: 1,
-      dy: 1,
-    },
-  },
-  villager_8_asset: {
-    _id: "villager_8_asset",
-    name: "Villager 8 asset",
+    _id: "villager_5_asset",
+    name: "Villager 5 asset",
     date: "2024-05-21T18:23:42.555+10:00",
     description: "..........",
     type: "png",
