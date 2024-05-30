@@ -27,7 +27,7 @@ const WS_URL = "ws://127.0.0.1:3000";
  * @throws {SyntaxError} If the request is not in the expected format.
  * @throws {InvalidWSRequestTypeError} If the request type is not recognized.
  */
-export const handleClientMessage = (
+export const handleClientMessage = async (
   request: ClientWebsocketMessage,
   ws: WebSocket
 ) => {
@@ -70,11 +70,10 @@ export const handleClientMessage = (
       if (assertWSReqType<CreateVillagerWSReq>(request, isCreateVillagerWSReq)) {
         const { eye, hair, outfit } = request;
 
-        const villagerAsset = {
-          getRemoteImages: () => [{ url: `${WS_URL}/gen/villager?eye=${eye}&hair=${hair}&outfit=${outfit}` }]
-        }
+        const villagerAsset = await generateVillagerAsset(eye, hair, outfit)
+        const villagerURL = villagerAsset.getRemoteImages().at(-1).url
 
-        ws.send(JSON.stringify({ type: 'VILLAGER_CREATED', payload: villagerAsset.getRemoteImages().at(-1).url }));
+        ws.send(JSON.stringify({ type: 'VILLAGER_CREATED', payload: villagerURL }));
       }
     // ADD NEW WEBSOCKET REQUEST TYPES HERE
     default:
