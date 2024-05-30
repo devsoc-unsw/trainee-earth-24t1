@@ -99,7 +99,7 @@ const villager1: VillagerJSON = {
   friends: ["villager_2"],
   enemies: [],
   interactingWith: null,
-  energy: 100,
+  energy: 75,
   coins: 90,
   resources: {},
   cosmeticEnvironmentObjects: ["cosmetic_1"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
@@ -124,7 +124,7 @@ const villager2: VillagerJSON = {
   friends: ["villager_1"],
   enemies: [],
   interactingWith: null,
-  energy: 100,
+  energy: 75,
   coins: 90,
   resources: {},
   cosmeticEnvironmentObjects: ["cosmetic_2"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
@@ -149,7 +149,7 @@ const villager3: VillagerJSON = {
   friends: ["villager_1"],
   enemies: [],
   interactingWith: null,
-  energy: 100,
+  energy: 75,
   coins: 90,
   resources: {},
   cosmeticEnvironmentObjects: ["cosmetic_3"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
@@ -174,7 +174,7 @@ const villager4: VillagerJSON = {
   friends: ["villager_1"],
   enemies: [],
   interactingWith: null,
-  energy: 100,
+  energy: 75,
   coins: 90,
   resources: {},
   cosmeticEnvironmentObjects: ["cosmetic_4"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
@@ -199,7 +199,7 @@ const villager5: VillagerJSON = {
   friends: ["villager_1"],
   enemies: [],
   interactingWith: null,
-  energy: 100,
+  energy: 75,
   coins: 90,
   resources: {},
   cosmeticEnvironmentObjects: ["cosmetic_5"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
@@ -224,7 +224,7 @@ const villager6: VillagerJSON = {
   friends: ["villager_1"],
   enemies: [],
   interactingWith: null,
-  energy: 100,
+  energy: 75,
   coins: 90,
   resources: {},
   cosmeticEnvironmentObjects: ["cosmetic_6"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
@@ -249,7 +249,7 @@ const villager7: VillagerJSON = {
   friends: ["villager_1"],
   enemies: [],
   interactingWith: null,
-  energy: 100,
+  energy: 75,
   coins: 90,
   resources: {},
   cosmeticEnvironmentObjects: ["cosmetic_7"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
@@ -274,7 +274,7 @@ const villager8: VillagerJSON = {
   friends: ["villager_1"],
   enemies: [],
   interactingWith: null,
-  energy: 100,
+  energy: 75,
   coins: 90,
   resources: {},
   cosmeticEnvironmentObjects: ["cosmetic_8"], // villager1 owns this cosmetic object and is entitled to place it wherever they want within their plot of land
