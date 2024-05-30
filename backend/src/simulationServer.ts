@@ -213,9 +213,8 @@ export class SimulationServer {
      * making trades
      */
 
-    
     if (counter % TICKS_PER_CYCLE === 0) {
-       fs.appendFileSync(
+      fs.appendFileSync(
         "output_test2.json",
         "Step simulation forward one timestep, production\n"
       );
@@ -811,7 +810,6 @@ function calcItemsMade(
       totalAttribute += villager.characterAttributes[attribute].totalValue;
     }
   }
-
   return totalItems + totalAttribute * 0.2;
 }
 
