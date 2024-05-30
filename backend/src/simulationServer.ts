@@ -180,14 +180,17 @@ export class SimulationServer {
       "Step simulation forward one timestep, production\n"
     );
     this.state.villagers.forEach((villagers, villagerId) => {
-      const print: string =
-        "${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: ${villagers.assignment.resource}";
+      let print: string = ``;
+      if (villagers.assignment === null) {
+        print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: null\n`;
+      } else {
+        print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: ${villagers.assignment.resource}\n`;
+      }
       fs.appendFileSync("output_test2.json", print);
       this.state.resources.forEach((reousrce, resourceId) => {
         const resourceDetails = villagers.resources[resourceId];
 
-        const printRes: string =
-          "${resourceId}, total: ${resourceDetails.total}, buyPrice: ${resourceDetails.buyPrice}, isSelling: ${resourceDetails.isSelling}, sellPrice: ${resourceDetails.sellPrice}";
+        const printRes: string = `${resourceId}, total: ${resourceDetails.total}, buyPrice: ${resourceDetails.buyPrice}, isSelling: ${resourceDetails.isSelling}, sellPrice: ${resourceDetails.sellPrice}\n`;
         fs.appendFileSync("output_test2.json", printRes);
       });
     });
@@ -217,14 +220,17 @@ export class SimulationServer {
         "Step simulation forward one timestep, production\n"
       );
       this.state.villagers.forEach((villagers, villagerId) => {
-        const print: string =
-          "${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: ${villagers.assignment.resource}";
+        let print: string = ``;
+        if (villagers.assignment === null) {
+          print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: null\n`;
+        } else {
+          print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: ${villagers.assignment.resource}\n`;
+        }
         fs.appendFileSync("output_test2.json", print);
         this.state.resources.forEach((reousrce, resourceId) => {
           const resourceDetails = villagers.resources[resourceId];
 
-          const printRes: string =
-            "${resourceId}, total: ${resourceDetails.total}, buyPrice: ${resourceDetails.buyPrice}, isSelling: ${resourceDetails.isSelling}, sellPrice: ${resourceDetails.sellPrice}";
+          const printRes: string = `${resourceId}, total: ${resourceDetails.total}, buyPrice: ${resourceDetails.buyPrice}, isSelling: ${resourceDetails.isSelling}, sellPrice: ${resourceDetails.sellPrice}\n`;
           fs.appendFileSync("output_test2.json", printRes);
         });
       });
@@ -344,14 +350,18 @@ export class SimulationServer {
         "Step simulation forward one timestep, production\n"
       );
       this.state.villagers.forEach((villagers, villagerId) => {
-        const print: string =
-          "${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: ${villagers.assignment.resource}, items made: ${villagers.assignment.nItemsMade}";
+        let print: string = ``;
+        if (villagers.assignment === null) {
+          print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: null \n`;
+        } else {
+          print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: ${villagers.assignment.resource} items made: ${villagers.assignment.nItemsMade}\n`;
+        }
+
         fs.appendFileSync("output_test2.json", print);
         this.state.resources.forEach((reousrce, resourceId) => {
           const resourceDetails = villagers.resources[resourceId];
 
-          const printRes: string =
-            "${resourceId}, total: ${resourceDetails.total}";
+          const printRes: string = `${resourceId}, total: ${resourceDetails.total}\n`;
           fs.appendFileSync("output_test2.json", printRes);
         });
       });
@@ -694,13 +704,20 @@ export class SimulationServer {
           //  console.log(i);
           const id = resourcesAvailable[i].resource;
           if (resourcesAvailable.length < 3) {
-            while (worker.resources[id].total > 0) {
+            while (worker.resources[id].total > 0 && itemsConsumed > 0) {
               consumeResource(
                 worker,
                 id,
                 resourcesAvailable,
                 i,
                 consumedResources
+              );
+              console.log(
+                worker._id,
+                worker.energy,
+                worker.resources[id].total,
+                "i: ",
+                i
               );
               itemsConsumed--;
             }
