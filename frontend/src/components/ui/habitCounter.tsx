@@ -100,6 +100,11 @@ export default function HabitCounter({
   };
 
   const handleReset = (id: string) => {
+    habits.map((habit) => {
+      if (habit.id === id && habit.currentGoal !== 0) {
+        Alert('Info', 'Habbit Counter Widget', 'Habit successfully reset!');
+      }
+    })
     setHabits(
       habits.map((habit) =>
         habit.id === id ? { ...habit, currentGoal: 0 } : habit
