@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect, useState } from "react";
 import Tile, { Coords } from "./components/map/tiles/tile";
 import {
   parsePosStr,
@@ -31,7 +31,7 @@ import {
 } from "@backend/types/wsTypes";
 
 const DEBUG1 = false;
-const DEBUG2 = true;
+const DEBUG_WORLDMAP_CELLS = false;
 export const DEBUG_MAP_VIS = false;
 
 // Number of frames for which the render loop runs, including first frame. -1 means run indefinitely.
@@ -169,7 +169,7 @@ const WorldMap = () => {
       { x: 0, y: 0 }, // this position means nothing, will be updated every tim
       // grass field object is drawn
       // negative elevation, grass field goes below the ground
-      -116,
+      -346,
       { dx: 10, dy: 10 }, // dimensions 10x10 tiles per grass field object
       null
     )
@@ -189,6 +189,7 @@ const WorldMap = () => {
     (simulationState: SimulationState) => {
       simStateRef.current = simulationState;
 
+      setInterfaceComponent(<Interface simulationState={simulationState} />);
       tileMapRange.current = findRange(simStateRef.current.worldMap.cells);
 
       posRenderOrder.current = calculatePosRenderOrder(tileMapRange.current);
@@ -428,33 +429,64 @@ const WorldMap = () => {
     // === Draw highlighted cells on environment objects
     for (let [posStr, cell] of simStateRef.current?.worldMap.cells.entries() ??
       []) {
-      if (cell.object) {
+      if (cell.object && DEBUG_WORLDMAP_CELLS) {
         // === DEBUG draw cell if has object
-        if (DEBUG2) {
-          const simPos = parsePosStr(posStr);
-          if (!simPos) {
-            continue;
-          }
-          // Note: assumes mapObject.dimensions.dx and mapObject.dimensions.dy are
-          // same value ie mapObject is square. Shouldnt matter which you use.
-          const centerCoord = posToIsoCoords(originRaw, simPos);
+        const simPos = parsePosStr(posStr);
+        if (!simPos) {
+          continue;
+        }
+        // Note: assumes mapObject.dimensions.dx and mapObject.dimensions.dy are
+        // same value ie mapObject is square. Shouldnt matter which you use.
+        const centerCoord = posToIsoCoords(originRaw, simPos);
 
+        drawTileOutline(
+          ctx,
+          centerCoord,
+          {
+            dx: Tile.TILE_WIDTH,
+            dy: Tile.TILE_HEIGHT,
+          },
+          "rgba(247, 203, 171, 0.5)",
+          "rgba(247, 203, 171,0.4)",
+          3,
+          []
+        );
+      }
+    }
+
+    // === Draw highlighted cells on selected environment object
+    const selectedObject =
+      selectedEnviroObject.current &&
+      mapObjects.current.get(selectedEnviroObject.current);
+    const selectedObjectCenterPos = selectedObject && selectedObject.pos;
+    const selectedObjectPos = selectedObjectCenterPos && {
+      x:
+        selectedObjectCenterPos.x -
+        Math.floor(selectedObject.dimensions.dx / 2),
+      y:
+        selectedObjectCenterPos.y -
+        Math.floor(selectedObject.dimensions.dy / 2),
+    };
+    if (selectedObjectPos) {
+      for (let x = 0; x < selectedObject.dimensions.dx; ++x) {
+        for (let y = 0; y < selectedObject.dimensions.dy; ++y) {
+          const pos = {
+            x: selectedObjectPos.x + x,
+            y: selectedObjectPos.y + y,
+          };
+          const coord = posToIsoCoords(originRaw, pos);
           drawTileOutline(
             ctx,
-            centerCoord,
-            {
-              dx: Tile.TILE_WIDTH,
-              dy: Tile.TILE_HEIGHT,
-            },
-            "rgba(247, 203, 171, 0.5)",
-            "rgba(247, 203, 171,0.4)",
-            3,
+            coord,
+            { dx: Tile.TILE_WIDTH, dy: Tile.TILE_HEIGHT },
+            "rgba(247, 203, 171, 0.6)",
+            "rgba(247, 203, 171,0.25)",
+            2,
             []
           );
         }
       }
     }
-
     // === Draw mouse cursor colliding object outlines ===
     const mouseCoordsTransformed = getTransformedPoint(
       transformMat.current,
@@ -965,19 +997,20 @@ const WorldMap = () => {
           const mapObject = mapObjects.current.get(villagerId);
           if (mapObject) {
             const prevPos = { ...mapObject.pos };
-            const targetPos = villager.path.at(0);
-            if (targetPos) {
+            const targetPosStr = villager.villagerPath?.at(0);
+            if (targetPosStr) {
+              const targetPos = parsePosStr(targetPosStr);
               const displacement = {
                 x: targetPos.x - mapObject.pos.x,
                 y: targetPos.y - mapObject.pos.y,
               };
               const vel = {
-                x: displacement.x * 0.1,
-                y: displacement.y * 0.1,
+                x: displacement.x,
+                y: displacement.y,
               };
               // mapObject.setAcc(acc);
               mapObject.setVel(vel);
-              mapObject.update(delta); // will update pos
+              mapObject.update(delta, elapsed); // will update pos
               posToObjectsUpdate(
                 posToObjects.current,
                 villagerId,
@@ -996,7 +1029,7 @@ const WorldMap = () => {
               );
               if (newDisplacementFromTargetMag < 0.4) {
                 // Villager has reached target, remove target from path
-                villager.path.shift();
+                villager.villagerPath?.shift();
                 const villagerReachedPathPointClientMsg = {
                   type: ClientMessageType.VILLAGER_REACHED_PATH_POINT,
                   villagerId: villagerId,
@@ -1259,9 +1292,12 @@ const WorldMap = () => {
     };
   }, []);
 
+  const [interfaceComponent, setInterfaceComponent] = useState(<></>);
+
   return (
     <>
-      <Interface />
+      {/* <Interface /> */}
+      {interfaceComponent}
       <div
         style={{
           width: "100vw",

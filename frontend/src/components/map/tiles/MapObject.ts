@@ -20,7 +20,7 @@ import {
 const CONFIRM_OUT_OF_BOUND = false;
 
 const MAX_ACC = 0.0001;
-const MAX_VEL = 0.005;
+const MAX_VEL = 0.003;
 
 export default class MapObject {
   htmlImage: HTMLImageElement;
@@ -97,11 +97,11 @@ export default class MapObject {
   /**
    * Delta in milliseconds
    */
-  update(delta: number) {
+  update(delta: number, elapsed: number) {
     // this.vel.x += this.acc.x;
     // this.vel.y += this.acc.y;
 
-    // const velMag = Math.sqrt(this.vel.x ** 2 + this.vel.y ** 2);
+    const velMag = Math.sqrt(this.vel.x ** 2 + this.vel.y ** 2);
     // if (velMag > MAX_VEL) {
     //   this.vel.x = (this.vel.x / velMag) * MAX_VEL;
     //   this.vel.y = (this.vel.y / velMag) * MAX_VEL;
@@ -109,6 +109,10 @@ export default class MapObject {
 
     this.pos.x += this.vel.x * delta;
     this.pos.y += this.vel.y * delta;
+
+    if (velMag > 0.00001) {
+      this.elevation = Math.sin(elapsed / 8) * 12;
+    }
 
     this.acc.x = 0;
     this.acc.y = 0;
@@ -172,14 +176,30 @@ export default class MapObject {
       return;
     }
 
-    ctx.drawImage(
-      this.htmlImage,
-      boundingBoxTopLeft.x,
-      boundingBoxTopLeft.y,
-      scaledWidth,
-      scaledHeight
-    );
+    // Flip image if velocity is north-east
+    if (this.vel.x > 0 || this.vel.y < 0) {
+      ctx.save();
+      ctx.scale(-1, 1);
+      ctx.translate(-2 * boundingBoxTopLeft.x - scaledWidth, 0);
 
+      ctx.drawImage(
+        this.htmlImage,
+        boundingBoxTopLeft.x,
+        boundingBoxTopLeft.y,
+        scaledWidth,
+        scaledHeight
+      );
+
+      ctx.restore();
+    } else {
+      ctx.drawImage(
+        this.htmlImage,
+        boundingBoxTopLeft.x,
+        boundingBoxTopLeft.y,
+        scaledWidth,
+        scaledHeight
+      );
+    }
     if (DEBUG_MAP_VIS) {
       drawSquare(
         ctx,

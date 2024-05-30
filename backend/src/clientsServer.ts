@@ -168,8 +168,10 @@ export class CommunicationServer {
               ) {
                 const { villagerId } = message;
                 console.log(`Villager ${villagerId} reached path point`);
-                this.simulationState.villagers.get(villagerId).path.shift();
-                this.broadcastSimStateAssets(this.simulationState, this.assets);
+                this.simulationState.villagers
+                  .get(villagerId)
+                  .villagerPath.shift();
+                // this.broadcastSimStateAssets(this.simulationState, this.assets);
               }
               break;
             // ADD NEW WEBSOCKET REQUEST TYPES HERE

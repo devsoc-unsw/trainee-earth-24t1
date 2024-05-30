@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@frontend/@/components/ui/dialog";
+import { SimulationState } from "@backend/types/simulationTypes";
 
 /**
  * Default widget positions calculated relative to middle
@@ -79,11 +80,19 @@ type widgetType =
   | "github"
   | "habitCounter";
 
-export default function Interface() {
+export default function Interface({
+  simulationState,
+}: {
+  simulationState: SimulationState;
+}) {
   const [widgets, setWidgets] = useState<widgetDataType>(() => {
     const savedWidgetsData = localStorage.getItem("widgetsData");
     return savedWidgetsData ? JSON.parse(savedWidgetsData) : defaultWidgetsData;
   });
+
+  useEffect(() => {
+    console.log(`simulationState`, simulationState);
+  }, [simulationState]);
 
   useEffect(() => {
     localStorage.setItem("widgetsData", JSON.stringify(widgets));
