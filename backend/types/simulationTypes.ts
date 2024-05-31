@@ -206,12 +206,6 @@ export const checkGridCells = (
         (checkObject && !objects.includes(cells.get(curPosStr).object)) ||
         (checkOwner && cells.get(curPosStr).owner !== owner)
       ) {
-        console.log(`
-        curPos: ${curPosStr},
-        object: ${cells.get(curPosStr).object},
-        owner: ${cells.get(curPosStr).owner},
-        `);
-
         return false;
       }
     }
@@ -424,9 +418,9 @@ export type EnviroObjectId = string; // uuid
 type EnviroObjectRef = EnviroObjectId;
 
 export class EnviroObject implements Serializable<EnviroObjectJSON> {
-  protected readonly _id: EnviroObjectId;
+  public readonly _id: EnviroObjectId;
   public readonly name: string;
-  public readonly asset: AssetId | null;
+  public asset: AssetId | null;
   public pos: Pos | null;
   public readonly enviroType: EnviroObjectType;
 
@@ -602,12 +596,12 @@ export class Villager implements Serializable<VillagerJSON> {
   public friends: VillagerId[];
   public enemies: VillagerId[];
   public _interactingWith: VillagerId | EnviroObjectId | null = null;
-  public energy: number;
-  public coins: number;
-  public resources: ResourcesCount;
-  public cosmeticEnvironmentObjects: EnviroObjectId[];
-  public characterAttributes: AttributeValues;
-  public assignedPlant: boolean;
+  public energy: number = 0;
+  public coins: number = 0;
+  public resources: ResourcesCount = {};
+  public cosmeticEnvironmentObjects: EnviroObjectId[] = [];
+  public characterAttributes: AttributeValues = {};
+  public assignedPlant: boolean = false;
 
   /**
    * Multipliers against the basic energy gain from producing each kind of
@@ -643,15 +637,15 @@ export class Villager implements Serializable<VillagerJSON> {
 
   public houseObject: EnviroObjectId | null = null;
 
-  public assignment: villagerAssignType;
+  public assignment: villagerAssignType = null;
 
-  public asset: AssetId | null;
+  public asset: AssetId | null = null;
 
-  public pos: Pos | null;
+  public pos: Pos | null = null;
 
   public basePos: Pos;
 
-  public villagerPath: PosStr[];
+  public villagerPath: PosStr[] = [];
 
   constructor(type: VillagerType, name: string, _id: VillagerId = createId()) {
     this.type = type;
@@ -789,6 +783,7 @@ export interface ResourceJSON extends JSONObject {
   type: ResourceTypeType;
   attirbuteAffinity: AttributeId[];
   productionObject: EnviroObjectId;
+  asset: AssetId | null;
 }
 
 export class Resource implements Serializable<ResourceJSON> {
@@ -818,6 +813,8 @@ export class Resource implements Serializable<ResourceJSON> {
 
   public readonly productionObject: EnviroObjectId;
 
+  public asset: AssetId | null;
+
   constructor(
     name: string,
     productionEnergyCostBasic: number,
@@ -825,7 +822,8 @@ export class Resource implements Serializable<ResourceJSON> {
     type: ResourceTypeType,
     attirbuteAffinity: AttributeId[],
     productionObject: EnviroObjectId,
-    _id: string = createId()
+    _id: string = createId(),
+    asset: AssetId | null = null
   ) {
     this.name = name;
     this.productionEnergyCostBasic = productionEnergyCostBasic;
@@ -834,6 +832,7 @@ export class Resource implements Serializable<ResourceJSON> {
     this.attirbuteAffinity = attirbuteAffinity;
     this.productionObject = productionObject;
     this._id = _id;
+    this.asset = asset;
   }
 
   serialize(): JSONCompatible<ResourceJSON> {
@@ -845,6 +844,7 @@ export class Resource implements Serializable<ResourceJSON> {
       type: this.type,
       attirbuteAffinity: this.attirbuteAffinity,
       productionObject: this.productionObject,
+      asset: this.asset,
     };
   }
 
@@ -856,7 +856,8 @@ export class Resource implements Serializable<ResourceJSON> {
       obj.type,
       obj.attirbuteAffinity,
       obj.productionObject,
-      obj._id
+      obj._id,
+      obj.asset
     );
   }
 }

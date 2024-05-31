@@ -740,6 +740,9 @@ function consumeResource(
   i: number,
   consumedResources: { [key: ResourceId]: number }
 ) {
+  if (!worker?.resources[id]) {
+    return;
+  }
   worker.resources[id].total--;
   if (worker.resources[id].isSelling < worker.resources[id].total) {
     worker.resources[id].isSelling--;
@@ -802,13 +805,19 @@ function copyToBuyList(
   simState: SimulationState
 ) {
   simState.resources.forEach((resource, resourceId) => {
-    list.push({
-      villagerId: villager._id,
-      resourceId: resourceId,
-      buyingPrice: villager.resources[resourceId].buyPrice,
-      buyingState: villager.resources[resourceId].buyState,
-      bought: false,
-    });
+    const villagerResource = villager.resources[resourceId];
+    if (
+      villagerResource &&
+      villagerResource.buyPrice &&
+      villagerResource.buyState
+    )
+      list.push({
+        villagerId: villager._id,
+        resourceId: resourceId,
+        buyingPrice: villagerResource.buyPrice,
+        buyingState: villagerResource.buyState,
+        bought: false,
+      });
   });
 }
 
@@ -818,13 +827,19 @@ function copyToSellList(
   simState: SimulationState
 ) {
   simState.resources.forEach((resource, resourceId) => {
-    list.push({
-      villagerId: villager._id,
-      resourceId: resourceId,
-      sellingPrice: villager.resources[resourceId].sellPrice,
-      sellingQuantity: villager.resources[resourceId].isSelling,
-      sold: false,
-    });
+    const villagerResource = villager.resources[resourceId];
+    if (
+      villagerResource &&
+      villagerResource.sellPrice &&
+      villagerResource.isSelling
+    )
+      list.push({
+        villagerId: villager._id,
+        resourceId: resourceId,
+        sellingPrice: villagerResource?.sellPrice ?? 0,
+        sellingQuantity: villagerResource?.isSelling ?? 0,
+        sold: false,
+      });
   });
 }
 
@@ -834,6 +849,17 @@ function updateVillagersBuySell(
 ) {
   const villagerBuy = simState.villagers.get(transactionInfo.villagerBuy);
   const villagerSell = simState.villagers.get(transactionInfo.villagerSell);
+
+  if (
+    !villagerBuy ||
+    !transactionInfo?.resourceId ||
+    !villagerBuy.resources[transactionInfo.resourceId] ||
+    !villagerSell ||
+    !transactionInfo?.resourceId ||
+    !villagerSell.resources[transactionInfo.resourceId]
+  ) {
+    console.log("Villager not found");
+  }
 
   villagerBuy.resources[transactionInfo.resourceId].total +=
     transactionInfo.saleQuantity;

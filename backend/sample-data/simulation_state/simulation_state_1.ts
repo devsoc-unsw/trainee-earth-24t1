@@ -387,7 +387,7 @@ const house8: HouseObjectJSON = {
   name: "Villager 8's house",
   asset: "house_8_asset",
   owner: "villager_8",
-  pos: { x: 38, y: 37 },
+  pos: { x: 40, y: 37 },
   enviroType: EnviroObjectType.HOUSE,
 };
 
@@ -404,7 +404,7 @@ const production1: ProductionObjectJSON = {
   // object which can be transformed into resources. Once this energy reserve
   // is depleted, the production object will stop producing resources until
   // it is replenished with more energy (through time).
-  pos: { x: -18, y: -18 },
+  pos: { x: -16, y: -14 },
   enviroType: EnviroObjectType.PRODUCTION,
 };
 
@@ -418,7 +418,7 @@ const production2: ProductionObjectJSON = {
   },
   workerCapacity: 2,
   energyReserve: 1700,
-  pos: { x: -18, y: 18 },
+  pos: { x: -10, y: 15 },
   enviroType: EnviroObjectType.PRODUCTION,
 };
 
@@ -460,7 +460,59 @@ const production5: ProductionObjectJSON = {
   },
   workerCapacity: 2,
   energyReserve: 1700,
-  pos: { x: 13, y: -10 },
+  pos: { x: 15, y: 1 },
+  enviroType: EnviroObjectType.PRODUCTION,
+};
+const production6: ProductionObjectJSON = {
+  _id: "production_6",
+  name: "Tavern",
+  asset: "production_6_asset",
+  resourceProductionProportions: {
+    resource_2: 0.3,
+    resource_3: 0.7,
+  },
+  workerCapacity: 2,
+  energyReserve: 1700,
+  pos: { x: 33, y: -12 },
+  enviroType: EnviroObjectType.PRODUCTION,
+};
+const production7: ProductionObjectJSON = {
+  _id: "production_7",
+  name: "Tavern",
+  asset: "production_7_asset",
+  resourceProductionProportions: {
+    resource_2: 0.3,
+    resource_3: 0.7,
+  },
+  workerCapacity: 2,
+  energyReserve: 1700,
+  pos: { x: 18, y: 30 },
+  enviroType: EnviroObjectType.PRODUCTION,
+};
+const production8: ProductionObjectJSON = {
+  _id: "production_8",
+  name: "Tavern",
+  asset: "production_8_asset",
+  resourceProductionProportions: {
+    resource_2: 0.3,
+    resource_3: 0.7,
+  },
+  workerCapacity: 2,
+  energyReserve: 1700,
+  pos: { x: -42, y: -27 },
+  enviroType: EnviroObjectType.PRODUCTION,
+};
+const production9: ProductionObjectJSON = {
+  _id: "production_9",
+  name: "Tavern",
+  asset: "production_9_asset",
+  resourceProductionProportions: {
+    resource_2: 0.3,
+    resource_3: 0.7,
+  },
+  workerCapacity: 2,
+  energyReserve: 1700,
+  pos: { x: -15, y: 32 },
   enviroType: EnviroObjectType.PRODUCTION,
 };
 
@@ -485,9 +537,9 @@ const cosmetic3: CosmeticObjectJSON = {
   _id: "cosmetic_3",
   name: "Garden Swing",
   asset: "cosmetic_3_asset",
-  pos: { x: 0, y: 37 },
+  pos: { x: -40, y: -42 },
   enviroType: EnviroObjectType.COSMETIC,
-  owner: "villager_3",
+  owner: null,
 };
 const cosmetic4: CosmeticObjectJSON = {
   _id: "cosmetic_4",
@@ -525,15 +577,39 @@ const cosmetic8: CosmeticObjectJSON = {
   _id: "cosmetic_8",
   name: "Log Bench",
   asset: "cosmetic_8_asset",
-  pos: { x: 38, y: 44 },
+  pos: { x: 12, y: 26 },
   enviroType: EnviroObjectType.COSMETIC,
-  owner: "villager_8",
+  owner: null,
 };
 const cosmetic9: CosmeticObjectJSON = {
   _id: "cosmetic_9",
   name: "Flower Garden",
   asset: "cosmetic_9_asset",
-  pos: { x: 21, y: -7 },
+  pos: { x: -5, y: -15 },
+  enviroType: EnviroObjectType.COSMETIC,
+  owner: null,
+};
+const cosmetic10: CosmeticObjectJSON = {
+  _id: "cosmetic_10",
+  name: "Flower Garden",
+  asset: "cosmetic_10_asset",
+  pos: { x: 21, y: -9 },
+  enviroType: EnviroObjectType.COSMETIC,
+  owner: null,
+};
+const cosmetic11: CosmeticObjectJSON = {
+  _id: "cosmetic_11",
+  name: "Flower Garden",
+  asset: "cosmetic_11_asset",
+  pos: { x: 7, y: -14 },
+  enviroType: EnviroObjectType.COSMETIC,
+  owner: null,
+};
+const cosmetic12: CosmeticObjectJSON = {
+  _id: "cosmetic_12",
+  name: "Flower Garden",
+  asset: "cosmetic_12_asset",
+  pos: { x: 38, y: 18 },
   enviroType: EnviroObjectType.COSMETIC,
   owner: null,
 };
@@ -546,6 +622,7 @@ const resource1: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Dexterity", "Perception"],
   productionObject: "production_1",
+  asset: "resource_1_asset",
 };
 
 const resource2: ResourceJSON = {
@@ -556,6 +633,7 @@ const resource2: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Charisma", "Stamina"],
   productionObject: "production_2",
+  asset: "resource_2_asset",
 };
 
 const resource3: ResourceJSON = {
@@ -566,6 +644,7 @@ const resource3: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Strength", "Negotiation"],
   productionObject: "production_3",
+  asset: "resource_3_asset",
 };
 
 const resource4: ResourceJSON = {
@@ -576,6 +655,7 @@ const resource4: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Intelligence", "Dexterity"],
   productionObject: "production_4",
+  asset: "resource_4_asset",
 };
 
 const resource5: ResourceJSON = {
@@ -586,6 +666,7 @@ const resource5: ResourceJSON = {
   type: "material",
   attirbuteAffinity: ["Speed", "Negotiation", "Luck"],
   productionObject: "production_5",
+  asset: "resource_5_asset",
 };
 
 const resource6: ResourceJSON = {
@@ -596,6 +677,7 @@ const resource6: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Stamina", "Strength", "Perception"],
   productionObject: "production_1",
+  asset: "resource_6_asset",
 };
 
 const resource7: ResourceJSON = {
@@ -606,6 +688,7 @@ const resource7: ResourceJSON = {
   type: "material",
   attirbuteAffinity: ["Strength", "Charisma", "Luck"],
   productionObject: "production_2",
+  asset: "resource_7_asset",
 };
 
 const resource8: ResourceJSON = {
@@ -616,6 +699,7 @@ const resource8: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Strength", "Luck", "Dexterity"],
   productionObject: "production_3",
+  asset: "resource_8_asset",
 };
 
 const resource9: ResourceJSON = {
@@ -626,6 +710,7 @@ const resource9: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Strength", "Speed", "Intelligence"],
   productionObject: "production_4",
+  asset: "resource_9_asset",
 };
 
 const resource10: ResourceJSON = {
@@ -636,6 +721,7 @@ const resource10: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Intelligence", "Dexterity"],
   productionObject: "production_5",
+  asset: "resource_10_asset",
 };
 const resource11: ResourceJSON = {
   _id: "resource_11",
@@ -645,6 +731,7 @@ const resource11: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Negotiation", "Luck"],
   productionObject: "production_1",
+  asset: "resource_11_asset",
 };
 const resource12: ResourceJSON = {
   _id: "resource_12",
@@ -654,6 +741,7 @@ const resource12: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Stamina", "Strength", "Perception"],
   productionObject: "production_2",
+  asset: "resource_12_asset",
 };
 const resource13: ResourceJSON = {
   _id: "resource_13",
@@ -663,6 +751,7 @@ const resource13: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Strength", "Charisma", "Luck"],
   productionObject: "production_3",
+  asset: "resource_13_asset",
 };
 const resource14: ResourceJSON = {
   _id: "resource_14",
@@ -672,6 +761,7 @@ const resource14: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Strength", "Luck", "Dexterity"],
   productionObject: "production_4",
+  asset: "resource_14_asset",
 };
 const resource15: ResourceJSON = {
   _id: "resource_15",
@@ -680,8 +770,8 @@ const resource15: ResourceJSON = {
   consumptionEnergyGainBasic: 14,
   type: "edible",
   attirbuteAffinity: ["Stamina", "Strength", "Perception"],
-
   productionObject: "production_5",
+  asset: "resource_15_asset",
 };
 const resource16: ResourceJSON = {
   _id: "resource_16",
@@ -691,6 +781,7 @@ const resource16: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Strength", "Speed", "Intelligence"],
   productionObject: "production_1",
+  asset: "resource_16_asset",
 };
 const resource17: ResourceJSON = {
   _id: "resource_17",
@@ -700,6 +791,7 @@ const resource17: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Intelligence", "Dexterity"],
   productionObject: "production_2",
+  asset: "resource_17_asset",
 };
 
 export const simulationState1: SimulationStateJSON = {
@@ -740,6 +832,10 @@ export const simulationState1: SimulationStateJSON = {
     production_3: production3,
     production_4: production4,
     production_5: production5,
+    production_6: production6,
+    production_7: production7,
+    production_8: production8,
+    production_9: production9,
     cosmetic_1: cosmetic1,
     cosmetic_2: cosmetic2,
     cosmetic_3: cosmetic3,
@@ -749,6 +845,12 @@ export const simulationState1: SimulationStateJSON = {
     cosmetic_7: cosmetic7,
     cosmetic_8: cosmetic8,
     cosmetic_9: cosmetic9,
+    cosmetic_10: cosmetic10,
+    cosmetic_11: cosmetic11,
+    cosmetic_12: cosmetic12,
+    // cosmetic_13: cosmetic13,
+    // cosmetic_14: cosmetic14,
+    // cosmetic_15: cosmetic15,
   },
   resources: {
     resource_1: resource1,
@@ -786,8 +888,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_2_asset: {
@@ -803,8 +905,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_3_asset: {
@@ -820,8 +922,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_4_asset: {
@@ -833,12 +935,12 @@ export const assets1: AssetsJSON = {
     remoteImages: [
       {
         name: "final.png",
-        url: "https://flatearth.b-cdn.net/house-2024-05-23T03:26:14.187Z/edges-cropped2.png",
+        url: "https://flatearth.b-cdn.net/house-2024-05-30T22:48:15.471Z/edges-cropped.png",
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_5_asset: {
@@ -854,8 +956,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_6_asset: {
@@ -867,12 +969,12 @@ export const assets1: AssetsJSON = {
     remoteImages: [
       {
         name: "final.png",
-        url: "https://flatearth.b-cdn.net/house-2024-05-23T03:28:11.539Z/edges-cropped2.png",
+        url: "https://flatearth.b-cdn.net/house-2024-05-31T02:05:38.543Z/edges-cropped.png",
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_7_asset: {
@@ -884,12 +986,12 @@ export const assets1: AssetsJSON = {
     remoteImages: [
       {
         name: "final.png",
-        url: "https://flatearth.b-cdn.net/house-2024-05-23T03:28:11.539Z/edges-cropped2.png",
+        url: "https://flatearth.b-cdn.net/house-2024-05-31T01:42:14.636Z/edges-cropped.png",
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_8_asset: {
@@ -901,12 +1003,12 @@ export const assets1: AssetsJSON = {
     remoteImages: [
       {
         name: "final.png",
-        url: "https://flatearth.b-cdn.net/house-2024-05-23T03:28:11.539Z/edges-cropped2.png",
+        url: "https://flatearth.b-cdn.net/house-2024-05-31T01:58:02.316Z/edges-cropped.png",
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   production_1_asset: {
@@ -987,6 +1089,74 @@ export const assets1: AssetsJSON = {
       {
         name: "final.png",
         url: "https://flatearth.b-cdn.net/RESOURCE_ENVIRONMENT_OBJ-2024-05-23T06:34:15.160Z/edges-cropped2.png",
+      },
+    ],
+    dimensions: {
+      dx: 8,
+      dy: 8,
+    },
+  },
+  production_6_asset: {
+    _id: "production_6_asset",
+    name: "Production Object 6 asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "..........",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/RESOURCE_ENVIRONMENT_OBJ-2024-05-31T00:25:50.926Z/edges-cropped.png",
+      },
+    ],
+    dimensions: {
+      dx: 7,
+      dy: 7,
+    },
+  },
+  production_7_asset: {
+    _id: "production_7_asset",
+    name: "Production Object 7 asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "..........",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/RESOURCE_ENVIRONMENT_OBJ-2024-05-31T00:25:59.149Z/edges-cropped.png",
+      },
+    ],
+    dimensions: {
+      dx: 6,
+      dy: 6,
+    },
+  },
+  production_8_asset: {
+    _id: "production_8_asset",
+    name: "Production Object 8 asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "..........",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/RESOURCE_ENVIRONMENT_OBJ-2024-05-31T01:30:50.651Z/edges-cropped.png",
+      },
+    ],
+    dimensions: {
+      dx: 9,
+      dy: 9,
+    },
+  },
+  production_9_asset: {
+    _id: "production_9_asset",
+    name: "Production Object 9 asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "..........",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/RESOURCE_ENVIRONMENT_OBJ-2024-05-31T01:31:06.894Z/edges-cropped.png",
       },
     ],
     dimensions: {
@@ -1147,6 +1317,108 @@ export const assets1: AssetsJSON = {
       dy: 4,
     },
   },
+  cosmetic_10_asset: {
+    _id: "cosmetic_10_asset",
+    name: "Cosmetic Object 10 asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "..........",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/COSMETIC_ENVIRONMENT_OBJ-2024-05-31T00:19:57.830Z/edges-cropped.png",
+      },
+    ],
+    dimensions: {
+      dx: 4,
+      dy: 4,
+    },
+  },
+  cosmetic_11_asset: {
+    _id: "cosmetic_11_asset",
+    name: "Cosmetic Object 11 asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "..........",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/COSMETIC_ENVIRONMENT_OBJ-2024-05-31T00:19:59.470Z/edges-cropped.png",
+      },
+    ],
+    dimensions: {
+      dx: 4,
+      dy: 4,
+    },
+  },
+  cosmetic_12_asset: {
+    _id: "cosmetic_12_asset",
+    name: "Cosmetic Object 12 asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "..........",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/COSMETIC_ENVIRONMENT_OBJ-2024-05-31T00:22:22.745Z/edges-cropped.png",
+      },
+    ],
+    dimensions: {
+      dx: 2,
+      dy: 2,
+    },
+  },
+  cosmetic_13_asset: {
+    _id: "cosmetic_13_asset",
+    name: "Cosmetic Object 13 asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "..........",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/COSMETIC_ENVIRONMENT_OBJ-2024-05-31T00:22:25.394Z/edges-cropped.png",
+      },
+    ],
+    dimensions: {
+      dx: 4,
+      dy: 4,
+    },
+  },
+  cosmetic_14_asset: {
+    _id: "cosmetic_14_asset",
+    name: "Cosmetic Object 14 asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "..........",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/COSMETIC_ENVIRONMENT_OBJ-2024-05-31T01:31:34.694Z/edges-cropped.png",
+      },
+    ],
+    dimensions: {
+      dx: 3,
+      dy: 3,
+    },
+  },
+  cosmetic_15_asset: {
+    _id: "cosmetic_15_asset",
+    name: "Cosmetic Object 15 asset",
+    date: "2024-05-21T18:23:42.555+10:00",
+    description: "..........",
+    type: "png",
+    remoteImages: [
+      {
+        name: "final.png",
+        url: "https://flatearth.b-cdn.net/RESOURCE_ENVIRONMENT_OBJ-2024-05-31T01:31:42.813Z/edges-cropped.png",
+      },
+    ],
+    dimensions: {
+      dx: 5,
+      dy: 5,
+    },
+  },
   villager_1_asset: {
     _id: "villager_1_asset",
     name: "Villager 1 asset",
@@ -1218,14 +1490,14 @@ export const assets1: AssetsJSON = {
   villager_5_asset: {
     _id: "villager_5_asset",
     name: "Villager 5 asset",
-    date: "2024-05-21T18:23:42.555+10:00",
+    date: "2024-05-31T08:47:19.538+10:0",
     description: "..........",
     type: "png",
     remoteImages: [
       {
-        name: "final.png",
-        url: "https://flatearth.b-cdn.net/VILLAGER-2024-05-25T20:40/farid-removebg-preview.png",
-      }, // TODO: change this dupliacte
+        name: "edges-cropped.png",
+        url: "https://flatearth.b-cdn.net/villager-2024-05-30T22:47:19.535Z/edges-cropped.png",
+      },
     ],
     dimensions: {
       dx: 1,
@@ -1241,8 +1513,8 @@ export const assets1: AssetsJSON = {
     remoteImages: [
       {
         name: "final.png",
-        url: "https://flatearth.b-cdn.net/VILLAGER-2024-05-25T20:40/farid-removebg-preview.png",
-      }, //TODO: change this dupliacte
+        url: "https://flatearth.b-cdn.net/villager-2024-05-31T00:01:37.404Z/edges-cropped.png",
+      },
     ],
     dimensions: {
       dx: 1,
@@ -1258,8 +1530,8 @@ export const assets1: AssetsJSON = {
     remoteImages: [
       {
         name: "final.png",
-        url: "https://flatearth.b-cdn.net/VILLAGER-2024-05-25T20:40/farid-removebg-preview.png",
-      }, // TODO: change this dupliacte
+        url: "https://flatearth.b-cdn.net/villager-2024-05-31T00:12:10.082Z/edges-cropped.png",
+      },
     ],
     dimensions: {
       dx: 1,

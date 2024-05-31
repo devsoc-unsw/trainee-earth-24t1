@@ -6,7 +6,9 @@ import TodoWidget from "@frontend/src/components/ui/todo";
 import GithubWidget from "@frontend/src/components/ui/github";
 import CalendarWidget from "@frontend/src/components/ui/calendarWidget";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { MutableRefObject, ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
+import WorldMap from "@frontend/src/WorldMap";
+import VillagerGenButton from "./components/ui/VillagerGenButton";
 import HabitCounter from "./components/ui/habitCounter";
 import { Button } from "./components/ui/button";
 import {
@@ -93,8 +95,14 @@ type widgetType =
 
 export default function Interface({
   simulationState,
+  onRequestCreateVillager,
 }: {
   simulationState: SimulationState;
+  onRequestCreateVillager: (
+    eyeColor: string,
+    hairColor: string,
+    outFit: string
+  ) => void;
 }) {
   const [widgets, setWidgets] = useState<widgetDataType>(() => {
     const savedWidgetsData = localStorage.getItem("widgetsData");
@@ -248,6 +256,11 @@ export default function Interface({
           </DialogHeader>
         </DialogContent>
       </Dialog>
+      <div className="fixed left-16 top-1/2 animate-bounce">
+        <VillagerGenButton
+          onRequestCreateVillager={onRequestCreateVillager}
+        ></VillagerGenButton>
+      </div>
       <Toaster richColors visibleToasts={4} closeButton />
       <DndContext onDragEnd={handleDragEnd}>
         {widgets.map((widget) => {

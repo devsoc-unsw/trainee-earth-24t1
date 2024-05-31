@@ -23,6 +23,7 @@ import {
   generateVillagerAsset,
   generateProductionObjectAsset,
   generateCosmeticObjectAsset,
+  generateResourceItemAsset,
   // generateVillagerAssetV2
 } from "@backend/asset-gen/generate-asset.ts";
 import cosmeticPresetJSON from "@backend/sample-data/gen-assets/cosmetic_assets/presets.json";
@@ -121,7 +122,8 @@ app.get("/gen/house", async (req, res) => {
 // Create a new villager asset
 app.get("/gen/villager", async (req, res) => {
   try {
-    const asset = await generateVillagerAsset();
+    const {eye, hair, outfit} = req.query;
+    const asset = await generateVillagerAsset(eye, hair, outfit);
     res.send(
       `<html><body><img src="${
         asset.getRemoteImages().at(-1).url
@@ -132,6 +134,20 @@ app.get("/gen/villager", async (req, res) => {
     res.status(500).send(err);
   }
 });
+
+// app.get("/gen/villager", async (req, res) => {
+//   try {
+//     const asset = await generateResourceItemAsset();
+//     res.send(
+//       `<html><body><img src="${
+//         asset.getRemoteImages().at(-1).url
+//       }" /></body></html>`
+//     );
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).send(err);
+//   }
+// })
 
 app.get("/edit/cosmetic", async (req, res) => {
   try {

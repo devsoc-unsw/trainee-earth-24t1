@@ -13,6 +13,8 @@ import {
   generateProductionObjectImage,
   generateVillagerImage,
   generateHouseImage,
+  generateStableImage,
+  generateResourceImage,
   // generateVillagerObjectImageV2,
 } from "@backend/asset-gen/generate-image.ts";
 import { storeImageIntoBunny } from "@backend/asset-gen/store-image.ts";
@@ -163,6 +165,14 @@ async function generateAsset(assetType: AssetType): Promise<Asset | null> {
     newAsset.addRemoteImage(new RemoteImage(croppedImgName, croppedImgUrl));
   }
   // ===
+  
+  const remoteImages = newAsset.getRemoteImages()
+  const supposedDimensions = await estimateDimensions(remoteImages[remoteImages.length - 1].url)
+  const finalDimensions = supposedDimensions.split(' ')
+  newAsset.setDimensions({ dx: parseInt(finalDimensions[0], 10),
+    dy: parseInt(finalDimensions[0], 10) })
+
+  console.log(newAsset.getDimensions())
 
   return newAsset;
 }
@@ -179,8 +189,8 @@ export async function generateHouseAsset(): Promise<Asset | null> {
   const filename = `house-${new Date().toISOString()}`;
   const newAsset = new Asset(
     generatedImage.revised_prompt ?? "",
+    filename,
     generatedImage.fileType,
-    filename
   );
 
   let imageData: ArrayBuffer | null = null;
@@ -294,15 +304,76 @@ export async function generateHouseAsset(): Promise<Asset | null> {
     newAsset.addRemoteImage(new RemoteImage(croppedImgName, croppedImgUrl));
   }
 
-  // ===
+  const remoteImages = newAsset.getRemoteImages()
+  const supposedDimensions = await estimateDimensions(remoteImages[remoteImages.length - 1].url)
+  const finalDimensions = supposedDimensions.split(' ')
+  newAsset.setDimensions({ dx: parseInt(finalDimensions[0], 10),
+    dy: parseInt(finalDimensions[0], 10) })
 
+  console.log(newAsset.getDimensions())
   return newAsset;
 }
 
-export async function generateVillagerAsset(): Promise<Asset | null> {
+export async function generateAssetVillagerImage(assetType: AssetType, eye, hair, outfit): Promise<Asset | null> {
+  const generatedImage = await generateStableImage(eye, hair, outfit);
+
+  // make new asset class
+  if (generatedImage == null) {
+    console.error("Failed to generate image");
+    return null;
+  }
+
+  const filename = `villager-${new Date().toISOString()}`;
+  const newAsset = new Asset(
+    "villager new asset",
+    filename,
+    "png",
+    undefined,
+    undefined,
+    undefined,
+    { dx: 1, dy: 1 }
+  );
+
+  let imageData: ArrayBuffer | null = null;
+
+  // remove background
+  imageData = await removeBackgroundStableDiffusion(generatedImage);
+  if (imageData == null) {
+    console.error("Failed to remove background from image using stability AI");
+    return null;
+  }
+
+  // crop
+  imageData = await cropImage(imageData);
+  if (imageData == null) {
+    console.error("Failed to crop image");
+    return null;
+  }
+  // store
+  const croppedImgName = `edges-cropped.${newAsset.type}`;
+  const croppedImgUrl = await storeImageIntoBunny(
+    imageData,
+    newAsset.name + "/",
+    croppedImgName
+  );
+  if (croppedImgUrl == null) {
+    console.error("Failed to store image after cropping");
+  } else {
+    console.log(`Stored image after cropping: ${croppedImgUrl}`);
+    newAsset.addRemoteImage(new RemoteImage(croppedImgName, croppedImgUrl));
+  }
+  // send
+  return newAsset
+}
+
+export async function generateResourceItemAsset() {
+  const generatedImage = generateResourceImage();
+}
+
+export async function generateVillagerAsset(eye, hair, outfit): Promise<Asset | null> {
   // TODO: Implement this in a specialised way rather than delegate to
   // generateAsset()
-  return generateAsset(AssetType.VILLAGER);
+  return await generateAssetVillagerImage(AssetType.VILLAGER, eye, hair, outfit);
 }
 
 export async function generateProductionObjectAsset(): Promise<Asset | null> {
@@ -314,3 +385,32 @@ export async function generateProductionObjectAsset(): Promise<Asset | null> {
 export async function generateCosmeticObjectAsset(): Promise<Asset | null> {
   return await generateAsset(AssetType.COSMETIC_ENVIRONMENT_OBJ);
 }
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+async function estimateDimensions(imageURL: string) {
+  // send it to chatgpt for opinion
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: `pretend you are a game character within the game world standing before this object shown in the image. please accurately estimate the width and breadth of the entire plot of land, in meters. For reference, a house plot is typically 10 meters by 10 meters, a bench plot would be about 2 metres by 2 metres. Mention the measurement in the format "x y" where x and y are the width and breadth in metres respectively, nothing else.` },
+            {
+              type: "image_url",
+              image_url: {
+                "url": imageURL,
+              },
+            },
+          ],
+        },
+      ],
+    });
+    return response.choices[0].message.content
+  } catch (err) {
+    console.error(err)
+  }
+}
+

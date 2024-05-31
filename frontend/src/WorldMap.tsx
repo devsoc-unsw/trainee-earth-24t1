@@ -28,7 +28,12 @@ import {
   isServerWebsocketMessage,
   ClientMessageType,
   PingMsg,
+  isNewVillagerAndHouseServerMsg,
+  CreateVillagerServerMsg,
 } from "@backend/types/wsTypes";
+import { IRange, findRange } from "@frontend/src/lib/mapUtils";
+import { Alert } from "./components/ui/alert";
+import ShowAsset from "./components/ui/showAsset";
 
 const DEBUG1 = false;
 const DEBUG_WORLDMAP_CELLS = false;
@@ -42,13 +47,6 @@ export interface IKeys {
   up: boolean;
   right: boolean;
   down: boolean;
-}
-
-interface IRange {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
 }
 
 type MapObjectId = EnviroObjectId | VillagerId;
@@ -189,7 +187,12 @@ const WorldMap = () => {
     (simulationState: SimulationState) => {
       simStateRef.current = simulationState;
 
-      setInterfaceComponent(<Interface simulationState={simulationState} />);
+      setInterfaceComponent(
+        <Interface
+          simulationState={simulationState}
+          onRequestCreateVillager={createVillager}
+        />
+      );
       tileMapRange.current = findRange(simStateRef.current.worldMap.cells);
 
       posRenderOrder.current = calculatePosRenderOrder(tileMapRange.current);
@@ -352,7 +355,7 @@ const WorldMap = () => {
   const startTimestamp = useRef<DOMHighResTimeStamp>(0);
   const prevTimestamp = useRef<DOMHighResTimeStamp>(0);
 
-  console.log("Render Map");
+  console.log("Render WorldMap");
 
   const renderTiles = useCallback((ctx: CanvasRenderingContext2D) => {
     const canvas = canvasRef.current;
@@ -410,6 +413,33 @@ const WorldMap = () => {
           //             `rgba(128, 206, 242,0.8)`
           //         );
         }
+      }
+    }
+
+    // === Draw outline of villagers plot of land
+    for (let [villagerId, villager] of simStateRef.current?.villagers ?? []) {
+      if (villager.basePos) {
+        const plotOfLandDimensions: Dimensions = { dx: 18, dy: 18 };
+        const plotOfLandCenterCoord = posToIsoCoords(
+          originRaw,
+          villager.basePos
+        );
+        const plotOfLandTopCoord = {
+          x: plotOfLandCenterCoord.x,
+          y: plotOfLandCenterCoord.y - 9 * Tile.TILE_HEIGHT,
+        };
+        drawTileOutline(
+          ctx,
+          plotOfLandTopCoord,
+          {
+            dx: plotOfLandDimensions.dx * Tile.TILE_WIDTH,
+            dy: plotOfLandDimensions.dy * Tile.TILE_HEIGHT,
+          },
+          "rgba(212, 250, 240, 0.7)",
+          "rgba(212, 250, 240,0.2)",
+          3,
+          []
+        );
       }
     }
 
@@ -1205,6 +1235,7 @@ const WorldMap = () => {
       reconnectAttemptsRef.current = 0; // Reset reconnect attempts on successful connection
 
       simStateRef.current = new SimulationState();
+      assetsRef.current = new Map();
       mapObjects.current.clear();
       posToObjects.current.clear();
     };
@@ -1241,6 +1272,18 @@ const WorldMap = () => {
         handleReceiveSimStateServerMsg(
           SimulationState.deserialize(message.simulationState)
         );
+      } else if (isNewVillagerAndHouseServerMsg(message)) {
+        console.log("Received new villager and house from server");
+        console.log(message);
+        setDisplayNewAsset(
+          <ShowAsset
+            name={message.villagerAsset.name}
+            text={"Meet your new villager!"}
+            styles="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+            img={message.villagerAsset.remoteImages.at(-1)?.url ?? ""}
+            dismiss={() => setDisplayNewAsset(<></>)}
+          />
+        );
       } else {
         console.error(`Unhandled WS message type:`, message.type);
       }
@@ -1251,6 +1294,10 @@ const WorldMap = () => {
     // Event listener for when the connection is closed
     socket.onclose = (event) => {
       console.log("WebSocket connection closed");
+      simStateRef.current = new SimulationState();
+      assetsRef.current = new Map();
+      mapObjects.current.clear();
+      posToObjects.current.clear();
 
       if (
         maxReconnectAttempts < 0 ||
@@ -1281,8 +1328,61 @@ const WorldMap = () => {
     };
   }, []);
 
+  const createVillager = useCallback(
+    (eyeColor: string, hairColor: string, outfit: string) => {
+      // check if all options are picked
+      if (eyeColor === "" || hairColor === "" || outfit === "") {
+        // be angry
+        Alert(
+          "Error",
+          "Could not create villager",
+          "Please select all options"
+        );
+        return;
+      }
+      const createVillagerClientMsg: CreateVillagerServerMsg = {
+        type: ClientMessageType.CREATE_VILLAGER,
+        eye: eyeColor,
+        hair: hairColor,
+        outfit: outfit,
+      };
+      socketRef.current?.send(JSON.stringify(createVillagerClientMsg));
+      console.log(eyeColor, hairColor, outfit);
+      Alert(
+        "Info",
+        "Creating new villager...",
+        "Please wait while we create your villager. This may take about 15 seconds."
+      );
+    },
+    []
+  );
+
   useEffect(() => {
     connectWebSocket();
+
+    setInterval(() => {
+      const allResources = Array.from(
+        simStateRef.current?.resources.keys() ?? []
+      );
+      const amount = Math.floor(Math.random() * 10) + 1;
+      const resourceKind =
+        allResources[Math.floor(Math.random() * allResources.length)];
+      const resource = simStateRef.current?.resources.get(resourceKind);
+      const resourceName = resource?.name;
+      if (resourceKind && resource) {
+        const asset = assetsRef.current?.get(resource.asset ?? "");
+        const img = asset?.remoteImages.at(-1)?.url ?? "";
+        setDisplayNewAsset(
+          <ShowAsset
+            name={`${amount} ${resourceName}`}
+            text="You earned some resources!"
+            img={img}
+            styles="left-[100px] bottom-[100px]"
+            dismiss={() => setDisplayNewAsset(<></>)}
+          />
+        );
+      }
+    }, 45000);
 
     // Cleanup function to close the WebSocket connection when the component unmounts
     return () => {
@@ -1293,11 +1393,13 @@ const WorldMap = () => {
   }, []);
 
   const [interfaceComponent, setInterfaceComponent] = useState(<></>);
+  const [displayNewAsset, setDisplayNewAsset] = useState(<></>);
 
   return (
     <>
       {/* <Interface /> */}
       {interfaceComponent}
+      {displayNewAsset}
       <div
         style={{
           width: "100vw",
@@ -1361,23 +1463,6 @@ const inputCoordsToTileMapPos = (
 };
 
 const getSign = (value: number) => (value >= 0 ? 1 : -1);
-
-const findRange = (cells: Cells): IRange => {
-  let minX = Number.MAX_SAFE_INTEGER;
-  let minY = Number.MAX_SAFE_INTEGER;
-  let maxX = Number.MIN_SAFE_INTEGER;
-  let maxY = Number.MIN_SAFE_INTEGER;
-
-  for (const coordStr of cells.keys()) {
-    const { x, y } = parsePosStr(coordStr);
-    if (x < minX) minX = x;
-    if (y < minY) minY = y;
-    if (x > maxX) maxX = x;
-    if (y > maxY) maxY = y;
-  }
-
-  return { minX, minY, maxX, maxY };
-};
 
 const getCanvasSize = (canvas: HTMLCanvasElement): Dimensions => {
   return {
