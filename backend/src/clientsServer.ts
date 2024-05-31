@@ -294,6 +294,7 @@ export class CommunicationServer {
         Math.floor(Math.random()) * RANDOM_VILLAGER_NAMES.length
       ];
     const newVillager = new Villager(randomVillagerType, randomVillagerName);
+    villagerAsset.name = newVillager.name;
     newVillager.energy = 20;
     newVillager.coins = 25;
     newVillager.characterAttributes = {};

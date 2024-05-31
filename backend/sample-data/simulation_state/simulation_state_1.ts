@@ -622,6 +622,7 @@ const resource1: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Dexterity", "Perception"],
   productionObject: "production_1",
+  asset: "resource_1_asset",
 };
 
 const resource2: ResourceJSON = {
@@ -632,6 +633,7 @@ const resource2: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Charisma", "Stamina"],
   productionObject: "production_2",
+  asset: "resource_2_asset",
 };
 
 const resource3: ResourceJSON = {
@@ -642,6 +644,7 @@ const resource3: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Strength", "Negotiation"],
   productionObject: "production_3",
+  asset: "resource_3_asset",
 };
 
 const resource4: ResourceJSON = {
@@ -652,6 +655,7 @@ const resource4: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Intelligence", "Dexterity"],
   productionObject: "production_4",
+  asset: "resource_4_asset",
 };
 
 const resource5: ResourceJSON = {
@@ -662,6 +666,7 @@ const resource5: ResourceJSON = {
   type: "material",
   attirbuteAffinity: ["Speed", "Negotiation", "Luck"],
   productionObject: "production_5",
+  asset: "resource_5_asset",
 };
 
 const resource6: ResourceJSON = {
@@ -672,6 +677,7 @@ const resource6: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Stamina", "Strength", "Perception"],
   productionObject: "production_1",
+  asset: "resource_6_asset",
 };
 
 const resource7: ResourceJSON = {
@@ -682,6 +688,7 @@ const resource7: ResourceJSON = {
   type: "material",
   attirbuteAffinity: ["Strength", "Charisma", "Luck"],
   productionObject: "production_2",
+  asset: "resource_7_asset",
 };
 
 const resource8: ResourceJSON = {
@@ -692,6 +699,7 @@ const resource8: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Strength", "Luck", "Dexterity"],
   productionObject: "production_3",
+  asset: "resource_8_asset",
 };
 
 const resource9: ResourceJSON = {
@@ -702,6 +710,7 @@ const resource9: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Strength", "Speed", "Intelligence"],
   productionObject: "production_4",
+  asset: "resource_9_asset",
 };
 
 const resource10: ResourceJSON = {
@@ -712,6 +721,7 @@ const resource10: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Intelligence", "Dexterity"],
   productionObject: "production_5",
+  asset: "resource_10_asset",
 };
 const resource11: ResourceJSON = {
   _id: "resource_11",
@@ -721,6 +731,7 @@ const resource11: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Negotiation", "Luck"],
   productionObject: "production_1",
+  asset: "resource_11_asset",
 };
 const resource12: ResourceJSON = {
   _id: "resource_12",
@@ -730,6 +741,7 @@ const resource12: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Stamina", "Strength", "Perception"],
   productionObject: "production_2",
+  asset: "resource_12_asset",
 };
 const resource13: ResourceJSON = {
   _id: "resource_13",
@@ -739,6 +751,7 @@ const resource13: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Strength", "Charisma", "Luck"],
   productionObject: "production_3",
+  asset: "resource_13_asset",
 };
 const resource14: ResourceJSON = {
   _id: "resource_14",
@@ -748,6 +761,7 @@ const resource14: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Strength", "Luck", "Dexterity"],
   productionObject: "production_4",
+  asset: "resource_14_asset",
 };
 const resource15: ResourceJSON = {
   _id: "resource_15",
@@ -756,8 +770,8 @@ const resource15: ResourceJSON = {
   consumptionEnergyGainBasic: 14,
   type: "edible",
   attirbuteAffinity: ["Stamina", "Strength", "Perception"],
-
   productionObject: "production_5",
+  asset: "resource_15_asset",
 };
 const resource16: ResourceJSON = {
   _id: "resource_16",
@@ -767,6 +781,7 @@ const resource16: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Strength", "Speed", "Intelligence"],
   productionObject: "production_1",
+  asset: "resource_16_asset",
 };
 const resource17: ResourceJSON = {
   _id: "resource_17",
@@ -776,6 +791,7 @@ const resource17: ResourceJSON = {
   type: "edible",
   attirbuteAffinity: ["Speed", "Intelligence", "Dexterity"],
   productionObject: "production_2",
+  asset: "resource_17_asset",
 };
 
 export const simulationState1: SimulationStateJSON = {

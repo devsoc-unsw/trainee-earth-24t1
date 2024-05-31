@@ -33,7 +33,7 @@ export interface AssetJSON extends JSONObject {
 
 export class Asset implements Serializable<AssetJSON> {
   public readonly _id: AssetId;
-  public readonly name: string;
+  public name: string;
   public type: string;
   public description: string;
   public readonly date: Date;
@@ -72,13 +72,13 @@ export class Asset implements Serializable<AssetJSON> {
   getRemoteImages(): RemoteImage[] {
     return this.remoteImages;
   }
-  
+
   getDimensions(): Dimensions {
     return this.dimensions;
   }
 
   setDimensions(dimensions: Dimensions): void {
-    this.dimensions = dimensions
+    this.dimensions = dimensions;
   }
 
   serialize(): JSONCompatible<AssetJSON> {

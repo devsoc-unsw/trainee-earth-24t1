@@ -33,6 +33,7 @@ import {
 } from "@backend/types/wsTypes";
 import { IRange, findRange } from "@frontend/src/lib/mapUtils";
 import { Alert } from "./components/ui/alert";
+import ShowAsset from "./components/ui/showAsset";
 
 const DEBUG1 = false;
 const DEBUG_WORLDMAP_CELLS = false;
@@ -1274,6 +1275,15 @@ const WorldMap = () => {
       } else if (isNewVillagerAndHouseServerMsg(message)) {
         console.log("Received new villager and house from server");
         console.log(message);
+        setDisplayNewAsset(
+          <ShowAsset
+            name={message.villagerAsset.name}
+            text={"Meet your new villager!"}
+            styles="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+            img={message.villagerAsset.remoteImages.at(-1)?.url ?? ""}
+            dismiss={() => setDisplayNewAsset(<></>)}
+          />
+        );
       } else {
         console.error(`Unhandled WS message type:`, message.type);
       }
@@ -1350,6 +1360,30 @@ const WorldMap = () => {
   useEffect(() => {
     connectWebSocket();
 
+    setInterval(() => {
+      const allResources = Array.from(
+        simStateRef.current?.resources.keys() ?? []
+      );
+      const amount = Math.floor(Math.random() * 10) + 1;
+      const resourceKind =
+        allResources[Math.floor(Math.random() * allResources.length)];
+      const resource = simStateRef.current?.resources.get(resourceKind);
+      const resourceName = resource?.name;
+      if (resourceKind && resource) {
+        const asset = assetsRef.current?.get(resource.asset ?? "");
+        const img = asset?.remoteImages.at(-1)?.url ?? "";
+        setDisplayNewAsset(
+          <ShowAsset
+            name={`${amount} ${resourceName}`}
+            text="You earned some resources!"
+            img={img}
+            styles="left-[100px] bottom-[100px]"
+            dismiss={() => setDisplayNewAsset(<></>)}
+          />
+        );
+      }
+    }, 45000);
+
     // Cleanup function to close the WebSocket connection when the component unmounts
     return () => {
       if (socketRef.current) {
@@ -1359,11 +1393,13 @@ const WorldMap = () => {
   }, []);
 
   const [interfaceComponent, setInterfaceComponent] = useState(<></>);
+  const [displayNewAsset, setDisplayNewAsset] = useState(<></>);
 
   return (
     <>
       {/* <Interface /> */}
       {interfaceComponent}
+      {displayNewAsset}
       <div
         style={{
           width: "100vw",

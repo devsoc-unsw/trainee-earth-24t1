@@ -783,6 +783,7 @@ export interface ResourceJSON extends JSONObject {
   type: ResourceTypeType;
   attirbuteAffinity: AttributeId[];
   productionObject: EnviroObjectId;
+  asset: AssetId | null;
 }
 
 export class Resource implements Serializable<ResourceJSON> {
@@ -812,6 +813,8 @@ export class Resource implements Serializable<ResourceJSON> {
 
   public readonly productionObject: EnviroObjectId;
 
+  public asset: AssetId | null;
+
   constructor(
     name: string,
     productionEnergyCostBasic: number,
@@ -819,7 +822,8 @@ export class Resource implements Serializable<ResourceJSON> {
     type: ResourceTypeType,
     attirbuteAffinity: AttributeId[],
     productionObject: EnviroObjectId,
-    _id: string = createId()
+    _id: string = createId(),
+    asset: AssetId | null = null
   ) {
     this.name = name;
     this.productionEnergyCostBasic = productionEnergyCostBasic;
@@ -828,6 +832,7 @@ export class Resource implements Serializable<ResourceJSON> {
     this.attirbuteAffinity = attirbuteAffinity;
     this.productionObject = productionObject;
     this._id = _id;
+    this.asset = asset;
   }
 
   serialize(): JSONCompatible<ResourceJSON> {
@@ -839,6 +844,7 @@ export class Resource implements Serializable<ResourceJSON> {
       type: this.type,
       attirbuteAffinity: this.attirbuteAffinity,
       productionObject: this.productionObject,
+      asset: this.asset,
     };
   }
 
@@ -850,7 +856,8 @@ export class Resource implements Serializable<ResourceJSON> {
       obj.type,
       obj.attirbuteAffinity,
       obj.productionObject,
-      obj._id
+      obj._id,
+      obj.asset
     );
   }
 }

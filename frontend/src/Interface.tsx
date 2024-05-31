@@ -256,7 +256,7 @@ export default function Interface({
           </DialogHeader>
         </DialogContent>
       </Dialog>
-      <div className="absolute left-16 top-1/2">
+      <div className="fixed left-16 top-1/2 animate-bounce">
         <VillagerGenButton
           onRequestCreateVillager={onRequestCreateVillager}
         ></VillagerGenButton>
