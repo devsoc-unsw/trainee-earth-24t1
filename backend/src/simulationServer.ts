@@ -11,6 +11,13 @@ import {
   TransactionsType,
   resourceOrigin,
   AttributeValue,
+  Pos,
+  Cells,
+  serializePosStr,
+  PosStr,
+  Dimensions,
+  EnviroObjectType,
+  EnviroObject,
 } from "@backend/types/simulationTypes.ts";
 
 import fs from "fs";
@@ -86,7 +93,6 @@ export class SimulationServer {
       });
 
       this.state.attributes.forEach((attribute, attributeId) => {
-        //come up with attribute
         let baseValue = Math.ceil(Math.random() * (maxAttribute - 0));
         if (attributeId == "Speed" || attributeId == "Strength") {
           baseValue = Math.ceil(Math.random() * (maxAttribute - 7) + 7);
@@ -96,9 +102,8 @@ export class SimulationServer {
         villager.characterAttributes[attributeId] = instance;
       });
     });
-    // assign workers to production plants randomly
+
     let villagersWorking = Math.ceil(this.state.villagers.size * 0.75);
-    //console.log(villagersWorking);
 
     const resourcesRandom = getRandomUniqueNumbers(
       0,
@@ -107,19 +112,14 @@ export class SimulationServer {
       this.state
     );
 
-    //console.log(5, resourcesRandom);
-
     let workerList = Array.from(this.state.villagers.keys());
-    //console.log(1, workerList);
 
     const producedResources: ResourceId[] = [];
     let increment = villagersWorking / normalPriceRange;
     let i = 0;
     for (; i < villagersWorking; i++) {
       let worker = this.state.villagers.get(workerList[i]);
-      //console.log(2, worker);
-      //console.log(3, resourcesRandom);
-      //console.log(this.state.resources);
+
       let nItems = calcItemsMade(worker, resourcesRandom[i], this.state);
 
       worker.assignedPlant = true;
@@ -153,7 +153,6 @@ export class SimulationServer {
         this.state
       );
 
-      //console.log("resources", resourcesList);
       i = 0;
       increment = this.state.villagers.size / normalPriceRange;
       this.state.resources.forEach((resource, resourceId) => {
@@ -174,37 +173,34 @@ export class SimulationServer {
       });
     });
 
-    console.log("initalise");
-    // this.state.villagers.forEach((villager, villagerId) => {
-    //   console.log(villager._id, villager.energy);
-    //   if (villager.assignment === null) {
-    //     console.log("assignment: null");
-    //   } else {
-    //     console.log(villager.assignment);
-    //   }
-    // });
-    //const fs = require("fs");
-    fs.appendFileSync(
-      "output_test2.json",
-      "Step simulation forward one timestep, production\n"
-    );
-    this.state.villagers.forEach((villagers, villagerId) => {
-      let print: string = ``;
-      if (villagers.assignment === null) {
-        print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: null\n`;
-      } else {
-        print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: ${villagers.assignment.resource}\n`;
-      }
-      fs.appendFileSync("output_test2.json", print);
-      this.state.resources.forEach((reousrce, resourceId) => {
-        const resourceDetails = villagers.resources[resourceId];
+    this.state.villagers.forEach((villager, villagerId) => {
+      if (villager.assignment !== null) {
+        const resource = this.state.resources.get(villager.assignment.resource);
+        const productionObject = this.state.enviroObjects.get(
+          resource.productionObject
+        );
+        const pos = productionObject.pos;
+        const dim = this.assets.get(productionObject.asset).dimensions;
 
-        const printRes: string = `${resourceId}, total: ${resourceDetails.total}, buyPrice: ${resourceDetails.buyPrice}, isSelling: ${resourceDetails.isSelling}, sellPrice: ${resourceDetails.sellPrice}\n`;
-        fs.appendFileSync("output_test2.json", printRes);
-      });
+        findDestOutside(this.state, dim, villager, pos);
+      } else {
+        let cosmetcObjects: EnviroObject[] = [];
+        this.state.enviroObjects.forEach((object, objectId) => {
+          if (object.enviroType === EnviroObjectType.COSMETIC) {
+            cosmetcObjects.push(object);
+          }
+        });
+
+        const randomIndex = Math.floor(Math.random() * cosmetcObjects.length);
+
+        findDestOutside(
+          this.state,
+          this.assets.get(cosmetcObjects[randomIndex].asset).dimensions,
+          villager,
+          cosmetcObjects[randomIndex].pos
+        );
+      }
     });
-    //console.dir(this.state.villagers, { depth: null });
-    // this.state.show();
   };
 
   /**
@@ -215,37 +211,16 @@ export class SimulationServer {
     console.log(`\n========\nStep simulation forward one timestep`);
     const jsonData = this.state.serialize();
 
-    // const fs = require("fs");
-
-    // this.state.show();
-    //  console.dir(this.state.villagers, { depth: null });
+    if (counter === 600) {
+      let jsonData = this.state.serialize();
+      fs.writeFileSync("output_test2.json", JSON.stringify(jsonData));
+    }
 
     /**
      * making trades
      */
 
-    
     if (counter % TICKS_PER_CYCLE === 0) {
-       fs.appendFileSync(
-        "output_test2.json",
-        "Step simulation forward one timestep, production\n"
-      );
-      this.state.villagers.forEach((villagers, villagerId) => {
-        let print: string = ``;
-        if (villagers.assignment === null) {
-          print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: null\n`;
-        } else {
-          print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: ${villagers.assignment.resource}\n`;
-        }
-        fs.appendFileSync("output_test2.json", print);
-        this.state.resources.forEach((reousrce, resourceId) => {
-          const resourceDetails = villagers.resources[resourceId];
-
-          const printRes: string = `${resourceId}, total: ${resourceDetails.total}, buyPrice: ${resourceDetails.buyPrice}, isSelling: ${resourceDetails.isSelling}, sellPrice: ${resourceDetails.sellPrice}\n`;
-          fs.appendFileSync("output_test2.json", printRes);
-        });
-      });
-
       this.state.transactions = [];
 
       let buyList: BuyInfo[] = [];
@@ -347,6 +322,52 @@ export class SimulationServer {
         // villager.resources[max_resource].buyPrice = 1;
       });
 
+      let villagerList: Map<VillagerId, number> = new Map();
+
+      for (let i in transactionList) {
+        const villagerSell = this.state.villagers.get(
+          transactionList[i].villagerSell
+        );
+
+        if (
+          !villagerList.has(villagerSell._id) &&
+          !villagerList.has(transactionList[i].villagerBuy)
+        ) {
+          const house = this.state.enviroObjects.get(villagerSell.houseObject);
+          const pos = house.pos;
+          const dim = this.assets.get(house.asset).dimensions;
+          findDestOutside(this.state, dim, villagerSell, pos);
+          findDestOutside(
+            this.state,
+            dim,
+            this.state.villagers.get(transactionList[i].villagerBuy),
+            pos
+          );
+
+          villagerList.set(villagerSell._id, 1);
+          villagerList.set(transactionList[i].villagerBuy, 1);
+        }
+      }
+
+      this.state.villagers.forEach((villager, villagerId) => {
+        if (!villagerList.has(villagerId)) {
+          let cosmetcObjects: EnviroObject[] = [];
+          this.state.enviroObjects.forEach((object, objectId) => {
+            if (object.enviroType === EnviroObjectType.COSMETIC) {
+              cosmetcObjects.push(object);
+            }
+          });
+
+          const randomIndex = Math.floor(Math.random() * cosmetcObjects.length);
+
+          findDestOutside(
+            this.state,
+            this.assets.get(cosmetcObjects[randomIndex].asset).dimensions,
+            villager,
+            cosmetcObjects[randomIndex].pos
+          );
+        }
+      });
       /**
        * end of makikng trades
        */
@@ -357,28 +378,6 @@ export class SimulationServer {
      */
 
     if ((counter + Math.floor(TICKS_PER_CYCLE / 2)) % TICKS_PER_CYCLE === 0) {
-      fs.appendFileSync(
-        "output_test2.json",
-        "Step simulation forward one timestep, production\n"
-      );
-      this.state.villagers.forEach((villagers, villagerId) => {
-        let print: string = ``;
-        if (villagers.assignment === null) {
-          print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: null \n`;
-        } else {
-          print = `"${villagerId}, energy: ${villagers.energy}, coins: ${villagers.coins}, assigned: ${villagers.assignment.resource} items made: ${villagers.assignment.nItemsMade}\n`;
-        }
-
-        fs.appendFileSync("output_test2.json", print);
-        this.state.resources.forEach((reousrce, resourceId) => {
-          const resourceDetails = villagers.resources[resourceId];
-
-          const printRes: string = `${resourceId}, total: ${resourceDetails.total}\n`;
-          fs.appendFileSync("output_test2.json", printRes);
-        });
-      });
-      // print stuff out in a readable way
-
       this.state.villagers.forEach((villager, villagerId) => {
         villager.assignment = null;
       });
@@ -388,49 +387,27 @@ export class SimulationServer {
         { totalPrice: number; totalQuantity: number }
       >();
 
-      // //console.log("1");
-      //console.log("transactions:", this.state.transactions);
       if (Array.isArray(this.state.transactions)) {
         for (let i = 0; i < this.state.transactions.length; i++) {
-          //console.log(i);
           let transaction = this.state.transactions[i];
 
           soldList.set(transaction.resourceId, {
             totalPrice: transaction.salePrice,
             totalQuantity: transaction.saleQuantity,
           });
-          //.totalPrice +=
-          // transaction.salePrice;
-          //soldList.set(transaction.resourceId).totalQuantity +=
-          //  transaction.saleQuantity;
         }
       }
-      //console.log(soldList);
-      // //console.log("2");
 
       const sortedSold: { resourceId: ResourceId; averagePrice: number }[] = [];
-      //console.log(2, soldList);
 
       soldList.forEach((resource, resourceId) => {
-        //console.log(10);
         let averagePrice = resource.totalPrice / resource.totalQuantity;
         sortedSold.push({ resourceId, averagePrice });
       });
 
-      // for (const [resourceId, v] of soldList.entries()) {
-      //   //console.log(10);
-      //   let averagePrice = v.totalPrice / v.totalQuantity;
-
-      //   sortedSold.push({ resourceId, averagePrice });
-      // }
-      // console.log({ sortedSold });
-      // //console.log("3");
-      //console.log(3);
       sortedSold.sort((a, b) => b.averagePrice - a.averagePrice);
 
       let workingVillagers: Villager[] = [];
-
-      // console.log("4");
 
       this.state.villagers.forEach((villager, villagerId) => {
         if (villager.energy >= minProductionEnergy) {
@@ -439,19 +416,12 @@ export class SimulationServer {
         }
       });
 
-      // if sortedSold.length == 0, randomised assign, else { below:
-      // but thered be way too much nesting tho so idk
-
-      // //console.log({ workingVillagers });
-
       const nBestSelling = Math.ceil(sortedSold.length * 0.2);
       //console.log(sortedSold.length);
 
       let workAtBest = workingVillagers.length * 0.3;
 
       const nWorkersAtBest: number[] = [];
-
-      //console.log("5");
 
       for (let i = 0; i < sortedSold.length; i++) {
         if (i < nBestSelling % workAtBest) {
@@ -463,14 +433,13 @@ export class SimulationServer {
 
       let workers = Math.ceil(workAtBest - (nBestSelling % workAtBest));
       let i = 0;
-      //console.log(nBestSelling);
+
       while (workers > 0) {
         for (let j = 0; j < nBestSelling - i; j++) {
           if (workers > 0) {
             nWorkersAtBest[j]++;
             workers--;
           }
-          // //console.log(workAtBest);
         }
         i++;
         if (i == nBestSelling) {
@@ -488,7 +457,6 @@ export class SimulationServer {
       }
 
       const workAssigns: ProductionAssigns[] = [];
-      // add villagers that dont have enough energy to work to a different list
       for (let i = 0; i < sortedSold.length; i++) {
         let energyCost = energyToProduce(medianSold, i) * minProductionEnergy;
         let villagerList: { villager: Villager; itemsMade: number }[] = [];
@@ -523,10 +491,8 @@ export class SimulationServer {
       }
 
       workers = Math.floor(workAtBest);
-      // console.log("best", nBestSelling, workAtBest);
-      //console.log(10, Math.floor(nBestSelling));
+
       while (workers != 0) {
-        //console.log(workers);
         for (let i = 0; i < Math.floor(nBestSelling); i++) {
           let worker = workAssigns[i].villagerList[0];
           let nItems = 0;
@@ -537,11 +503,10 @@ export class SimulationServer {
             continue;
           }
           for (let j = 1; worker.villager.assignment != null; j++) {
-            // if k is larger than villagerList.length??
             worker = workAssigns[i].villagerList[j];
             nItems = worker.itemsMade;
           }
-          //let villagerAssignment = worker.villager.assignment;
+
           worker.villager.assignedPlant = true;
           let villagerAssignment: villagerAssignType = {
             resource: sortedSold[i].resourceId,
@@ -559,15 +524,12 @@ export class SimulationServer {
           worker.villager.energy -= workAssigns[i].energyCost;
           worker.villager.resources[sortedSold[i].resourceId].sellPrice =
             sortedSold[i].averagePrice;
-          //console.log(1, sortedSold[i].averagePrice);
 
           this.sendVillagerAssignment(
             this.state,
             worker.villager._id,
             sortedSold[i].resourceId
           );
-          // need to keep track of how many workers to assign to each plant
-          // and stop when thats been reached
         }
       }
 
@@ -576,15 +538,13 @@ export class SimulationServer {
       const nPlants = sortedSold.length - nBestSelling;
 
       let atEachPlant = nPlants / workers;
-      // yet to implement this but should almost naturally be implemented
 
       for (let i = 0; i < atEachPlant; i++) {
         for (let j = 0; workers > 0 && j < nPlants; j++) {
           let worker = workAssigns[i].villagerList[0];
-          //console.log(worker);
+
           let nItems = 0;
           for (let k = 1; worker.villager.assignment != null; k++) {
-            // if k is larger than villagerList.length??
             worker = workAssigns[i].villagerList[k];
             nItems = worker.itemsMade;
           }
@@ -609,12 +569,9 @@ export class SimulationServer {
             worker.villager._id,
             sortedSold[i].resourceId
           );
-          //console.log(1, sortedSold[i].averagePrice);
         }
       }
 
-      // checks how many resources haven't been assigned to produce, and if its lower than a certain amount, we assign
-      // some extra randomly, the same way completed at the beginning of the code
       let nullAssignments = 0;
       let workerList: Villager[] = [];
       let needToConsume: Villager[] = [];
@@ -651,15 +608,12 @@ export class SimulationServer {
           j++;
         }
       }
-      // vilagers working should be from the list above on line 372
+
       if (nullAssignments < this.state.resources.size * 0.6) {
         let increment = villagersWorking / normalPriceRange;
         let i = 0;
         for (; i < villagersWorking * 0.7; i++) {
           let worker = this.state.villagers.get(workerList[i]._id);
-          //console.log(2, worker);
-          //console.log(3, resourcesRandom);
-          //console.log(this.state.resources);
 
           let nItems = calcItemsMade(worker, resourcesRandom[i], this.state);
 
@@ -672,7 +626,7 @@ export class SimulationServer {
               energyToProduce(villagersWorking / 2, i) * minProductionEnergy,
           };
           worker.assignment = villagerAssignment;
-          //producedResources.push(resourcesRandom[i]);
+
           worker.resources[resourcesRandom[i]].total = nItems;
           worker.resources[resourcesRandom[i]].isSelling = nItems / 2;
           let price = Math.floor(sellMinPrice + increment);
@@ -706,14 +660,11 @@ export class SimulationServer {
           }
         });
 
-        //  console.log(resourcesAvailable);
-
         resourcesAvailable.sort((a, b) => b.energy - a.energy);
 
         let itemsConsumed = 3;
 
         for (let i = 0; itemsConsumed > 0; i++) {
-          //  console.log(i);
           const id = resourcesAvailable[i].resource;
           if (resourcesAvailable.length < 3) {
             while (worker.resources[id].total > 0 && itemsConsumed > 0) {
@@ -723,13 +674,6 @@ export class SimulationServer {
                 resourcesAvailable,
                 i,
                 consumedResources
-              );
-              console.log(
-                worker._id,
-                worker.energy,
-                worker.resources[id].total,
-                "i: ",
-                i
               );
               itemsConsumed--;
             }
@@ -750,25 +694,39 @@ export class SimulationServer {
           consumedResources
         );
       }
-
-      this.state.villagers.forEach((villager, villagerId) => {
-        console.log(villager._id, "\n", villager.energy);
-        //console.log(villager.resources);
-        //   if (villager.assignment === null) {
-        //     console.log("assignment: null");
-        //   } else {
-        //     console.log(
-        //       villager.assignment.resource,
-        //       ":",
-        //       villager.assignment.nItemsMade
-        //     );
-        //   }
-        //   console.log("\n");
-      });
-
       /**
        * end of consumption assignment
        */
+      this.state.villagers.forEach((villager, villagerId) => {
+        if (villager.assignment !== null) {
+          const resource = this.state.resources.get(
+            villager.assignment.resource
+          );
+          const productionObject = this.state.enviroObjects.get(
+            resource.productionObject
+          );
+          const pos = productionObject.pos;
+          const dim = this.assets.get(productionObject.asset).dimensions;
+
+          findDestOutside(this.state, dim, villager, pos);
+        } else {
+          let cosmetcObjects: EnviroObject[] = [];
+          this.state.enviroObjects.forEach((object, objectId) => {
+            if (object.enviroType === EnviroObjectType.COSMETIC) {
+              cosmetcObjects.push(object);
+            }
+          });
+
+          const randomIndex = Math.floor(Math.random() * cosmetcObjects.length);
+
+          findDestOutside(
+            this.state,
+            this.assets.get(cosmetcObjects[randomIndex].asset).dimensions,
+            villager,
+            cosmetcObjects[randomIndex].pos
+          );
+        }
+      });
     }
 
     this.commServer.broadcastSimStateAssets(this.state, this.assets);
@@ -782,6 +740,9 @@ function consumeResource(
   i: number,
   consumedResources: { [key: ResourceId]: number }
 ) {
+  if (!worker?.resources[id]) {
+    return;
+  }
   worker.resources[id].total--;
   if (worker.resources[id].isSelling < worker.resources[id].total) {
     worker.resources[id].isSelling--;
@@ -824,7 +785,6 @@ function calcItemsMade(
       totalAttribute += villager.characterAttributes[attribute].totalValue;
     }
   }
-
   return totalItems + totalAttribute * 0.2;
 }
 
@@ -845,13 +805,19 @@ function copyToBuyList(
   simState: SimulationState
 ) {
   simState.resources.forEach((resource, resourceId) => {
-    list.push({
-      villagerId: villager._id,
-      resourceId: resourceId,
-      buyingPrice: villager.resources[resourceId].buyPrice,
-      buyingState: villager.resources[resourceId].buyState,
-      bought: false,
-    });
+    const villagerResource = villager.resources[resourceId];
+    if (
+      villagerResource &&
+      villagerResource.buyPrice &&
+      villagerResource.buyState
+    )
+      list.push({
+        villagerId: villager._id,
+        resourceId: resourceId,
+        buyingPrice: villagerResource.buyPrice,
+        buyingState: villagerResource.buyState,
+        bought: false,
+      });
   });
 }
 
@@ -861,14 +827,19 @@ function copyToSellList(
   simState: SimulationState
 ) {
   simState.resources.forEach((resource, resourceId) => {
-    list.push({
-      villagerId: villager._id,
-      resourceId: resourceId,
-      sellingPrice: villager.resources[resourceId].sellPrice,
-      sellingQuantity: villager.resources[resourceId].isSelling,
-      sold: false,
-    });
-    //console.log(100, villager.resources[resourceId].isSelling);
+    const villagerResource = villager.resources[resourceId];
+    if (
+      villagerResource &&
+      villagerResource.sellPrice &&
+      villagerResource.isSelling
+    )
+      list.push({
+        villagerId: villager._id,
+        resourceId: resourceId,
+        sellingPrice: villagerResource?.sellPrice ?? 0,
+        sellingQuantity: villagerResource?.isSelling ?? 0,
+        sold: false,
+      });
   });
 }
 
@@ -878,6 +849,17 @@ function updateVillagersBuySell(
 ) {
   const villagerBuy = simState.villagers.get(transactionInfo.villagerBuy);
   const villagerSell = simState.villagers.get(transactionInfo.villagerSell);
+
+  if (
+    !villagerBuy ||
+    !transactionInfo?.resourceId ||
+    !villagerBuy.resources[transactionInfo.resourceId] ||
+    !villagerSell ||
+    !transactionInfo?.resourceId ||
+    !villagerSell.resources[transactionInfo.resourceId]
+  ) {
+    console.log("Villager not found");
+  }
 
   villagerBuy.resources[transactionInfo.resourceId].total +=
     transactionInfo.saleQuantity;
@@ -889,10 +871,7 @@ function updateVillagersBuySell(
 
   villagerSell.resources[transactionInfo.resourceId].isSelling -=
     transactionInfo.saleQuantity;
-  //   console.log(
-  //     villagerSell.resources[transactionInfo.resourceId].isSelling,
-  //     transactionInfo.saleQuantity
-  //   );
+
   villagerBuy.resources[transactionInfo.resourceId].isSelling +=
     transactionInfo.saleQuantity / 2;
 
@@ -966,4 +945,138 @@ function calcConsumeEnergy(
   }
 
   return energy + totalAttribute * 0.2;
+}
+
+function findVillagerPath(
+  simState: SimulationState,
+  villager: Villager,
+  dest: Pos
+) {
+  const initaliseValue: Pos = { x: -100, y: -100 };
+
+  let pred: Map<string, Pos> = new Map();
+  const q = new Queue<Pos>();
+
+  const src = villager.pos;
+
+  pred.set(serializePosStr(src), villager.pos);
+  q.enqueue(villager.pos);
+
+  let pathFound: boolean | Pos = false;
+  //console.log(villager._id, villager.pos, dest);
+
+  while (!q.isEmpty() && !pathFound) {
+    let v = q.dequeue();
+
+    let xStart = v.x - 1;
+    let yStart = v.y - 1;
+
+    for (let i = 0; i < 3 && !pathFound; i++) {
+      for (let j = 0; j < 3 && !pathFound; j++) {
+        let w = { x: xStart + i, y: yStart + j };
+        if (w.x === dest.x && w.y === dest.y) {
+          pathFound = true;
+          pred.set(serializePosStr(w), v);
+        } else if (checkCanVisit(simState, w, v, pred) === true) {
+          pred.set(serializePosStr(w), v);
+          q.enqueue(w);
+        }
+      }
+    }
+  }
+
+  let path: PosStr[] = [];
+  if (pred.has(serializePosStr(dest))) {
+    let v = dest;
+    while (v != src) {
+      path.unshift(serializePosStr(v));
+      v = pred.get(serializePosStr(v));
+    }
+    path.unshift(serializePosStr(src));
+    villager.pos = dest;
+  }
+
+  villager.villagerPath = path;
+}
+
+function checkCanVisit(
+  simState: SimulationState,
+  w: Pos,
+  v: Pos,
+  pred: Map<string, Pos>
+): boolean {
+  if (w === v) return false;
+
+  if (pred.has(serializePosStr(w))) return false;
+
+  const cell = simState.worldMap.cells.get(serializePosStr(w));
+  if (!simState.worldMap.cells.has(serializePosStr(w))) return false;
+
+  if (simState.worldMap.cells.get(serializePosStr(w)).object !== null)
+    return false;
+
+  return true;
+}
+
+function findDestOutside(
+  simState: SimulationState,
+  dim: Dimensions,
+  villager: Villager,
+  pos: Pos
+) {
+  let xStart = pos.x - Math.ceil(dim.dx / 2);
+  let yStart = pos.y - Math.ceil(dim.dy / 2);
+  let dest = { x: xStart, y: yStart };
+
+  for (let i = xStart; i < pos.x + dim.dx - Math.ceil(dim.dx / 2) + 2; i++) {
+    for (let j = yStart; j < pos.y + dim.dy - Math.ceil(dim.dy / 2) + 2; j++) {
+      dest = { x: i, y: j };
+
+      if (
+        simState.worldMap.cells.has(serializePosStr(dest)) &&
+        simState.worldMap.cells.get(serializePosStr(dest)).object === null
+      ) {
+        findVillagerPath(simState, villager, dest);
+        return;
+      }
+    }
+  }
+}
+
+class Queue<T> {
+  private items: T[];
+
+  constructor() {
+    this.items = [];
+  }
+
+  enqueue(element: T): void {
+    this.items.push(element);
+  }
+
+  dequeue(): T | undefined {
+    if (this.isEmpty()) {
+      return undefined;
+    }
+    return this.items.shift();
+  }
+
+  peek(): T | undefined {
+    if (this.isEmpty()) {
+      return undefined;
+    }
+    return this.items[0];
+  }
+
+  isEmpty(): boolean {
+    return this.items.length === 0;
+  }
+
+  size(): number {
+    return this.items.length;
+  }
+}
+
+function serializePos(pos: Pos) {
+  throw new Error("Function not implemented.");
 }

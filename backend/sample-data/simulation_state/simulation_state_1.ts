@@ -51,6 +51,7 @@ export const worldMap: WorldMapJSON = {
 };
 
 const villager1: VillagerJSON = {
+  name: "Sarah",
   _id: "villager_1",
   type: "farmer",
   friends: ["villager_2"],
@@ -74,9 +75,11 @@ const villager1: VillagerJSON = {
   asset: "villager_1_asset",
   pos: { x: 1, y: 5 }, // in front of house_1
   basePos: { x: 0, y: 0 },
+  villagerPath: [],
 };
 
 const villager2: VillagerJSON = {
+  name: "Dylan",
   _id: "villager_2",
   type: "miner",
   friends: ["villager_1"],
@@ -100,9 +103,11 @@ const villager2: VillagerJSON = {
   asset: "villager_2_asset",
   pos: { x: 18, y: 8 },
   basePos: { x: 36, y: 8 },
+  villagerPath: [],
 };
 
 const villager3: VillagerJSON = {
+  name: "Caitlyn",
   _id: "villager_3",
   type: "miner",
   friends: ["villager_1"],
@@ -126,9 +131,11 @@ const villager3: VillagerJSON = {
   asset: "villager_3_asset",
   pos: { x: -15, y: 4 },
   basePos: { x: 0, y: 30 },
+  villagerPath: [],
 };
 
 const villager4: VillagerJSON = {
+  name: "Gordon",
   _id: "villager_4",
   type: "miner",
   friends: ["villager_1"],
@@ -152,9 +159,11 @@ const villager4: VillagerJSON = {
   asset: "villager_4_asset",
   pos: { x: 1, y: -11 },
   basePos: { x: -30, y: 0 },
+  villagerPath: [],
 };
 
 const villager5: VillagerJSON = {
+  name: "Lachlan",
   _id: "villager_5",
   type: "miner",
   friends: ["villager_1"],
@@ -178,9 +187,11 @@ const villager5: VillagerJSON = {
   asset: "villager_5_asset",
   pos: { x: 5, y: 1 },
   basePos: { x: 0, y: -30 },
+  villagerPath: [],
 };
 
 const villager6: VillagerJSON = {
+  name: "Nicole",
   _id: "villager_6",
   type: "miner",
   friends: ["villager_1"],
@@ -204,9 +215,11 @@ const villager6: VillagerJSON = {
   asset: "villager_6_asset",
   pos: { x: -8, y: 1 },
   basePos: { x: -34, y: 30 },
+  villagerPath: [],
 };
 
 const villager7: VillagerJSON = {
+  name: "Jess",
   _id: "villager_7",
   type: "miner",
   friends: ["villager_1"],
@@ -230,9 +243,11 @@ const villager7: VillagerJSON = {
   asset: "villager_6_asset",
   pos: { x: -8, y: 3 },
   basePos: { x: 38, y: -37 },
+  villagerPath: [],
 };
 
 const villager8: VillagerJSON = {
+  name: "Dylan H",
   _id: "villager_8",
   type: "miner",
   friends: ["villager_1"],
@@ -256,6 +271,7 @@ const villager8: VillagerJSON = {
   asset: "villager_8_asset",
   pos: { x: -8, y: 5 },
   basePos: { x: 38, y: 37 },
+  villagerPath: [],
 };
 
 const attribute1: AttributeJSON = {
@@ -770,8 +786,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_2_asset: {
@@ -787,8 +803,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_3_asset: {
@@ -804,8 +820,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_4_asset: {
@@ -817,12 +833,12 @@ export const assets1: AssetsJSON = {
     remoteImages: [
       {
         name: "final.png",
-        url: "https://flatearth.b-cdn.net/house-2024-05-23T03:26:14.187Z/edges-cropped2.png",
+        url: "https://flatearth.b-cdn.net/house-2024-05-30T22:48:15.471Z/edges-cropped.png",
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_5_asset: {
@@ -838,8 +854,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_6_asset: {
@@ -855,8 +871,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_7_asset: {
@@ -872,8 +888,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   house_8_asset: {
@@ -889,8 +905,8 @@ export const assets1: AssetsJSON = {
       },
     ],
     dimensions: {
-      dx: 8,
-      dy: 8,
+      dx: 10,
+      dy: 10,
     },
   },
   production_1_asset: {
@@ -1202,14 +1218,14 @@ export const assets1: AssetsJSON = {
   villager_5_asset: {
     _id: "villager_5_asset",
     name: "Villager 5 asset",
-    date: "2024-05-21T18:23:42.555+10:00",
+    date: "2024-05-31T08:47:19.538+10:0",
     description: "..........",
     type: "png",
     remoteImages: [
       {
-        name: "final.png",
-        url: "https://flatearth.b-cdn.net/VILLAGER-2024-05-25T20:40/farid-removebg-preview.png",
-      }, // TODO: change this dupliacte
+        name: "edges-cropped.png",
+        url: "https://flatearth.b-cdn.net/villager-2024-05-30T22:47:19.535Z/edges-cropped.png",
+      },
     ],
     dimensions: {
       dx: 1,
@@ -1225,8 +1241,8 @@ export const assets1: AssetsJSON = {
     remoteImages: [
       {
         name: "final.png",
-        url: "https://flatearth.b-cdn.net/VILLAGER-2024-05-25T20:40/farid-removebg-preview.png",
-      }, //TODO: change this dupliacte
+        url: "https://flatearth.b-cdn.net/villager-2024-05-31T00:01:37.404Z/edges-cropped.png",
+      },
     ],
     dimensions: {
       dx: 1,

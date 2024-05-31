@@ -1,7 +1,12 @@
 import { CustomError } from "@backend/utils/customError.ts";
 import { WebSocket } from "ws";
-import { Assets, AssetsJSON } from "./assetTypes.ts";
-import { EnviroObjectId, Pos, SimulationStateJSON } from "./simulationTypes.ts";
+import { AssetJSON, Assets, AssetsJSON } from "./assetTypes.ts";
+import {
+  EnviroObjectId,
+  Pos,
+  SimulationStateJSON,
+  VillagerId,
+} from "./simulationTypes.ts";
 
 /**
  * Maps clientIds (created by server) to WebSocket objects which represent a
@@ -14,13 +19,14 @@ export enum ClientMessageType {
   PLAYER_VISIT = "PLAYER_VISIT",
   CREATE_VILLAGER = "CREATE_VILLAGER",
   MOVE_ENVIRO_OBJECT = "MOVE_ENVIRO_OBJECT",
+  VILLAGER_REACHED_PATH_POINT = "VILLAGER_REACHED_PATH_POINT",
 }
 
 export enum ServerMessageType {
   PONG = "PONG",
   SIM_STATE_ASSETS = "SIM_STATE_ASSETS",
   WELCOME = "WELCOME",
-  NEW_VILLAGER_CREATED = "NEW_VILLAGER_CREATED",
+  NEW_VILLAGER_AND_HOUSE_CREATED = "NEW_VILLAGER_CREATED",
 }
 
 // ==========================
@@ -74,21 +80,21 @@ export function isPlayerVisitMsg(
   );
 }
 
-export interface CreateVillagerWSReq extends ClientWebsocketMessage {
+export interface CreateVillagerServerMsg extends ClientWebsocketMessage {
   type: ClientMessageType.CREATE_VILLAGER;
   eye: string;
   hair: string;
   outfit: string;
 }
 
-export function isCreateVillagerWSReq(
+export function isCreateVillagerServerMsg(
   obj: ClientWebsocketMessage
-): obj is CreateVillagerWSReq {
+): obj is CreateVillagerServerMsg {
   return (
     obj.type === ClientMessageType.CREATE_VILLAGER &&
-    (obj as CreateVillagerWSReq).eye !== undefined &&
-    (obj as CreateVillagerWSReq).hair !== undefined &&
-    (obj as CreateVillagerWSReq).outfit !== undefined
+    (obj as CreateVillagerServerMsg).eye !== undefined &&
+    (obj as CreateVillagerServerMsg).hair !== undefined &&
+    (obj as CreateVillagerServerMsg).outfit !== undefined
   );
 }
 
@@ -107,6 +113,20 @@ export function isMoveEnviroObjectClientMsg(
   );
 }
 
+export interface VillagerReachedPathPointClientMsg
+  extends ClientWebsocketMessage {
+  type: ClientMessageType.VILLAGER_REACHED_PATH_POINT;
+  villagerId: VillagerId;
+}
+export function isVillagerReachedPathPointClientMsg(
+  obj: ClientWebsocketMessage
+): obj is VillagerReachedPathPointClientMsg {
+  return (
+    obj.type === ClientMessageType.VILLAGER_REACHED_PATH_POINT &&
+    (obj as VillagerReachedPathPointClientMsg).villagerId !== undefined
+  );
+}
+
 // =======================
 // === Server Messages ===
 // =======================
@@ -122,18 +142,20 @@ export function isWelcomeServerMsg(
     (obj as WelcomeServerMsg).text !== undefined
   );
 }
-export interface NewVillagerMsg extends ServerWebsocketMessage {
-  type: ServerMessageType.NEW_VILLAGER_CREATED;
-  text: string;
+export interface NewVillagerAndHouseServerMsg extends ServerWebsocketMessage {
+  type: ServerMessageType.NEW_VILLAGER_AND_HOUSE_CREATED;
+  villagerAsset: AssetJSON;
+  houseAsset: AssetJSON;
 }
 
-export function isNewVillagerMsg(
+export function isNewVillagerAndHouseServerMsg(
   obj: ServerWebsocketMessage
-): obj is NewVillagerMsg {
+): obj is NewVillagerAndHouseServerMsg {
   return (
-    obj.type === ServerMessageType.NEW_VILLAGER_CREATED &&
-    (obj as NewVillagerMsg).text !== undefined
-  )
+    obj.type === ServerMessageType.NEW_VILLAGER_AND_HOUSE_CREATED &&
+    (obj as NewVillagerAndHouseServerMsg).villagerAsset !== undefined &&
+    (obj as NewVillagerAndHouseServerMsg).houseAsset !== undefined
+  );
 }
 
 /**

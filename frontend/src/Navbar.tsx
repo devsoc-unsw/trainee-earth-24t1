@@ -15,11 +15,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@frontend/@/components/ui/dialog"
+} from "@frontend/@/components/ui/dialog";
 import { Button } from "./components/ui/button";
-import { Input } from "./components/ui/input";
 import { ReactNode } from "react";
-import VillagerGenButton from "./components/ui/VillagerGenButton";
 
 interface NavbarProps {
   children: ReactNode;
@@ -34,9 +32,7 @@ const Navbar = ({ children }: NavbarProps) => {
       </a>
       {/* Add navigation links here */}
       <div className="flex justify-end space-x-8">
-        <Button onClick={() => localStorage.clear()}>
-          Reset Local Storage
-        </Button>
+        <Button onClick={() => localStorage.clear()}>Reset Data</Button>
 
         {/* <VillagerGenButton></VillagerGenButton> */}
 
