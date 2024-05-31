@@ -415,6 +415,33 @@ const WorldMap = () => {
       }
     }
 
+    // === Draw outline of villagers plot of land
+    for (let [villagerId, villager] of simStateRef.current?.villagers ?? []) {
+      if (villager.basePos) {
+        const plotOfLandDimensions: Dimensions = { dx: 18, dy: 18 };
+        const plotOfLandCenterCoord = posToIsoCoords(
+          originRaw,
+          villager.basePos
+        );
+        const plotOfLandTopCoord = {
+          x: plotOfLandCenterCoord.x,
+          y: plotOfLandCenterCoord.y - 9 * Tile.TILE_HEIGHT,
+        };
+        drawTileOutline(
+          ctx,
+          plotOfLandTopCoord,
+          {
+            dx: plotOfLandDimensions.dx * Tile.TILE_WIDTH,
+            dy: plotOfLandDimensions.dy * Tile.TILE_HEIGHT,
+          },
+          "rgba(212, 250, 240, 0.7)",
+          "rgba(212, 250, 240,0.2)",
+          3,
+          []
+        );
+      }
+    }
+
     // === Draw map objects in iso projection back to front ===
     for (let pos of posRenderOrder.current) {
       const mapObjectIds = posToObjects.current.get(serializePosStr(pos)) ?? [];
