@@ -211,10 +211,10 @@ export class SimulationServer {
     console.log(`\n========\nStep simulation forward one timestep`);
     const jsonData = this.state.serialize();
 
-    if (counter === 600) {
-      let jsonData = this.state.serialize();
-      fs.writeFileSync("output_test2.json", JSON.stringify(jsonData));
-    }
+    // if (counter === 1200) {
+    //   let jsonData = this.state.serialize();
+    //   fs.writeFileSync("output_test2.json", JSON.stringify(jsonData));
+    // }
 
     /**
      * making trades
@@ -951,7 +951,12 @@ function findVillagerPath(
         if (w.x === dest.x && w.y === dest.y) {
           pathFound = true;
           pred.set(serializePosStr(w), v);
-        } else if (checkCanVisit(simState, w, v, pred) === true) {
+        } else if (
+          checkCanVisit(simState, w, v, pred) === true &&
+          checkObjectNearby(simState, w) === true
+        ) {
+          //console.log(w);
+          checkObjectNearby(simState, w);
           pred.set(serializePosStr(w), v);
           q.enqueue(w);
         }
@@ -985,6 +990,9 @@ function checkCanVisit(
 
   const cell = simState.worldMap.cells.get(serializePosStr(w));
   if (!simState.worldMap.cells.has(serializePosStr(w))) return false;
+  // console.log(1, w);
+
+  //if (checkObjectNearby(simState, w)) //return true;
 
   if (simState.worldMap.cells.get(serializePosStr(w)).object !== null)
     return false;
@@ -998,17 +1006,18 @@ function findDestOutside(
   villager: Villager,
   pos: Pos
 ) {
-  let xStart = pos.x - Math.ceil(dim.dx / 2);
-  let yStart = pos.y - Math.ceil(dim.dy / 2);
+  let xStart = pos.x - Math.ceil(dim.dx / 2) - 5;
+  let yStart = pos.y - Math.ceil(dim.dy / 2) - 5;
   let dest = { x: xStart, y: yStart };
 
-  for (let i = xStart; i < pos.x + dim.dx - Math.ceil(dim.dx / 2) + 2; i++) {
-    for (let j = yStart; j < pos.y + dim.dy - Math.ceil(dim.dy / 2) + 2; j++) {
+  for (let i = xStart; i < pos.x + dim.dx - Math.ceil(dim.dx / 2) + 10; i++) {
+    for (let j = yStart; j < pos.y + dim.dy - Math.ceil(dim.dy / 2) + 10; j++) {
       dest = { x: i, y: j };
 
       if (
         simState.worldMap.cells.has(serializePosStr(dest)) &&
-        simState.worldMap.cells.get(serializePosStr(dest)).object === null
+        simState.worldMap.cells.get(serializePosStr(dest)).object === null &&
+        checkObjectNearby(simState, dest)
       ) {
         findVillagerPath(simState, villager, dest);
         return;
@@ -1053,4 +1062,27 @@ class Queue<T> {
 
 function serializePos(pos: Pos) {
   throw new Error("Function not implemented.");
+}
+
+function checkObjectNearby(simState: SimulationState, pos: Pos): boolean {
+  let xStart = pos.x - 2;
+  let yStart = pos.y - 2;
+  // pos.x -= 1;
+  // pos.y -= 1;
+  //console.log("new");
+  for (let i = 0; i < 5; i++) {
+    for (let j = 0; j < 5; j++) {
+      let w = { x: xStart + i, y: yStart + j };
+      //console.log(1);
+      if (
+        simState.worldMap.cells.has(serializePosStr(w)) &&
+        simState.worldMap.cells.get(serializePosStr(w)).object !== null
+      ) {
+        //console.log(2, w);
+        return false;
+      }
+    }
+  }
+  // console.log(3, pos);
+  return true;
 }
