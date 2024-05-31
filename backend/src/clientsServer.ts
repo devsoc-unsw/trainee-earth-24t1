@@ -1,15 +1,32 @@
 import {
+  ClientMessageType,
+  InvalidWSRequestSubTypeError,
+  InvalidWSRequestTypeError,
+  MoveEnviroObjectClientMsg,
+  PingMsg,
+  PlayerVisitMsg,
   ServerMessageType,
   SimStateAssetsServerMsg,
+  VillagerReachedPathPointClientMsg,
   WebsocketClients,
+  WelcomeServerMsg,
+  assertWSReqType,
+  isClientWebsocketMessage,
+  isMoveEnviroObjectClientMsg,
+  isPingMsg,
+  isPlayerVisitMsg,
+  isVillagerReachedPathPointClientMsg,
 } from "@backend/types/wsTypes.ts";
 import createId from "@backend/utils/createId.ts";
 import { serializeMapToJSON } from "@backend/utils/objectTyping.ts";
 import { Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
-import { handleClientMessage, handleDisconnect } from "./wsHandler.ts";
 import { Assets } from "@backend/types/assetTypes.ts";
-import { SimulationState } from "@backend/types/simulationTypes.ts";
+import {
+  SimulationState,
+  clearGridCells,
+  fillGridCells,
+} from "@backend/types/simulationTypes.ts";
 
 /**
  * Wrapper for WebSocket server. Handles communications between server and
@@ -66,9 +83,101 @@ export class CommunicationServer {
 
         try {
           const message = JSON.parse(msg.toString("utf-8"));
-          // handleWSRequest takes care of replying to the client
-          // in wsHandler.ts
-          handleClientMessage(message, connection);
+          /**
+           * Ensures the request provided by the client is in the format:
+           * { "type": "something" }
+           * Subject to change - consult WebSocketRequest type.
+           */
+          if (!isClientWebsocketMessage(message)) {
+            throw new InvalidWSRequestTypeError();
+          }
+
+          console.log(`Handle ws message: ${JSON.stringify(message)}`);
+
+          /**
+           * Follow different strategies depending on what
+           * the client wants from the server and send back the response.
+           */
+          switch (message.type) {
+            case ClientMessageType.PING:
+              console.log(`Handle wsreq as PING`);
+              if (assertWSReqType<PingMsg>(message, isPingMsg)) {
+                connection.send(JSON.stringify({ type: "PONG" }));
+              }
+              break;
+            case ClientMessageType.PLAYER_VISIT:
+              console.log(`Handle wsreq as PLAYER_VISIT`);
+              if (assertWSReqType<PlayerVisitMsg>(message, isPlayerVisitMsg)) {
+                const playerId = message.playerId;
+                connection.send(
+                  JSON.stringify({
+                    type: ServerMessageType.WELCOME,
+                    text: `Welcome ${playerId}`,
+                  } as WelcomeServerMsg)
+                );
+              }
+              break;
+            case ClientMessageType.MOVE_ENVIRO_OBJECT:
+              console.log(`Handle wsreq as MOVE_ENVIRO_OBJECT`);
+              if (
+                assertWSReqType<MoveEnviroObjectClientMsg>(
+                  message,
+                  isMoveEnviroObjectClientMsg
+                )
+              ) {
+                const { enviroObjectId, newPos } = message;
+                console.log(
+                  `Move enviro object ${enviroObjectId} to ${newPos.x}, ${newPos.y}`
+                );
+
+                const prevEnviroObject =
+                  this.simulationState.enviroObjects.get(enviroObjectId);
+                const enviroObjectDim = this.assets.get(
+                  prevEnviroObject.asset
+                ).dimensions;
+
+                clearGridCells(
+                  this.simulationState.worldMap.cells,
+                  prevEnviroObject.pos,
+                  enviroObjectDim,
+                  true, // clear object from cell grid
+                  false // dont clear owner from cell
+                );
+                fillGridCells(
+                  this.simulationState.worldMap.cells,
+                  newPos,
+                  enviroObjectDim,
+                  enviroObjectId,
+                  true,
+                  null,
+                  false
+                );
+
+                this.simulationState.enviroObjects.get(enviroObjectId).pos =
+                  newPos;
+                this.broadcastSimStateAssets(this.simulationState, this.assets);
+              }
+              break;
+            case ClientMessageType.VILLAGER_REACHED_PATH_POINT:
+              console.log(`Handle wsreq as VILLAGER_REACHED_PATH_POINT`);
+              if (
+                assertWSReqType<VillagerReachedPathPointClientMsg>(
+                  message,
+                  isVillagerReachedPathPointClientMsg
+                )
+              ) {
+                const { villagerId } = message;
+                console.log(`Villager ${villagerId} reached path point`);
+                this.simulationState.villagers
+                  .get(villagerId)
+                  .villagerPath.shift();
+                // this.broadcastSimStateAssets(this.simulationState, this.assets);
+              }
+              break;
+            // ADD NEW WEBSOCKET REQUEST TYPES HERE
+            default:
+              throw new InvalidWSRequestSubTypeError();
+          }
         } catch (e) {
           console.error(e);
           let clientErrorMsg = e.message;
@@ -113,3 +222,8 @@ export class CommunicationServer {
     });
   }
 }
+
+const handleDisconnect = (userId: string, clients: WebsocketClients) => {
+  console.log(`${userId} disconnected.`);
+  clients.delete(userId);
+};

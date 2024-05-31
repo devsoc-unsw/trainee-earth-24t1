@@ -184,7 +184,7 @@ export const checkGridCells = (
   cells: Cells,
   pos: Pos,
   dim: Dimensions,
-  object: EnviroObjectId | null,
+  objects: (EnviroObjectId | null)[],
   checkObject: boolean,
   owner: VillagerId | null,
   checkOwner: boolean
@@ -203,7 +203,7 @@ export const checkGridCells = (
       const curPosStr = serializePosStr(curPos);
       if (
         !cells.get(curPosStr) ||
-        (checkObject && cells.get(curPosStr).object !== object) ||
+        (checkObject && !objects.includes(cells.get(curPosStr).object)) ||
         (checkOwner && cells.get(curPosStr).owner !== owner)
       ) {
         console.log(`
@@ -592,7 +592,7 @@ export interface VillagerJSON extends JSONObject {
   readonly asset: AssetId | null;
   pos: Pos | null;
   basePos: Pos;
-  villagerPath: PosStr[] | null;
+  villagerPath: PosStr[];
 }
 
 export class Villager implements Serializable<VillagerJSON> {
@@ -651,7 +651,7 @@ export class Villager implements Serializable<VillagerJSON> {
 
   public basePos: Pos;
 
-  public villagerPath: PosStr[] | null;
+  public villagerPath: PosStr[];
 
   constructor(type: VillagerType, name: string, _id: VillagerId = createId()) {
     this.type = type;
@@ -686,7 +686,7 @@ export class Villager implements Serializable<VillagerJSON> {
       asset: this.asset,
       pos: this.pos,
       basePos: this.basePos,
-      villagerPath: this.villagerPath,
+      villagerPath: [...this.villagerPath],
     };
   }
 
@@ -718,7 +718,7 @@ export class Villager implements Serializable<VillagerJSON> {
     villager.asset = obj.asset;
     villager.pos = obj.pos;
     villager.basePos = obj.basePos;
-    villager.villagerPath = obj.villagerPath;
+    villager.villagerPath = [...obj.villagerPath];
 
     return villager;
   }

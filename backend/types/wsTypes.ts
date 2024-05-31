@@ -1,7 +1,12 @@
 import { CustomError } from "@backend/utils/customError.ts";
 import { WebSocket } from "ws";
 import { Assets, AssetsJSON } from "./assetTypes.ts";
-import { SimulationStateJSON } from "./simulationTypes.ts";
+import {
+  EnviroObjectId,
+  Pos,
+  SimulationStateJSON,
+  VillagerId,
+} from "./simulationTypes.ts";
 
 /**
  * Maps clientIds (created by server) to WebSocket objects which represent a
@@ -12,18 +17,22 @@ export type WebsocketClients = Map<string, WebSocket>;
 export enum ClientMessageType {
   PING = "PING",
   PLAYER_VISIT = "PLAYER_VISIT",
+  MOVE_ENVIRO_OBJECT = "MOVE_ENVIRO_OBJECT",
+  VILLAGER_REACHED_PATH_POINT = "VILLAGER_REACHED_PATH_POINT",
 }
 
 export enum ServerMessageType {
   PONG = "PONG",
-  SIM_STATE_ASSETS = "ASSETS",
+  SIM_STATE_ASSETS = "SIM_STATE_ASSETS",
   WELCOME = "WELCOME",
 }
 
+// ==========================
+// === Base Message types ===
+// ==========================
 export interface ClientWebsocketMessage {
   type: ClientMessageType;
 }
-
 export function isClientWebsocketMessage(
   obj: Object
 ): obj is ClientWebsocketMessage {
@@ -37,6 +46,10 @@ export function isServerWebsocketMessage(
 ): obj is ServerWebsocketMessage {
   return (obj as ServerWebsocketMessage).type !== undefined;
 }
+
+// =======================
+// === Client Messages ===
+// =======================
 
 export interface PingMsg extends ClientWebsocketMessage {
   type: ClientMessageType.PING;
@@ -65,6 +78,38 @@ export function isPlayerVisitMsg(
   );
 }
 
+export interface MoveEnviroObjectClientMsg extends ClientWebsocketMessage {
+  type: ClientMessageType.MOVE_ENVIRO_OBJECT;
+  enviroObjectId: EnviroObjectId;
+  newPos: Pos;
+}
+export function isMoveEnviroObjectClientMsg(
+  obj: ClientWebsocketMessage
+): obj is MoveEnviroObjectClientMsg {
+  return (
+    obj.type === ClientMessageType.MOVE_ENVIRO_OBJECT &&
+    (obj as MoveEnviroObjectClientMsg).enviroObjectId !== undefined &&
+    (obj as MoveEnviroObjectClientMsg).newPos !== undefined
+  );
+}
+
+export interface VillagerReachedPathPointClientMsg
+  extends ClientWebsocketMessage {
+  type: ClientMessageType.VILLAGER_REACHED_PATH_POINT;
+  villagerId: VillagerId;
+}
+export function isVillagerReachedPathPointClientMsg(
+  obj: ClientWebsocketMessage
+): obj is VillagerReachedPathPointClientMsg {
+  return (
+    obj.type === ClientMessageType.VILLAGER_REACHED_PATH_POINT &&
+    (obj as VillagerReachedPathPointClientMsg).villagerId !== undefined
+  );
+}
+
+// =======================
+// === Server Messages ===
+// =======================
 export interface WelcomeServerMsg extends ServerWebsocketMessage {
   type: ServerMessageType.WELCOME;
   text: string;
@@ -96,6 +141,9 @@ export function isSimStateAssetsServerMsg(
     (obj as SimStateAssetsServerMsg).assets !== undefined
   );
 }
+
+// ===========================
+// ===========================
 
 /**
  * Asserts that a WebSocketRequest object is of a certain type. Else throws an error.
