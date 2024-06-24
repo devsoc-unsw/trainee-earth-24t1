@@ -1,12 +1,12 @@
-import { CustomError } from "@backend/utils/customError.ts";
-import { WebSocket } from "ws";
-import { AssetJSON, Assets, AssetsJSON } from "./assetTypes.ts";
+import { CustomError } from '@backend/utils/customError.ts';
+import { WebSocket } from 'ws';
+import { AssetJSON, AssetsJSON } from './assetTypes.ts';
 import {
   EnviroObjectId,
   Pos,
   SimulationStateJSON,
   VillagerId,
-} from "./simulationTypes.ts";
+} from './simulationTypes.ts';
 
 /**
  * Maps clientIds (created by server) to WebSocket objects which represent a
@@ -15,18 +15,18 @@ import {
 export type WebsocketClients = Map<string, WebSocket>;
 
 export enum ClientMessageType {
-  PING = "PING",
-  PLAYER_VISIT = "PLAYER_VISIT",
-  CREATE_VILLAGER = "CREATE_VILLAGER",
-  MOVE_ENVIRO_OBJECT = "MOVE_ENVIRO_OBJECT",
-  VILLAGER_REACHED_PATH_POINT = "VILLAGER_REACHED_PATH_POINT",
+  PING = 'PING',
+  PLAYER_VISIT = 'PLAYER_VISIT',
+  CREATE_VILLAGER = 'CREATE_VILLAGER',
+  MOVE_ENVIRO_OBJECT = 'MOVE_ENVIRO_OBJECT',
+  VILLAGER_REACHED_PATH_POINT = 'VILLAGER_REACHED_PATH_POINT',
 }
 
 export enum ServerMessageType {
-  PONG = "PONG",
-  SIM_STATE_ASSETS = "SIM_STATE_ASSETS",
-  WELCOME = "WELCOME",
-  NEW_VILLAGER_AND_HOUSE_CREATED = "NEW_VILLAGER_CREATED",
+  PONG = 'PONG',
+  SIM_STATE_ASSETS = 'SIM_STATE_ASSETS',
+  WELCOME = 'WELCOME',
+  NEW_VILLAGER_AND_HOUSE_CREATED = 'NEW_VILLAGER_CREATED',
 }
 
 // ==========================
@@ -231,6 +231,9 @@ export class BadlyFormattedWSTypeError extends WSTypeError {
     message?: string,
     errMsgForClient: string = `Badly formatted WebSocketRequest subtype object. Please provide an object that aligns with one of the WebSocketRequest subtypes in src/types/wsTypes.ts`
   ) {
+    if (!message) {
+      message = 'No message provided in request.';
+    }
     super(message, errMsgForClient);
   }
 }

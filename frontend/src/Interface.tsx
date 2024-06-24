@@ -1,16 +1,15 @@
-import "@frontend/src/Interface.css";
-import logo from "@frontend/img/logo.gif";
-import Navbar from "@frontend/src/Navbar";
-import TimerWidget from "@frontend/src/components/ui/timer";
-import TodoWidget from "@frontend/src/components/ui/todo";
-import GithubWidget from "@frontend/src/components/ui/github";
-import CalendarWidget from "@frontend/src/components/ui/calendarWidget";
-import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { ReactNode, useEffect, useState } from "react";
-import WorldMap from "@frontend/src/WorldMap";
-import VillagerGenButton from "./components/ui/VillagerGenButton";
-import HabitCounter from "./components/ui/habitCounter";
-import { Button } from "./components/ui/button";
+import '@frontend/src/Interface.css';
+import logo from '@frontend/img/logo.gif';
+import Navbar from '@frontend/src/Navbar';
+import TimerWidget from '@frontend/src/components/ui/timer';
+import TodoWidget from '@frontend/src/components/ui/todo';
+import GithubWidget from '@frontend/src/components/ui/github';
+import CalendarWidget from '@frontend/src/components/ui/calendarWidget';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { ReactNode, useEffect, useState } from 'react';
+import VillagerGenButton from './components/ui/VillagerGenButton';
+import HabitCounter from './components/ui/habitCounter';
+import { Button } from './components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -18,11 +17,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@frontend/@/components/ui/dialog";
-import Inventory from "./components/ui/inventory";
-import { Alert } from "./components/ui/alert";
-import { Toaster } from "sonner";
-import { Separator } from "./components/ui/separator";
+} from '@frontend/@/components/ui/dialog';
+import Inventory from './components/ui/inventory';
+import { Toaster } from 'sonner';
+import { Separator } from './components/ui/separator';
 import {
   IconArrowDown,
   IconArrowLeft,
@@ -30,8 +28,8 @@ import {
   IconArrowUp,
   IconDots,
   IconMouse,
-} from "@tabler/icons-react";
-import { SimulationState } from "@backend/types/simulationTypes";
+} from '@tabler/icons-react';
+import { SimulationState } from '@backend/types/simulationTypes';
 
 /**
  * Default widget positions calculated relative to middle
@@ -39,40 +37,40 @@ import { SimulationState } from "@backend/types/simulationTypes";
  */
 const defaultWidgetsData: widgetDataType = [
   {
-    id: "timer",
-    type: "timer",
+    id: 'timer',
+    type: 'timer',
     position: {
       x: -window.innerWidth / 2 + 180,
       y: +window.innerHeight / 2 - 380 + window.innerHeight / 2,
     },
   },
   {
-    id: "github",
-    type: "github",
+    id: 'github',
+    type: 'github',
     position: {
       x: -180,
       y: +window.innerHeight / 2 - 270 + window.innerHeight / 2,
     },
   },
   {
-    id: "todo-list",
-    type: "todo-list",
+    id: 'todo-list',
+    type: 'todo-list',
     position: {
       x: +window.innerWidth / 2 - 350,
       y: -window.innerHeight / 2 + 200 + window.innerHeight / 2,
     },
   },
   {
-    id: "calendar",
-    type: "calendar",
+    id: 'calendar',
+    type: 'calendar',
     position: {
       x: +window.innerWidth / 2 - 380,
       y: +window.innerHeight / 2 - 420 + window.innerHeight / 2,
     },
   },
   {
-    id: "habitCounter",
-    type: "habitCounter",
+    id: 'habitCounter',
+    type: 'habitCounter',
     position: {
       x: -window.innerWidth / 2 + 180,
       y: -window.innerHeight / 2 + 200 + window.innerHeight / 2,
@@ -87,11 +85,11 @@ type widgetDataType = {
 }[];
 
 type widgetType =
-  | "timer"
-  | "calendar"
-  | "todo-list"
-  | "github"
-  | "habitCounter";
+  | 'timer'
+  | 'calendar'
+  | 'todo-list'
+  | 'github'
+  | 'habitCounter';
 
 export default function Interface({
   simulationState,
@@ -105,7 +103,7 @@ export default function Interface({
   ) => void;
 }) {
   const [widgets, setWidgets] = useState<widgetDataType>(() => {
-    const savedWidgetsData = localStorage.getItem("widgetsData");
+    const savedWidgetsData = localStorage.getItem('widgetsData');
     return savedWidgetsData ? JSON.parse(savedWidgetsData) : defaultWidgetsData;
   });
 
@@ -121,7 +119,7 @@ export default function Interface({
   }, [simulationState]);
 
   useEffect(() => {
-    localStorage.setItem("widgetsData", JSON.stringify(widgets));
+    localStorage.setItem('widgetsData', JSON.stringify(widgets));
   }, [widgets]);
 
   function handleDragEnd(ev: DragEndEvent): void {
@@ -141,10 +139,10 @@ export default function Interface({
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
-    const hasSeenDialog = localStorage.getItem("hasSeenDialog");
+    const hasSeenDialog = localStorage.getItem('hasSeenDialog');
     if (!hasSeenDialog) {
       setDialogOpen(true);
-      localStorage.setItem("hasSeenDialog", "true");
+      localStorage.setItem('hasSeenDialog', 'true');
     }
   }, []);
 
@@ -265,7 +263,7 @@ export default function Interface({
       <DndContext onDragEnd={handleDragEnd}>
         {widgets.map((widget) => {
           switch (widget.type) {
-            case "timer":
+            case 'timer':
               return (
                 <TimerWidget
                   key={widget.id}
@@ -274,7 +272,7 @@ export default function Interface({
                   draggableId={widget.id}
                 />
               );
-            case "todo-list":
+            case 'todo-list':
               return (
                 <TodoWidget
                   key={widget.id}
@@ -283,7 +281,7 @@ export default function Interface({
                   draggableId={widget.id}
                 />
               );
-            case "github":
+            case 'github':
               return (
                 <GithubWidget
                   key={widget.id}
@@ -292,7 +290,7 @@ export default function Interface({
                   draggableId={widget.id}
                 />
               );
-            case "calendar":
+            case 'calendar':
               return (
                 <CalendarWidget
                   key={widget.id}
@@ -301,7 +299,7 @@ export default function Interface({
                   draggableId={widget.id}
                 />
               );
-            case "habitCounter":
+            case 'habitCounter':
               return (
                 <HabitCounter
                   key={widget.id}

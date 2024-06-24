@@ -1,13 +1,13 @@
-# fly.toml app configuration file generated for trainee-earth-24t1-withered-sky-8391 on 2024-04-04T17:06:05+11:00
+# fly.toml app configuration file generated for groveify on 2024-06-22T18:08:07+10:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'trainee-earth-24t1-withered-sky-8391'
+app = 'groveify'
 primary_region = 'syd'
 
 [http_service]
-  internal_port = 8080
+  internal_port = 8043
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true

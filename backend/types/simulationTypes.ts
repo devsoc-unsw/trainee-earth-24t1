@@ -7,10 +7,10 @@ import {
   JSONObject,
   Serializable,
   JSONValue,
-} from "@backend/utils/objectTyping.ts";
-import { IWorldMapDocument } from "@backend/types/databaseTypes.ts";
-import createId from "@backend/utils/createId.ts";
-import { AssetId } from "./assetTypes.ts";
+} from '@backend/utils/objectTyping.ts';
+// import { IWorldMapDocument } from "@backend/types/databaseTypes.ts";
+import createId from '@backend/utils/createId.ts';
+import { AssetId } from './assetTypes.ts';
 
 export interface SimulationStateJSON extends JSONObject {
   _id: string;
@@ -38,7 +38,7 @@ export class SimulationState {
 
   public readonly resources: Map<ResourceId, Resource>;
 
-  transactions: TransactionsType;
+  transactions: TransactionsType = [];
   constructor(
     worldMap: WorldMap = new WorldMap(),
     villagers = new Map(),
@@ -56,7 +56,7 @@ export class SimulationState {
   }
 
   show() {
-    console.log("\n\n=== SimulationState: ===");
+    console.log('\n\n=== SimulationState: ===');
     console.dir(this.serialize(), { depth: null });
   }
 
@@ -128,7 +128,7 @@ export const serializePosStr = ({ x, y }: { x: number; y: number }): PosStr =>
   `${x},${y}`;
 
 export const parsePosStr = (coordStr: PosStr): Pos => {
-  const [x, y] = coordStr.split(",").map((str) => parseInt(str));
+  const [x, y] = coordStr.split(',').map((str) => parseInt(str));
   return { x, y };
 };
 
@@ -203,7 +203,9 @@ export const checkGridCells = (
       const curPosStr = serializePosStr(curPos);
       if (
         !cells.get(curPosStr) ||
+        // @ts-ignore
         (checkObject && !objects.includes(cells.get(curPosStr).object)) ||
+        // @ts-ignore
         (checkOwner && cells.get(curPosStr).owner !== owner)
       ) {
         return false;
@@ -267,9 +269,11 @@ export const fillGridCells = (
       const curPos = { x, y };
       const curPosStr = serializePosStr(curPos);
       if (setOwner) {
+        // @ts-ignore
         cells.get(curPosStr).owner = owner;
       }
       if (setObject) {
+        // @ts-ignore
         cells.get(curPosStr).object = object;
       }
     }
@@ -374,6 +378,7 @@ export class Cell implements Serializable<CellJSON> {
   }
 
   static deserialize(obj: JSONCompatible<CellJSON>): Cell {
+    // @ts-ignore
     const cell = new Cell({ ...obj.pos });
     cell.owner = obj.owner;
     cell.object = obj.object;
@@ -391,19 +396,19 @@ export interface EnviroObjectJSON extends JSONObject {
 
 function isEnviroObjectJSON(obj: any): obj is EnviroObjectJSON {
   return (
-    typeof obj === "object" &&
+    typeof obj === 'object' &&
     obj !== null &&
-    "_id" in obj &&
-    typeof obj._id === "string" &&
-    "name" in obj &&
-    typeof obj.name === "string"
+    '_id' in obj &&
+    typeof obj._id === 'string' &&
+    'name' in obj &&
+    typeof obj.name === 'string'
   );
 }
 
 export enum EnviroObjectType {
-  HOUSE = "HOUSE",
-  COSMETIC = "COSMETIC",
-  PRODUCTION = "PRODUCTION",
+  HOUSE = 'HOUSE',
+  COSMETIC = 'COSMETIC',
+  PRODUCTION = 'PRODUCTION',
 }
 
 export type EnviroObjectId = string; // uuid
@@ -415,7 +420,7 @@ export type EnviroObjectId = string; // uuid
  * own the information about the object. Reference the object by its id.
  *
  */
-type EnviroObjectRef = EnviroObjectId;
+// type EnviroObjectRef = EnviroObjectId;
 
 export class EnviroObject implements Serializable<EnviroObjectJSON> {
   public readonly _id: EnviroObjectId;
@@ -536,22 +541,22 @@ export const isHouseObjectJSON = (obj: JSONValue): obj is HouseObjectJSON => {
 export type VillagerId = string;
 
 export const VILLAGER_TYPES_ARRAY = [
-  "farmer",
-  "merchant",
-  "lumberjack",
-  "miner",
-  "hunter",
-  "butcher",
-  "shepherd",
-  "miller",
-  "fisherman",
-  "blacksmith",
-  "builder",
-  "miller",
-  "weaver",
-  "herbalist",
-  "alchemist",
-  "potter",
+  'farmer',
+  'merchant',
+  'lumberjack',
+  'miner',
+  'hunter',
+  'butcher',
+  'shepherd',
+  'miller',
+  'fisherman',
+  'blacksmith',
+  'builder',
+  'miller',
+  'weaver',
+  'herbalist',
+  'alchemist',
+  'potter',
 ] as const;
 export type VillagerType = (typeof VILLAGER_TYPES_ARRAY)[number];
 
@@ -593,8 +598,8 @@ export class Villager implements Serializable<VillagerJSON> {
   public readonly name: string;
   public readonly _id: VillagerId;
   public readonly type: VillagerType;
-  public friends: VillagerId[];
-  public enemies: VillagerId[];
+  public friends: VillagerId[] = [];
+  public enemies: VillagerId[] = [];
   public _interactingWith: VillagerId | EnviroObjectId | null = null;
   public energy: number = 0;
   public coins: number = 0;
@@ -643,6 +648,7 @@ export class Villager implements Serializable<VillagerJSON> {
 
   public pos: Pos | null = null;
 
+  // @ts-ignore
   public basePos: Pos;
 
   public villagerPath: PosStr[] = [];
@@ -723,30 +729,30 @@ export class Villager implements Serializable<VillagerJSON> {
  * We don't want to limit the kinds of resources to this fixed list, we also
  * want to be able dynamically add new kinds of resources to the game as it runs.
  */
-const RESOURCES_ARRAY = [
-  "wheat",
-  "corn",
-  "apples",
-  "pork",
-  "sugar",
-  "wood",
-  "steel",
-  "stone",
-  "iron",
-  "gold",
-  "diamond",
-  "coal",
-  "glass",
-  "fish",
-  "plough",
-] as const;
+// const RESOURCES_ARRAY = [
+//   'wheat',
+//   'corn',
+//   'apples',
+//   'pork',
+//   'sugar',
+//   'wood',
+//   'steel',
+//   'stone',
+//   'iron',
+//   'gold',
+//   'diamond',
+//   'coal',
+//   'glass',
+//   'fish',
+//   'plough',
+// ] as const;
 
 /**
  * @deprecated Use ResourceId instead.
  */
-type ResourceType = (typeof RESOURCES_ARRAY)[number];
+// type ResourceType = (typeof RESOURCES_ARRAY)[number];
 
-const RESOURCE_TYPES_ARRAY = ["edible", "tool", "material", "luxury"] as const;
+const RESOURCE_TYPES_ARRAY = ['edible', 'tool', 'material', 'luxury'] as const;
 
 export type ResourceTypeType = (typeof RESOURCE_TYPES_ARRAY)[number];
 
@@ -869,45 +875,45 @@ export type AttributeId = string;
  * We don't want to limit the kinds of attributes to this fixed list, we also
  * want to be able dynamically add new kinds of attributes to the game as it runs.
  */
-const ATTRIBUTES_ARRAY = [
-  // Ability to perform physically demanding tasks, such as in harvesting
-  // resources.
-  "strength",
+// const ATTRIBUTES_ARRAY = [
+//   // Ability to perform physically demanding tasks, such as in harvesting
+//   // resources.
+//   'strength',
 
-  // How fast the character can travel across the map.
-  "speed",
+//   // How fast the character can travel across the map.
+//   'speed',
 
-  // Ability to sustain physical activity over time.
-  "stamina",
+//   // Ability to sustain physical activity over time.
+//   'stamina',
 
-  // Ability to solve problems and think critically.
-  "intelligence",
+//   // Ability to solve problems and think critically.
+//   'intelligence',
 
-  // Ability to influence and persuade others, particularly in trades.
-  "charisma",
+//   // Ability to influence and persuade others, particularly in trades.
+//   'charisma',
 
-  // Ability to identity profitable opportunities such as resources and
-  // trades.
-  "perception",
+//   // Ability to identity profitable opportunities such as resources and
+//   // trades.
+//   'perception',
 
-  // Ability to perform tasks that require precision and fine motor skills.
-  "dexterity",
+//   // Ability to perform tasks that require precision and fine motor skills.
+//   'dexterity',
 
-  // Ability to create items and objects.
-  "crafting",
+//   // Ability to create items and objects.
+//   'crafting',
 
-  // Ability to negotiate and make deals, particularly in trades.
-  "negotiation",
+//   // Ability to negotiate and make deals, particularly in trades.
+//   'negotiation',
 
-  "luck",
+//   'luck',
 
-  "adventurousness",
-] as const;
+//   'adventurousness',
+// ] as const;
 
 /**
  * @deprecated Use AttributeId instead.
  */
-type AttributeType = (typeof ATTRIBUTES_ARRAY)[number];
+// type AttributeType = (typeof ATTRIBUTES_ARRAY)[number];
 
 export interface AttributeJSON extends JSONObject {
   _id: string;
@@ -957,7 +963,7 @@ export interface AttributeValueJSON extends JSONObject {
   boosts: AttributeBoostJSON[];
 }
 
-type attributeValueId = string;
+// type attributeValueId = string;
 
 export class AttributeValue implements Serializable<AttributeValueJSON> {
   public readonly _id: string;

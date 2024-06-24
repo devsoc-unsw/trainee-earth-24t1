@@ -1,23 +1,13 @@
-import logo from "@frontend/img/logo.gif";
-import "@frontend/src/Navbar.css";
+import logo from '@frontend/img/logo.gif';
+import '@frontend/src/Navbar.css';
 import {
   SignInButton,
   SignedIn,
   SignedOut,
   UserButton,
-} from "@clerk/clerk-react";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@frontend/@/components/ui/dialog";
-import { Button } from "./components/ui/button";
-import { ReactNode } from "react";
+} from '@clerk/clerk-react';
+import { Button } from './components/ui/button';
+import { ReactNode } from 'react';
 
 interface NavbarProps {
   children: ReactNode;
