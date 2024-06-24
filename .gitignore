@@ -37,3 +37,5 @@ typings/
 
 backend/output_test1.json
 backend/output_test2.json
+
+.dockerignore
