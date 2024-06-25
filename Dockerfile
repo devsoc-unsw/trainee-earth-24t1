@@ -1,4 +1,4 @@
-FROM node:latest as builder
+FROM node:22.3.0-alpine3.19 as builder
 
 WORKDIR /home/node/groveify/backend
 COPY backend/package*.json ./
@@ -19,5 +19,6 @@ RUN npm run build
 ENV NODE_ENV=production
 CMD "cd /home/node/groveify/backend && npm dev"
 
-FROM pierrezemb/gostatic
-COPY --from=builder /home/node/groveify/frontend/dist /srv/http/
+# run apache web server for frontend
+FROM httpd:2.4.59-alpine
+COPY --from=builder /home/node/groveify/frontend/dist /usr/local/apache2/htdocs/
