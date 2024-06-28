@@ -1,8 +1,8 @@
-import axios from "axios";
-import FormData from "form-data";
-import sharp from "sharp";
-import fs from "node:fs";
-import { Readable } from "node:stream";
+import axios from 'axios';
+import FormData from 'form-data';
+import sharp from 'sharp';
+import fs from 'node:fs';
+import { Readable } from 'node:stream';
 
 /**
  * @deprecated Use removeBackgroundStableDiffusion instead
@@ -20,19 +20,19 @@ async function removeImageBGViaData(
   type: string
 ): Promise<ArrayBuffer | null> {
   const formData = new FormData();
-  formData.append("size", "auto");
-  formData.append("image_file", imageData, `${name}.${type}`);
-  formData.append("crop", "true");
+  formData.append('size', 'auto');
+  formData.append('image_file', imageData, `${name}.${type}`);
+  formData.append('crop', 'true');
 
   try {
     const response = await axios({
-      method: "post",
-      url: "https://api.remove.bg/v1.0/removebg",
+      method: 'post',
+      url: 'https://api.remove.bg/v1.0/removebg',
       data: formData,
-      responseType: "arraybuffer",
+      responseType: 'arraybuffer',
       headers: {
         ...formData.getHeaders(),
-        "X-Api-Key": process.env.REMOVEBG_KEY,
+        'X-Api-Key': process.env.REMOVEBG_KEY,
       },
       // encoding: null,
     });
@@ -60,18 +60,18 @@ async function removeImageBGViaData(
  */
 async function removeImageBGViaURL(imageUrl: URL): Promise<ArrayBuffer | null> {
   const formData = new FormData();
-  formData.append("size", "auto");
-  formData.append("image_url", imageUrl.toString());
+  formData.append('size', 'auto');
+  formData.append('image_url', imageUrl.toString());
 
   try {
     const response = await axios({
-      method: "post",
-      url: "https://api.remove.bg/v1.0/removebg",
+      method: 'post',
+      url: 'https://api.remove.bg/v1.0/removebg',
       data: formData,
-      responseType: "arraybuffer",
+      responseType: 'arraybuffer',
       headers: {
         ...formData.getHeaders(),
-        "X-Api-Key": process.env.REMOVEBG_KEY,
+        'X-Api-Key': process.env.REMOVEBG_KEY,
       },
       // encoding: null,
     });
@@ -93,20 +93,20 @@ export async function removeBackgroundStableDiffusion(
   imageData: ArrayBuffer
 ): Promise<Buffer | null> {
   const formData = new FormData();
-  formData.append("image", Buffer.from(imageData), {
-    filename: "image.png", // request doenst work without this, idk
+  formData.append('image', Buffer.from(imageData), {
+    filename: 'image.png', // request doenst work without this, idk
   });
-  formData.append("output_format", "png");
+  formData.append('output_format', 'png');
 
   const response = await axios.postForm(
     `https://api.stability.ai/v2beta/stable-image/edit/remove-background`,
     formData,
     {
       validateStatus: undefined,
-      responseType: "arraybuffer",
+      responseType: 'arraybuffer',
       headers: {
         Authorization: `Bearer ${process.env.STABILITYAI_API_KEY}`,
-        Accept: "image/*",
+        Accept: 'image/*',
       },
     }
   );
@@ -127,7 +127,7 @@ export async function cropImage(
 ): Promise<ArrayBuffer | null> {
   try {
     const data = await sharp(imageData)
-      .extractChannel("alpha")
+      .extractChannel('alpha')
       .trim()
       .toBuffer({ resolveWithObject: true });
 
@@ -190,7 +190,7 @@ export async function cutImage(
         }
 
         const buffer = await sharp(data, { raw: { width, height, channels } })
-          .toFormat("png")
+          .toFormat('png')
           .toBuffer();
         const arrayBuffer = buffer.buffer.slice(
           buffer.byteOffset,
@@ -235,7 +235,7 @@ export async function flopImage(
   try {
     const editedImage = await sharp(imageData)
       .flop()
-      .toFormat("png")
+      .toFormat('png')
       .toBuffer();
 
     const arrayBuffer = editedImage.buffer.slice(
