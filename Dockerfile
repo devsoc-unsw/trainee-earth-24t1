@@ -7,18 +7,21 @@ USER node
 RUN npm install
 COPY --chown=node:node backend/ .
 
-USER root
-WORKDIR /home/node/groveify/frontend
-COPY frontend/package*.json ./
-RUN chown -R node:node /home/node/groveify/ # account for frontend folder having incorrect perms
-USER node
-RUN npm install
-COPY --chown=node:node frontend/ .
-RUN npm run build 
-
+# USER root
+# WORKDIR /home/node/groveify/frontend
+# COPY frontend/package*.json ./
+# RUN chown -R node:node /home/node/groveify/ # account for frontend folder having incorrect perms
+# USER node
+# RUN npm install
+# COPY --chown=node:node frontend/ .
 ENV NODE_ENV=production
-CMD "cd /home/node/groveify/backend && npm dev"
+# ARG CLERK_KEY
+# ENV VITE_CLERK_KEY=${CLERK_KEY}
+EXPOSE 3000
+RUN npm run build
+
+CMD "sh -c $('cd /home/node/groveify/backend && npm dev')"
 
 # run apache web server for frontend
-FROM httpd:2.4.59-alpine
-COPY --from=builder /home/node/groveify/frontend/dist /usr/local/apache2/htdocs/
+# FROM httpd:2.4.59-alpine
+# COPY --from=builder /home/node/groveify/frontend/dist /usr/local/apache2/htdocs/
