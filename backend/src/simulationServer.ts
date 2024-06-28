@@ -18,7 +18,7 @@ import {
   Dimensions,
   EnviroObjectType,
   EnviroObject,
-} from '@backend/types/simulationTypes.js';
+} from '../types/simulationTypes.js';
 
 import fs from 'fs';
 
@@ -35,14 +35,14 @@ const normalPriceRange = normalMaxPrice - normalMinPrice;
 const maxPrice = 35;
 const buyQuantity = 3;
 const TICKS_PER_CYCLE = 10;
-import { UpdateFn } from '@backend/src/gameloopFramework.js';
-import { Assets } from '@backend/types/assetTypes.js';
+import { UpdateFn } from '../src/gameloopFramework.js';
+import { Assets } from '../types/assetTypes.js';
 import {
   ServerMessageType,
   SimStateAssetsServerMsg,
   WebsocketClients,
-} from '@backend/types/wsTypes.js';
-import { serializeMapToJSON } from '@backend/utils/objectTyping.js';
+} from '../types/wsTypes.js';
+import { serializeMapToJSON } from '../utils/objectTyping.js';
 import { CommunicationServer } from './clientsServer.js';
 
 export class SimulationServer {

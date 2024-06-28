@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { generateText } from './generate-text.js';
-import { isImageFileTypeType } from '@backend/types/imageFileTypes.js';
+import { isImageFileTypeType } from '../types/imageFileTypes.js';
 import axios from 'axios';
 import FormData from 'form-data';
 import fs from 'node:fs';

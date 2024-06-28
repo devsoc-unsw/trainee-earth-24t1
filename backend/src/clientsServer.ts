@@ -19,15 +19,15 @@ import {
   isPingMsg,
   isPlayerVisitMsg,
   isVillagerReachedPathPointClientMsg,
-} from '@backend/types/wsTypes.js';
-import createId from '@backend/utils/createId.js';
+} from '../types/wsTypes.js';
+import createId from '../utils/createId.js';
 import {
   serializeMapToJSON,
   transformObjectValues,
-} from '@backend/utils/objectTyping.js';
+} from '../utils/objectTyping.js';
 import { Server } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
-import { Assets } from '@backend/types/assetTypes.js';
+import { Assets } from '../types/assetTypes.js';
 import {
   AttributeValue,
   Cells,
@@ -47,13 +47,13 @@ import {
   parsePosStr,
   resourceOrigin,
   serializePosStr,
-} from '@backend/types/simulationTypes.js';
+} from '../types/simulationTypes.js';
 import {
   generateHouseAsset,
   generateVillagerAsset,
-} from '@backend/asset-gen/generate-asset.js';
-import { simulationState1 } from '@backend/sample-data/simulation_state/simulation_state_1.js';
-import { RANDOM_VILLAGER_NAMES } from '@backend/sample-data/random-villager-names.js';
+} from '../asset-gen/generate-asset.js';
+import { simulationState1 } from '../sample-data/simulation_state/simulation_state_1.js';
+import { RANDOM_VILLAGER_NAMES } from '../sample-data/random-villager-names.js';
 interface IRange {
   minX: number;
   maxX: number;

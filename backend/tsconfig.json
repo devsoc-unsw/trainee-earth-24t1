@@ -8,9 +8,6 @@
     "allowImportingTsExtensions": false,
     "noEmit": false,
     "baseUrl": "./",
-    "paths": {
-      "@backend/*": ["./*"]
-    },
     "typeRoots": ["./node_modules/@types", "type-extensions"],
     "resolveJsonModule": true
   },

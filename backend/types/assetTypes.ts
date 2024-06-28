@@ -1,10 +1,10 @@
-import createId from '@backend/utils/createId.js';
-import { toIsoStringWithTimezone } from '@backend/utils/date.js';
+import createId from '../utils/createId.js';
+import { toIsoStringWithTimezone } from '../utils/date.js';
 import {
   JSONCompatible,
   JSONObject,
   Serializable,
-} from '@backend/utils/objectTyping.js';
+} from '../utils/objectTyping.js';
 
 /**
  * Number of tiles that the asset occupies physically on the map.

@@ -6,13 +6,13 @@ import {
   WorldMap,
   serializePosStr,
 } from '../types/simulationTypes.js';
-import { run as runDB } from '@backend/src/db.js';
+import { run as runDB } from './db.js';
 import { WebSocketServer, WebSocket } from 'ws';
 import { GameLoop } from './gameloopFramework.js';
 import {
   assets1 as ASSETS,
   simulationState1 as SIMULATION_STATE,
-} from '@backend/sample-data/simulation_state/simulation_state_1.js';
+} from '../sample-data/simulation_state/simulation_state_1.js';
 import { SimulationServer } from './simulationServer.js';
 import {
   deserializeJSONToMap,
@@ -25,20 +25,20 @@ import {
   generateCosmeticObjectAsset,
   generateResourceItemAsset,
   // generateVillagerAssetV2
-} from '@backend/asset-gen/generate-asset.js';
-import cosmeticPresetJSON from '@backend/sample-data/gen-assets/cosmetic_assets/presets.json';
-import resourcePresetJSON from '@backend/sample-data/gen-assets/resource_assets/presets.json';
+} from '../asset-gen/generate-asset.js';
+import cosmeticPresetJSON from '../sample-data/gen-assets/cosmetic_assets/presets.json';
+import resourcePresetJSON from '../sample-data/gen-assets/resource_assets/presets.json';
 import axios, { AxiosResponse } from 'axios';
-import { cropImage } from '@backend/asset-gen/edit-image.js';
+import { cropImage } from '../asset-gen/edit-image.js';
 import fs from 'fs';
-import { storeImageIntoBunny } from '@backend/asset-gen/store-image.js';
-import { Asset } from '@backend/types/assetTypes.js';
+import { storeImageIntoBunny } from '../asset-gen/store-image.js';
+import { Asset } from '../types/assetTypes.js';
 import {
   ServerMessageType,
   SimStateAssetsServerMsg,
   WebsocketClients,
-} from '@backend/types/wsTypes.js';
-import createId from '@backend/utils/createId.js';
+} from '../types/wsTypes.js';
+import createId from '../utils/createId.js';
 import { CommunicationServer } from './clientsServer.js';
 
 const EXPRESS_PORT = 3000;

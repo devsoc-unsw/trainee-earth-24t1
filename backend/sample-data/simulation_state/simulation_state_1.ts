@@ -1,4 +1,4 @@
-import { AssetsJSON } from '@backend/types/assetTypes.js';
+import { AssetsJSON } from '../../types/assetTypes.js';
 import {
   AttributeJSON,
   CellJSON,
@@ -19,8 +19,8 @@ import {
   isHouseObjectJSON,
   isProductionObjectJSON,
   serializePosStr,
-} from '@backend/types/simulationTypes.js';
-import { Entries } from '@backend/utils/objectTyping.js';
+} from '../../types/simulationTypes.js';
+import { Entries } from '../../utils/objectTyping.js';
 
 const VILLAGER_PLOT_DIM = {
   dx: 18,

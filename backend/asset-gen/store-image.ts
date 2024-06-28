@@ -1,6 +1,6 @@
 import FormData from 'form-data';
 import axios from 'axios';
-import { checkEnvVars } from '@backend/utils/envVars.js';
+import { checkEnvVars } from '../utils/envVars.js';
 
 /**
  * @deprecated Use storeImageIntoBunny instead

@@ -7,7 +7,7 @@ import {
   // removeImageBGViaURL,
   flopImage,
   removeBackgroundStableDiffusion,
-} from '@backend/asset-gen/edit-image.js';
+} from './edit-image.js';
 import {
   generateCosmeticObjectImage,
   generateProductionObjectImage,
@@ -16,10 +16,10 @@ import {
   generateStableImage,
   generateResourceImage,
   // generateVillagerObjectImageV2,
-} from '@backend/asset-gen/generate-image.js';
-import { storeImageIntoBunny } from '@backend/asset-gen/store-image.js';
+} from './generate-image.js';
+import { storeImageIntoBunny } from './store-image.js';
 import OpenAI from 'openai';
-import { Asset, RemoteImage } from '@backend/types/assetTypes.js';
+import { Asset, RemoteImage } from '../types/assetTypes.js';
 
 export enum AssetType {
   COSMETIC_ENVIRONMENT_OBJ,

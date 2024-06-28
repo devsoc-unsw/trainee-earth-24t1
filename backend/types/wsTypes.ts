@@ -1,4 +1,4 @@
-import { CustomError } from '@backend/utils/customError.js';
+import { CustomError } from '../utils/customError.js';
 import { WebSocket } from 'ws';
 import { AssetJSON, AssetsJSON } from './assetTypes.js';
 import {

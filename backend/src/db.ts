@@ -4,8 +4,8 @@ import {
   Pos,
   WorldMap,
   serializePosStr,
-} from '@backend/types/simulationTypes.js';
-import createId from '@backend/utils/createId.js';
+} from '../types/simulationTypes.js';
+import createId from '../utils/createId.js';
 
 const mongoURI: string = process.env.MONGODB_CONNECTION_STR;
 

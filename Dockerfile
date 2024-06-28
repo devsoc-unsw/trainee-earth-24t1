@@ -18,7 +18,7 @@ ENV NODE_ENV=production
 # ARG CLERK_KEY
 # ENV VITE_CLERK_KEY=${CLERK_KEY}
 EXPOSE 3000
-RUN npm run build
+# RUN npm run build
 
 CMD "sh -c $('cd /home/node/groveify/backend && npm dev')"
 
