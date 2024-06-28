@@ -1,6 +1,6 @@
-import FormData from "form-data";
-import axios from "axios";
-import { checkEnvVars } from "@backend/utils/envVars.ts";
+import FormData from 'form-data';
+import axios from 'axios';
+import { checkEnvVars } from '@backend/utils/envVars.js';
 
 /**
  * @deprecated Use storeImageIntoBunny instead
@@ -16,23 +16,23 @@ async function storeImageIntoImgur(
   type: string
 ): Promise<string | null> {
   const data = new FormData();
-  data.append("image", imageData, `${name}.${type}`);
-  data.append("type", "file");
-  data.append("title", "Simple upload");
-  data.append("description", "This is a simple image upload in Imgur");
+  data.append('image', imageData, `${name}.${type}`);
+  data.append('type', 'file');
+  data.append('title', 'Simple upload');
+  data.append('description', 'This is a simple image upload in Imgur');
 
   try {
     const res = await axios({
-      method: "post",
+      method: 'post',
       maxBodyLength: Infinity,
-      url: "https://api.imgur.com/3/image",
+      url: 'https://api.imgur.com/3/image',
       headers: {
-        Authorization: "Client-ID " + process.env.IMGUR_KEY,
+        Authorization: 'Client-ID ' + process.env.IMGUR_KEY,
         ...data.getHeaders(),
       },
       data: data,
     });
-    console.log("uploading image to imgur...");
+    console.log('uploading image to imgur...');
     return res.data.data.link;
   } catch (err) {
     console.error(err);
@@ -60,20 +60,20 @@ export async function storeImageIntoBunny(
   imageFileName: string
 ): Promise<string | null> {
   checkEnvVars([
-    "BUNNY_ACCESS_KEY",
-    "BUNNY_STORAGE_ZONE_NAME",
-    "BUNNY_CDN_NAME",
-    "BUNNY_REGION",
+    'BUNNY_ACCESS_KEY',
+    'BUNNY_STORAGE_ZONE_NAME',
+    'BUNNY_CDN_NAME',
+    'BUNNY_REGION',
   ]);
 
   const storageURL = `https://syd.storage.bunnycdn.com/${process.env.BUNNY_STORAGE_ZONE_NAME}/${imagePath}${imageFileName}`;
   const cdnURL = `https://${process.env.BUNNY_CDN_NAME}.b-cdn.net/${imagePath}${imageFileName}`;
 
-  console.log("Uploading image to bunny...");
+  console.log('Uploading image to bunny...');
   const res = await axios.put(storageURL, imageData, {
     headers: {
       AccessKey: process.env.BUNNY_ACCESS_KEY,
-      "Content-Type": "application/octet-stream",
+      'Content-Type': 'application/octet-stream',
     },
   });
 
@@ -81,7 +81,7 @@ export async function storeImageIntoBunny(
     console.log(`Image uploaded to bunny successfully at ${storageURL}.`);
     console.log(`Access the image at CDN ${cdnURL}.`);
   } else {
-    console.error("Failed to upload image to bunny");
+    console.error('Failed to upload image to bunny');
     console.error(res.data);
     return null;
   }
@@ -93,7 +93,7 @@ export async function deleteImageFromBunny(
   pathname: string
 ): Promise<undefined> {
   const options = {
-    method: "DELETE",
+    method: 'DELETE',
     url: pathname,
     header: {
       AccessKey: `${process.env.BUNNY_ACCESS_KEY}`,

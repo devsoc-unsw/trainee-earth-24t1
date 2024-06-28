@@ -1,76 +1,76 @@
-import OpenAI from "openai";
-import { generateText } from "./generate-text.ts";
-import { isImageFileTypeType } from "@backend/types/imageFileTypes.ts";
-import axios from "axios";
-import FormData from "form-data";
-import fs from "node:fs";
+import OpenAI from 'openai';
+import { generateText } from './generate-text.js';
+import { isImageFileTypeType } from '@backend/types/imageFileTypes.js';
+import axios from 'axios';
+import FormData from 'form-data';
+import fs from 'node:fs';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Preset list of items to generate
 const cosmeticList = [
-  "Wooden Bench",
-  "Flower Bush",
-  "Stone Fountain",
-  "Park Swing",
-  "Wooden Arbor",
-  "Garden Gazebo",
-  "Apple Tree",
-  "Street Vendor Stall",
-  "Picnic Table",
-  "Bird Feeder",
-  "Wishing Well",
-  "Herbal bed",
-  "Decorative floor Lantern",
-  "Village Square Statue",
-  "Public Library Booth",
-  "Floral Archway",
-  "Potted Plant",
-  "Floral bush with butterflies",
-  "Water Mill",
+  'Wooden Bench',
+  'Flower Bush',
+  'Stone Fountain',
+  'Park Swing',
+  'Wooden Arbor',
+  'Garden Gazebo',
+  'Apple Tree',
+  'Street Vendor Stall',
+  'Picnic Table',
+  'Bird Feeder',
+  'Wishing Well',
+  'Herbal bed',
+  'Decorative floor Lantern',
+  'Village Square Statue',
+  'Public Library Booth',
+  'Floral Archway',
+  'Potted Plant',
+  'Floral bush with butterflies',
+  'Water Mill',
 ];
 const resourceList = [
-  "Lumber mill",
-  "Iron mine",
-  "Wheat farm",
-  "Fishery",
-  "Chicken farm",
-  "Brewery",
-  "Bakery",
-  "Cotton field",
-  "Sugarcane mill",
-  "Coal mine",
-  "Cow farm",
-  "Pig farm",
-  "Oil well",
-  "Oil refinery",
-  "Steel mill",
-  "Smelter",
-  "Glassworks",
-  "Textile mill",
-  "Soybean farm",
-  "Cocoa farm",
+  'Lumber mill',
+  'Iron mine',
+  'Wheat farm',
+  'Fishery',
+  'Chicken farm',
+  'Brewery',
+  'Bakery',
+  'Cotton field',
+  'Sugarcane mill',
+  'Coal mine',
+  'Cow farm',
+  'Pig farm',
+  'Oil well',
+  'Oil refinery',
+  'Steel mill',
+  'Smelter',
+  'Glassworks',
+  'Textile mill',
+  'Soybean farm',
+  'Cocoa farm',
 ];
 const productionList = [
-  "wood log",
-  "iron ore",
-  "wheat",
-  "salmon",
-  "chicken breast fillet",
-  "wood mug of beer",
-  "bread",
-  "round cotton wool",
-  "sugarcane pieces",
-  "coal ore",
-  "t-bone fillet",
-  "bacon slice",
-  "drum of oil",
-  "steel ore",
-  "glass pane",
-  "spool of thread",
-  "soybean bean",
-  "cocoa powder"
-]
+  'wood log',
+  'iron ore',
+  'wheat',
+  'salmon',
+  'chicken breast fillet',
+  'wood mug of beer',
+  'bread',
+  'round cotton wool',
+  'sugarcane pieces',
+  'coal ore',
+  't-bone fillet',
+  'bacon slice',
+  'drum of oil',
+  'steel ore',
+  'glass pane',
+  'spool of thread',
+  'soybean bean',
+  'cocoa powder',
+];
 
 // Picks a random street cosmetic
 export async function generateCosmeticObjectImage(): Promise<OpenAI.Images.Image | null> {
@@ -81,19 +81,19 @@ export async function generateCosmeticObjectImage(): Promise<OpenAI.Images.Image
   const textGenerationMessages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> =
     [
       {
-        role: "system",
+        role: 'system',
         content:
-          "You are a world-class architectural designer specializing in light-hearted, pleasant, friendly styles and integrating a vast variety of building architectures from all ages throughout history and places around the world. Help the user design some highly aesthetic, visually pleasing descriptions of street furniture architectures.",
+          'You are a world-class architectural designer specializing in light-hearted, pleasant, friendly styles and integrating a vast variety of building architectures from all ages throughout history and places around the world. Help the user design some highly aesthetic, visually pleasing descriptions of street furniture architectures.',
       },
       {
-        role: "user",
+        role: 'user',
         content: `Write a short description of the architectural style of a ${furniture}. The style could be anything from cottagecore, modern, or a combination of these, or anything else you can think of! The more unique and special and niche, the better. Be creative, it is completely up to you what style you choose! Make sure it is a cute cozy friendly design. The ${furniture} must be the primary and only subject. Be brief, coherent, clear, sharp, picturesque. Around 120 words. Start the first sentence with 'The ${furniture} is...'`,
       },
     ];
 
   const responseChoice = await generateText(textGenerationMessages);
   if (responseChoice == null) {
-    console.error("Failed to generate text");
+    console.error('Failed to generate text');
     return null;
   }
   const cosmeticItemDescription = responseChoice.message.content;
@@ -113,19 +113,19 @@ export async function generateProductionObjectImage(): Promise<OpenAI.Images.Ima
   const textGenerationMessages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> =
     [
       {
-        role: "system",
+        role: 'system',
         content:
-          "You are a world-class architectural designer specializing in light-hearted, pleasant, friendly styles and integrating a vast variety of building architectures from all ages throughout history and places around the world. Help the user design some highly aesthetic, visually pleasing descriptions of manufacture buildings architectures.",
+          'You are a world-class architectural designer specializing in light-hearted, pleasant, friendly styles and integrating a vast variety of building architectures from all ages throughout history and places around the world. Help the user design some highly aesthetic, visually pleasing descriptions of manufacture buildings architectures.',
       },
       {
-        role: "user",
+        role: 'user',
         content: `Write a short description of the architectural style of a ${resource}. The style could be anything from cottagecore, modern, or a combination of these, or anything else you can think of that is somewhat realistic! The more unique and special and niche, the better. Be creative, it is completely up to you what style you choose! Make sure it is a cute cozy friendly design. The ${resource} must be the primary and only subject. Be brief, coherent, clear, sharp, picturesque. Around 120 words. Start the first sentence with 'The ${resource} is...'`,
       },
     ];
 
   const responseChoice = await generateText(textGenerationMessages);
   if (responseChoice == null) {
-    console.error("Failed to generate text");
+    console.error('Failed to generate text');
     return null;
   }
   const resourceItemDescription = responseChoice.message.content;
@@ -149,42 +149,43 @@ export async function generateVillagerImage(): Promise<undefined> {
 export async function generateResourceImage() {
   for (const item in productionList) {
     // create image
-    const textGenerationMessages = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Create an image of ${item} for my village game. It is an icon to represent the resource produced by a production plant. Create the image in a simple style, and do not create any other elements, just make the ${item} only. Place the item against a plain white background.`
+    const textGenerationMessages = `I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: Create an image of ${item} for my village game. It is an icon to represent the resource produced by a production plant. Create the image in a simple style, and do not create any other elements, just make the ${item} only. Place the item against a plain white background.`;
 
-    return await generateImage(textGenerationMessages)
+    return await generateImage(textGenerationMessages);
   }
 }
 
 export async function generateStableImage(eye, hair, outfit) {
   try {
     const formData = {
-      image: fs.createReadStream("./stableDudePerfect.png"),
+      image: fs.createReadStream('./stableDudePerfect.png'),
       prompt: `a fun cute human for a village game, character only, 8 bit pixel style, white background. The villager has ${eye} eyes, ${hair} hair and a ${outfit}.`,
       control_strength: 0.6,
-      output_format: "webp",
-      negative_prompt: "background, additional props, shadows, ground, grass, floor"
+      output_format: 'webp',
+      negative_prompt:
+        'background, additional props, shadows, ground, grass, floor',
     };
-    
+
     const response = await axios.postForm(
-        `https://api.stability.ai/v2beta/stable-image/control/sketch`,
-        axios.toFormData(formData, new FormData()),
-        {
-            validateStatus: undefined,
-            responseType: "arraybuffer",
-            headers: {
-                Authorization: `Bearer ${process.env.STABILITYAI_API_KEY}`,
-                Accept: "image/*"
-            },
+      `https://api.stability.ai/v2beta/stable-image/control/sketch`,
+      axios.toFormData(formData, new FormData()),
+      {
+        validateStatus: undefined,
+        responseType: 'arraybuffer',
+        headers: {
+          Authorization: `Bearer ${process.env.STABILITYAI_API_KEY}`,
+          Accept: 'image/*',
         },
+      }
     );
-    
+
     if (response.status === 200) {
-      return response.data
+      return response.data;
     } else {
       console.error(`${response.status}: ${response.data.toString()}`);
     }
   } catch (err) {
-    console.error(err)
+    console.error(err);
   }
 }
 
@@ -192,12 +193,12 @@ export async function generateHouseImage(): Promise<OpenAI.Images.Image | null> 
   const textGenerationMessages: Array<OpenAI.Chat.Completions.ChatCompletionMessageParam> =
     [
       {
-        role: "system",
+        role: 'system',
         content:
-          "You are a world-class architectural designer specializing in light-hearted, pleasant, friendly styles and integrating a vast variety of building architectures from all ages throughout history and places around the world. Help the user design some highly aesthetic, visually pleasing descriptions of house architectures.",
+          'You are a world-class architectural designer specializing in light-hearted, pleasant, friendly styles and integrating a vast variety of building architectures from all ages throughout history and places around the world. Help the user design some highly aesthetic, visually pleasing descriptions of house architectures.',
       },
       {
-        role: "user",
+        role: 'user',
         content:
           "Write a short description of the architectural style of a village lodge. The style could be anything from village house architecture such as ancient Egyptian mudbrick homes, Greek stone cottages, Japanese machiya townhouses, medieval European timber-framed houses, Moroccan riads, Mughal courtyard homes, Georgian English manors, Victorian American terraces, Swiss chalets, Craftsman bungalows, Spanish colonial haciendas, Scandinavian mid-century modern designs, or sleek contemporary eco-lodges, or a combination of these, or anything else you can think of! The more unique and special and niche, the better. Be creative, it is completely up to you what style you choose! Make sure it is a cute cozy friendly design. The house must be the primary subject, any other secondary elements should be tiny. No trees. Be brief, coherent, clear, sharp, picturesque. Around 120 words. Start the first sentence with 'The villager's house is...'",
       },
@@ -205,7 +206,7 @@ export async function generateHouseImage(): Promise<OpenAI.Images.Image | null> 
 
   const responseChoice = await generateText(textGenerationMessages);
   if (responseChoice == null) {
-    console.error("Failed to generate text");
+    console.error('Failed to generate text');
     return null;
   }
   const villageHouseDescription = responseChoice.message.content;
@@ -223,11 +224,11 @@ async function generateImage(
   let generatedImage: OpenAI.Images.Image | null = null;
   try {
     const res = await openai.images.generate({
-      model: "dall-e-3",
+      model: 'dall-e-3',
       prompt: prompt,
       n: 1,
-      size: "1024x1024",
-      quality: "hd",
+      size: '1024x1024',
+      quality: 'hd',
     });
 
     generatedImage = res.data[0];
@@ -242,7 +243,7 @@ async function generateImage(
   }
 
   if (generatedImage == null || generatedImage.url == null) {
-    console.error("Failed to generate image by dalle3");
+    console.error('Failed to generate image by dalle3');
     return null;
   } else {
     console.log(`Revised prompt by dalle3: ${generatedImage.revised_prompt}`);
@@ -259,7 +260,7 @@ async function generateImage(
   const match = generatedImage.url.match(regex);
   if (match) {
     if (match.length < 3) {
-      console.error("Invalid match length");
+      console.error('Invalid match length');
       return null;
     }
     const filename = match[1];
@@ -276,7 +277,7 @@ async function generateImage(
     return { ...generatedImage, fileName: filename, fileType: extension };
   } else {
     console.error(
-      "Could not find file name and/or file extension in the OpenAI image URL"
+      'Could not find file name and/or file extension in the OpenAI image URL'
     );
     return null;
   }

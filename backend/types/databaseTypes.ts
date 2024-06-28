@@ -1,4 +1,4 @@
-import { WorldMap } from "./simulationTypes.ts";
+import { WorldMap } from './simulationTypes.js';
 
 export type User = {
   email: string;

@@ -18,9 +18,9 @@ import {
   Dimensions,
   EnviroObjectType,
   EnviroObject,
-} from "@backend/types/simulationTypes.ts";
+} from '@backend/types/simulationTypes.js';
 
-import fs from "fs";
+import fs from 'fs';
 
 const minProductionEnergy = 10;
 const maxAttribute = 15;
@@ -35,15 +35,15 @@ const normalPriceRange = normalMaxPrice - normalMinPrice;
 const maxPrice = 35;
 const buyQuantity = 3;
 const TICKS_PER_CYCLE = 10;
-import { UpdateFn } from "@backend/src/gameloopFramework.js";
-import { Assets } from "@backend/types/assetTypes.ts";
+import { UpdateFn } from '@backend/src/gameloopFramework.js';
+import { Assets } from '@backend/types/assetTypes.js';
 import {
   ServerMessageType,
   SimStateAssetsServerMsg,
   WebsocketClients,
-} from "@backend/types/wsTypes.ts";
-import { serializeMapToJSON } from "@backend/utils/objectTyping.ts";
-import { CommunicationServer } from "./clientsServer.ts";
+} from '@backend/types/wsTypes.js';
+import { serializeMapToJSON } from '@backend/utils/objectTyping.js';
+import { CommunicationServer } from './clientsServer.js';
 
 export class SimulationServer {
   private state: SimulationState;
@@ -94,7 +94,7 @@ export class SimulationServer {
 
       this.state.attributes.forEach((attribute, attributeId) => {
         let baseValue = Math.ceil(Math.random() * (maxAttribute - 0));
-        if (attributeId == "Speed" || attributeId == "Strength") {
+        if (attributeId == 'Speed' || attributeId == 'Strength') {
           baseValue = Math.ceil(Math.random() * (maxAttribute - 7) + 7);
         }
         const instance = new AttributeValue(baseValue);
@@ -858,7 +858,7 @@ function updateVillagersBuySell(
     !transactionInfo?.resourceId ||
     !villagerSell.resources[transactionInfo.resourceId]
   ) {
-    console.log("Villager not found");
+    console.log('Villager not found');
   }
 
   villagerBuy.resources[transactionInfo.resourceId].total +=
@@ -896,7 +896,7 @@ function getRandomUniqueNumbers(
 ): ResourceId[] {
   if (count > max - min + 1) {
     throw new Error(
-      "Cannot generate more unique numbers than the range allows."
+      'Cannot generate more unique numbers than the range allows.'
     );
   }
 
@@ -1087,7 +1087,7 @@ class Queue<T> {
 }
 
 function serializePos(pos: Pos) {
-  throw new Error("Function not implemented.");
+  throw new Error('Function not implemented.');
 }
 
 function checkObjectNearby(simState: SimulationState, pos: Pos): boolean {

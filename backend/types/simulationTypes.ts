@@ -7,10 +7,10 @@ import {
   JSONObject,
   Serializable,
   JSONValue,
-} from '@backend/utils/objectTyping.ts';
-// import { IWorldMapDocument } from "@backend/types/databaseTypes.ts";
-import createId from '@backend/utils/createId.ts';
-import { AssetId } from './assetTypes.ts';
+} from '@backend/utils/objectTyping.js';
+// import { IWorldMapDocument } from "@backend/types/databaseTypes.js";
+import createId from '@backend/utils/createId.js';
+import { AssetId } from './assetTypes.js';
 
 export interface SimulationStateJSON extends JSONObject {
   _id: string;
