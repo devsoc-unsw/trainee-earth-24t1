@@ -18,28 +18,28 @@
  */
 export function toIsoStringWithTimezone(date: Date): string {
   var tzo = -date.getTimezoneOffset(),
-    dif = tzo >= 0 ? "+" : "-",
-    pad = function (num) {
-      return (num < 10 ? "0" : "") + num;
-    };
+    dif = tzo >= 0 ? '+' : '-';
+  // pad = function (num: number) {
+  //   return (num < 10 ? '0' : '') + num;
+  // };
 
   return (
     date.getFullYear() +
-    "-" +
-    (date.getMonth() + 1).toString().padStart(2, "0") +
-    "-" +
-    date.getDate().toString().padStart(2, "0") +
-    "T" +
-    date.getHours().toString().padStart(2, "0") +
-    ":" +
-    date.getMinutes().toString().padStart(2, "0") +
-    ":" +
-    date.getSeconds().toString().padStart(2, "0") +
-    "." +
-    date.getMilliseconds().toString().padStart(3, "0") +
+    '-' +
+    (date.getMonth() + 1).toString().padStart(2, '0') +
+    '-' +
+    date.getDate().toString().padStart(2, '0') +
+    'T' +
+    date.getHours().toString().padStart(2, '0') +
+    ':' +
+    date.getMinutes().toString().padStart(2, '0') +
+    ':' +
+    date.getSeconds().toString().padStart(2, '0') +
+    '.' +
+    date.getMilliseconds().toString().padStart(3, '0') +
     dif +
     Math.floor(Math.abs(tzo) / 60) +
-    ":" +
+    ':' +
     (Math.abs(tzo) % 60)
   );
 }

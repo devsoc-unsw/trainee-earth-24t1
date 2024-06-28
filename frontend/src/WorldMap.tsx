@@ -1,11 +1,10 @@
-import { useCallback, useRef, useEffect, useState } from "react";
-import Tile, { Coords } from "./components/map/tiles/tile";
+import { useCallback, useRef, useEffect, useState } from 'react';
+import Tile, { Coords } from './components/map/tiles/tile';
 import {
   parsePosStr,
   serializePosStr,
   Dimensions,
   SimulationState,
-  Cells,
   EnviroObjectId,
   PosStr,
   Pos,
@@ -14,13 +13,13 @@ import {
   clearGridCells,
   fillGridCells,
   EnviroObject,
-} from "@backend/types/simulationTypes";
-import { Asset, Assets } from "@backend/types/assetTypes";
-import { deserializeJSONToMap } from "@backend/utils/objectTyping";
-import grassTileImgPath from "@frontend/img/special-assets/grass-tile.png";
-import MapObject from "./components/map/tiles/MapObject";
-import { Coordinates } from "@dnd-kit/core/dist/types";
-import Interface from "./Interface";
+} from '@backend/types/simulationTypes';
+import { Asset, Assets } from '@backend/types/assetTypes';
+import { deserializeJSONToMap } from '@backend/utils/objectTyping';
+import grassTileImgPath from '@frontend/img/special-assets/grass-tile.png';
+import MapObject from './components/map/tiles/MapObject';
+import { Coordinates } from '@dnd-kit/core/dist/types';
+import Interface from './Interface';
 import {
   ServerWebsocketMessage,
   isSimStateAssetsServerMsg,
@@ -30,10 +29,10 @@ import {
   PingMsg,
   isNewVillagerAndHouseServerMsg,
   CreateVillagerServerMsg,
-} from "@backend/types/wsTypes";
-import { IRange, findRange } from "@frontend/src/lib/mapUtils";
-import { Alert } from "./components/ui/alert";
-import ShowAsset from "./components/ui/showAsset";
+} from '@backend/types/wsTypes';
+import { IRange, findRange } from '@frontend/src/lib/mapUtils';
+import { Alert } from './components/ui/alert';
+import ShowAsset from './components/ui/showAsset';
 
 const DEBUG1 = false;
 const DEBUG_WORLDMAP_CELLS = false;
@@ -52,12 +51,12 @@ export interface IKeys {
 type MapObjectId = EnviroObjectId | VillagerId;
 
 const DEFAULT_MAP_SCALE = 1;
-const DEFAULT_DELTA_X = 1;
+// const DEFAULT_DELTA_X = 1;
 // Set temporarily (Should be changed once the requirements for UI/UX are all determined)
 const ZOOM_SENSITIVITY = 0.0002;
 const MAX_SCALE = 2.6;
 const MIN_SCALE = 0.4;
-const HORIZONTAL_SCROLL_SENSITIVITY = 0.05;
+// const HORIZONTAL_SCROLL_SENSITIVITY = 0.05;
 
 // TODO: FIGURE OUT HOW THIS IS DETERMINED
 const MAGIC_NUMBER_TO_ADJUST = 0;
@@ -89,7 +88,7 @@ const ACCEL = 0.016;
 const VEL_DAMPER = 0.94; // 0.9 means 90% of velocity is kept each frame
 
 // === Websocket constants ===
-const WS_URL = "ws://127.0.0.1:3000";
+const WS_URL = 'ws://127.0.0.1:3000';
 const maxReconnectAttempts = -1; // -1 for infiinty
 
 const WorldMap = () => {
@@ -311,7 +310,7 @@ const WorldMap = () => {
       }
 
       // Remove map objects that are not in the new simulation state
-      for (let [mapObjectId, mapObject] of mapObjects.current) {
+      for (let [mapObjectId] of mapObjects.current) {
         if (
           !simulationState.villagers.has(mapObjectId) &&
           !simulationState.enviroObjects.has(mapObjectId)
@@ -355,7 +354,7 @@ const WorldMap = () => {
   const startTimestamp = useRef<DOMHighResTimeStamp>(0);
   const prevTimestamp = useRef<DOMHighResTimeStamp>(0);
 
-  console.log("Render WorldMap");
+  console.log('Render WorldMap');
 
   const renderTiles = useCallback((ctx: CanvasRenderingContext2D) => {
     const canvas = canvasRef.current;
@@ -375,7 +374,7 @@ const WorldMap = () => {
         }
       }
     } else {
-      console.error("Could render grass field: grass tile object is null");
+      console.error('Could render grass field: grass tile object is null');
     }
 
     // === Draw square grid ===
@@ -398,8 +397,8 @@ const WorldMap = () => {
           ctx,
           coordsRender,
           { dx: Tile.TILE_WIDTH, dy: Tile.TILE_HEIGHT },
-          "rgba(255,255,255,0.4)",
-          "rgba(25,34,44,0.08)"
+          'rgba(255,255,255,0.4)',
+          'rgba(25,34,44,0.08)'
         );
         if (DEBUG_MAP_VIS) {
           //     if (tileX % 2 === 0 && tileY % 2 === 0)
@@ -417,6 +416,7 @@ const WorldMap = () => {
     }
 
     // === Draw outline of villagers plot of land
+    // @ts-ignore
     for (let [villagerId, villager] of simStateRef.current?.villagers ?? []) {
       if (villager.basePos) {
         const plotOfLandDimensions: Dimensions = { dx: 18, dy: 18 };
@@ -435,8 +435,8 @@ const WorldMap = () => {
             dx: plotOfLandDimensions.dx * Tile.TILE_WIDTH,
             dy: plotOfLandDimensions.dy * Tile.TILE_HEIGHT,
           },
-          "rgba(212, 250, 240, 0.7)",
-          "rgba(212, 250, 240,0.2)",
+          'rgba(212, 250, 240, 0.7)',
+          'rgba(212, 250, 240,0.2)',
           3,
           []
         );
@@ -476,8 +476,8 @@ const WorldMap = () => {
             dx: Tile.TILE_WIDTH,
             dy: Tile.TILE_HEIGHT,
           },
-          "rgba(247, 203, 171, 0.5)",
-          "rgba(247, 203, 171,0.4)",
+          'rgba(247, 203, 171, 0.5)',
+          'rgba(247, 203, 171,0.4)',
           3,
           []
         );
@@ -509,8 +509,8 @@ const WorldMap = () => {
             ctx,
             coord,
             { dx: Tile.TILE_WIDTH, dy: Tile.TILE_HEIGHT },
-            "rgba(247, 203, 171, 0.6)",
-            "rgba(247, 203, 171,0.25)",
+            'rgba(247, 203, 171, 0.6)',
+            'rgba(247, 203, 171,0.25)',
             2,
             []
           );
@@ -558,15 +558,15 @@ const WorldMap = () => {
           dx: mapObject.dimensions.dx * Tile.TILE_WIDTH,
           dy: mapObject.dimensions.dy * Tile.TILE_HEIGHT,
         },
-        "rgba(247, 217, 22, 0.7)",
-        "rgba(0,0,0,0)",
+        'rgba(247, 217, 22, 0.7)',
+        'rgba(0,0,0,0)',
         5,
         []
       );
     }
 
     // === Draw mouse hover tile ===
-    drawPoint(ctx, originRaw, "rgba(23, 23, 23,0.5)", 5);
+    drawPoint(ctx, originRaw, 'rgba(23, 23, 23,0.5)', 5);
 
     const mouseTransformed = getTransformedPoint(
       transformMat.current,
@@ -574,7 +574,7 @@ const WorldMap = () => {
     );
 
     // drawPoint(ctx, mouseRaw.current, "orange");
-    drawPoint(ctx, mouseTransformed, "lavender", 5);
+    drawPoint(ctx, mouseTransformed, 'lavender', 5);
 
     const hoverTilePos = inputCoordsToTileMapPos(originRaw, mouseTransformed);
 
@@ -596,7 +596,7 @@ const WorldMap = () => {
       : { dx: window.innerWidth, dy: window.innerHeight };
 
     // Can/Should change the color once UI design is determined
-    ctx.fillStyle = "#A7C7E7";
+    ctx.fillStyle = '#A7C7E7';
 
     // If render background using canvas width and height, must
     // reset canvase transformation matrix to normal before rendering.
@@ -633,6 +633,7 @@ const WorldMap = () => {
   );
 
   const onScrollY = useCallback(
+    // @ts-ignore
     (ctx: CanvasRenderingContext2D, e: WheelEvent) => {
       // const currentScale = ctx.getTransform().a;
       const currentScale = transformMat.current.a;
@@ -758,6 +759,7 @@ const WorldMap = () => {
   );
 
   const onMouseDown = useCallback(
+    // @ts-ignore
     (ctx: CanvasRenderingContext2D, e: MouseEvent) => {
       const originRaw = getOriginRaw(getCanvasSize(ctx.canvas));
       const mouseTransformed = getTransformedPoint(
@@ -792,6 +794,7 @@ const WorldMap = () => {
   );
 
   const onMouseUp = useCallback(
+    // @ts-ignore
     (ctx: CanvasRenderingContext2D, e: MouseEvent) => {
       mouseLeftIsDown.current = false;
     },
@@ -799,6 +802,7 @@ const WorldMap = () => {
   );
 
   const onClick = useCallback(
+    // @ts-ignore
     (ctx: CanvasRenderingContext2D, e: MouseEvent) => {
       const originRaw = getOriginRaw(getCanvasSize(ctx.canvas));
       const mouseCoordsTransformed = getTransformedPoint(
@@ -807,7 +811,7 @@ const WorldMap = () => {
       );
 
       // drawPoint(ctx, mouseRaw.current, "violet");
-      drawPoint(ctx, mouseCoordsTransformed, "beige");
+      drawPoint(ctx, mouseCoordsTransformed, 'beige');
 
       const clickedTileMapPos = inputCoordsToTileMapPos(
         originRaw,
@@ -896,10 +900,10 @@ const WorldMap = () => {
             );
           }
         } else {
-          const clickedTileRenderCoords = posToIsoCoords(
-            originRaw,
-            clickedTileMapPos
-          );
+          // const clickedTileRenderCoords = posToIsoCoords(
+          //   originRaw,
+          //   clickedTileMapPos
+          // );
           // do smthn with the clicked tile
 
           // Tile exists
@@ -981,6 +985,7 @@ const WorldMap = () => {
 
   const update = useCallback(
     (
+      // @ts-ignore
       ctx: CanvasRenderingContext2D,
       elapsed: DOMHighResTimeStamp,
       delta: DOMHighResTimeStamp
@@ -1082,14 +1087,14 @@ const WorldMap = () => {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
 
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext('2d');
     if (!context) return;
 
     // Save current transformation matrix (normal). Will be restored after
     // rendering tiles each draw cycle to draw background properly.
     context.save();
 
-    console.log("Canvas useEffect");
+    console.log('Canvas useEffect');
 
     const handleWheel = (e: WheelEvent) => onWheel(context, e);
     const handleMouseMouve = (e: MouseEvent) => onMouseMove(context, e);
@@ -1097,11 +1102,11 @@ const WorldMap = () => {
     const handleMouseDown = (e: MouseEvent) => onMouseDown(context, e);
     const handleMouseUp = (e: MouseEvent) => onMouseUp(context, e);
 
-    canvas.addEventListener("wheel", handleWheel);
-    canvas.addEventListener("click", handleClick);
-    document.addEventListener("mousemove", handleMouseMouve);
-    canvas.addEventListener("mousedown", handleMouseDown);
-    document.addEventListener("mouseup", handleMouseUp);
+    canvas.addEventListener('wheel', handleWheel);
+    canvas.addEventListener('click', handleClick);
+    document.addEventListener('mousemove', handleMouseMouve);
+    canvas.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mouseup', handleMouseUp);
 
     // TODO call these handles on receive ws event from simserver
     // handleReceiveAssetsServerMsg(
@@ -1139,11 +1144,11 @@ const WorldMap = () => {
     }
 
     return () => {
-      canvas.removeEventListener("wheel", handleWheel);
-      canvas.removeEventListener("click", handleClick);
-      document.removeEventListener("mousemove", handleMouseMouve);
-      canvas.removeEventListener("mousedown", handleMouseDown);
-      document.removeEventListener("mouseup", handleMouseUp);
+      canvas.removeEventListener('wheel', handleWheel);
+      canvas.removeEventListener('click', handleClick);
+      document.removeEventListener('mousemove', handleMouseMouve);
+      canvas.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mouseup', handleMouseUp);
 
       // TODO: Fix flickering when calling cancelAnimationFrame
       // This might help: https://stackoverflow.com/questions/40265707/flickering-images-in-canvas-animation
@@ -1158,66 +1163,66 @@ const WorldMap = () => {
         canvasRef.current.height = window.innerHeight;
       }
       if (canvasRef.current !== null) {
-        const canvasSize: Dimensions = {
-          dx: canvasRef.current.width,
-          dy: canvasRef.current.height,
-        };
-        const originRaw = getOriginRaw(canvasSize);
+        // const canvasSize: Dimensions = {
+        //   dx: canvasRef.current.width,
+        //   dy: canvasRef.current.height,
+        // };
+        // const originRaw = getOriginRaw(canvasSize);
         // Do smthn with updated originRaw
       }
     };
     handleResize();
-    window.addEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
     console.log(`Attached resize event listener to window`);
 
-    return () => window.removeEventListener("resize", handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === "ArrowLeft") {
+      if (e.code === 'ArrowLeft') {
         console.log(`left down`);
 
         keyRef.current.right = false;
         keyRef.current.left = true;
         e.preventDefault();
-      } else if (e.code === "ArrowUp") {
+      } else if (e.code === 'ArrowUp') {
         keyRef.current.down = false;
         keyRef.current.up = true;
         e.preventDefault();
-      } else if (e.code === "ArrowRight") {
+      } else if (e.code === 'ArrowRight') {
         keyRef.current.left = false;
         keyRef.current.right = true;
         e.preventDefault();
-      } else if (e.code === "ArrowDown") {
+      } else if (e.code === 'ArrowDown') {
         keyRef.current.up = false;
         keyRef.current.down = true;
         e.preventDefault();
       }
     };
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.code === "ArrowLeft") {
+      if (e.code === 'ArrowLeft') {
         console.log(`left up`);
 
         keyRef.current.left = false;
         e.preventDefault();
-      } else if (e.code === "ArrowUp") {
+      } else if (e.code === 'ArrowUp') {
         keyRef.current.up = false;
         e.preventDefault();
-      } else if (e.code === "ArrowRight") {
+      } else if (e.code === 'ArrowRight') {
         keyRef.current.right = false;
         e.preventDefault();
-      } else if (e.code === "ArrowDown") {
+      } else if (e.code === 'ArrowDown') {
         keyRef.current.down = false;
         e.preventDefault();
       }
     };
-    document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("keyup", handleKeyUp);
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("keyup", handleKeyUp);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
     };
     console.log(`Attached keydown and keyup event listeners to document`);
   }, []);
@@ -1229,7 +1234,7 @@ const WorldMap = () => {
 
     // Event listener for when the connection is opened
     socket.onopen = () => {
-      console.log("WebSocket connection established");
+      console.log('WebSocket connection established');
       const pingClientMsg: PingMsg = { type: ClientMessageType.PING };
       socket.send(JSON.stringify(pingClientMsg));
       reconnectAttemptsRef.current = 0; // Reset reconnect attempts on successful connection
@@ -1242,13 +1247,13 @@ const WorldMap = () => {
 
     // Event listener for when a message is received
     socket.onmessage = (event) => {
-      console.log("Received WS message");
+      console.log('Received WS message');
 
       let message = {};
       try {
         message = JSON.parse(event.data);
       } catch (error) {
-        console.error("Error parsing message:", error);
+        console.error('Error parsing message:', error);
         return;
       }
 
@@ -1260,9 +1265,9 @@ const WorldMap = () => {
       }
 
       if (isPongMsg(message)) {
-        console.log("Server said PONG");
+        console.log('Server said PONG');
       } else if (isSimStateAssetsServerMsg(message)) {
-        console.log("Received simstate and assets from server");
+        console.log('Received simstate and assets from server');
 
         // NOte: must handle assets first before simstate, because simstate
         // depends on assets
@@ -1273,14 +1278,14 @@ const WorldMap = () => {
           SimulationState.deserialize(message.simulationState)
         );
       } else if (isNewVillagerAndHouseServerMsg(message)) {
-        console.log("Received new villager and house from server");
+        console.log('Received new villager and house from server');
         console.log(message);
         setDisplayNewAsset(
           <ShowAsset
             name={message.villagerAsset.name}
-            text={"Meet your new villager!"}
+            text={'Meet your new villager!'}
             styles="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-            img={message.villagerAsset.remoteImages.at(-1)?.url ?? ""}
+            img={message.villagerAsset.remoteImages.at(-1)?.url ?? ''}
             dismiss={() => setDisplayNewAsset(<></>)}
           />
         );
@@ -1292,8 +1297,8 @@ const WorldMap = () => {
     };
 
     // Event listener for when the connection is closed
-    socket.onclose = (event) => {
-      console.log("WebSocket connection closed");
+    socket.onclose = () => {
+      console.log('WebSocket connection closed');
       simStateRef.current = new SimulationState();
       assetsRef.current = new Map();
       mapObjects.current.clear();
@@ -1318,25 +1323,25 @@ const WorldMap = () => {
           }
         }, reconnectDelay);
       } else {
-        console.log("Max reconnect attempts reached");
+        console.log('Max reconnect attempts reached');
       }
     };
 
     // Event listener for when an error occurs
     socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
+      console.error('WebSocket error:', error);
     };
   }, []);
 
   const createVillager = useCallback(
     (eyeColor: string, hairColor: string, outfit: string) => {
       // check if all options are picked
-      if (eyeColor === "" || hairColor === "" || outfit === "") {
+      if (eyeColor === '' || hairColor === '' || outfit === '') {
         // be angry
         Alert(
-          "Error",
-          "Could not create villager",
-          "Please select all options"
+          'Error',
+          'Could not create villager',
+          'Please select all options'
         );
         return;
       }
@@ -1349,9 +1354,9 @@ const WorldMap = () => {
       socketRef.current?.send(JSON.stringify(createVillagerClientMsg));
       console.log(eyeColor, hairColor, outfit);
       Alert(
-        "Info",
-        "Creating new villager...",
-        "Please wait while we create your villager. This may take about 15 seconds."
+        'Info',
+        'Creating new villager...',
+        'Please wait while we create your villager. This may take about 15 seconds.'
       );
     },
     []
@@ -1370,8 +1375,8 @@ const WorldMap = () => {
       const resource = simStateRef.current?.resources.get(resourceKind);
       const resourceName = resource?.name;
       if (resourceKind && resource) {
-        const asset = assetsRef.current?.get(resource.asset ?? "");
-        const img = asset?.remoteImages.at(-1)?.url ?? "";
+        const asset = assetsRef.current?.get(resource.asset ?? '');
+        const img = asset?.remoteImages.at(-1)?.url ?? '';
         setDisplayNewAsset(
           <ShowAsset
             name={`${amount} ${resourceName}`}
@@ -1402,10 +1407,10 @@ const WorldMap = () => {
       {displayNewAsset}
       <div
         style={{
-          width: "100vw",
-          height: "100vh",
-          overflow: "hidden",
-          position: "absolute",
+          width: '100vw',
+          height: '100vh',
+          overflow: 'hidden',
+          position: 'absolute',
           left: 0,
           top: 0,
           zIndex: -1,
@@ -1492,42 +1497,42 @@ export const drawPoint = (
   ctx.restore();
 };
 
-const checkTransformMatChanged = (
-  prevTransformMat: DOMMatrix | null,
-  transformMat: DOMMatrix
-) => {
-  if (prevTransformMat === null) return true;
-  return (
-    prevTransformMat.a !== transformMat.a ||
-    prevTransformMat.b !== transformMat.b ||
-    prevTransformMat.c !== transformMat.c ||
-    prevTransformMat.d !== transformMat.d ||
-    prevTransformMat.e !== transformMat.e ||
-    prevTransformMat.f !== transformMat.f
-  );
-};
+// const checkTransformMatChanged = (
+//   prevTransformMat: DOMMatrix | null,
+//   transformMat: DOMMatrix
+// ) => {
+//   if (prevTransformMat === null) return true;
+//   return (
+//     prevTransformMat.a !== transformMat.a ||
+//     prevTransformMat.b !== transformMat.b ||
+//     prevTransformMat.c !== transformMat.c ||
+//     prevTransformMat.d !== transformMat.d ||
+//     prevTransformMat.e !== transformMat.e ||
+//     prevTransformMat.f !== transformMat.f
+//   );
+// };
 
-const drawLine = (
-  ctx: CanvasRenderingContext2D,
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  color = "gray",
-  lineWidth = 1,
-  lineDash = []
-) => {
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = lineWidth;
-  ctx.setLineDash(lineDash);
-  ctx.stroke();
-  ctx.setLineDash([]); // Reset line dash to solid line
-  ctx.restore();
-};
+// const drawLine = (
+//   ctx: CanvasRenderingContext2D,
+//   x1: number,
+//   y1: number,
+//   x2: number,
+//   y2: number,
+//   color = 'gray',
+//   lineWidth = 1,
+//   lineDash = []
+// ) => {
+//   ctx.save();
+//   ctx.beginPath();
+//   ctx.moveTo(x1, y1);
+//   ctx.lineTo(x2, y2);
+//   ctx.strokeStyle = color;
+//   ctx.lineWidth = lineWidth;
+//   ctx.setLineDash(lineDash);
+//   ctx.stroke();
+//   ctx.setLineDash([]); // Reset line dash to solid line
+//   ctx.restore();
+// };
 
 /**
  * Draw tile using pos as middle-top corner of projected bounding box,
@@ -1537,8 +1542,8 @@ const drawTileOutline = (
   ctx: CanvasRenderingContext2D,
   coords: Coords,
   dim: Dimensions,
-  lineColor = "rgba(255,255,255,0.4)",
-  fillStyle = "rgba(25,34, 44,0.2)",
+  lineColor = 'rgba(255,255,255,0.4)',
+  fillStyle = 'rgba(25,34, 44,0.2)',
   lineWidth = 1,
   lineDash = [5, 2]
 ) => {
@@ -1567,8 +1572,8 @@ const renderTileHover = (
     ctx,
     { x: isoX, y: isoY },
     { dx: Tile.TILE_WIDTH, dy: Tile.TILE_HEIGHT },
-    "rgba(11, 94, 184, 0.8)",
-    "rgba(22, 219, 245, 0.4)",
+    'rgba(11, 94, 184, 0.8)',
+    'rgba(22, 219, 245, 0.4)',
     2,
     []
   );
@@ -1578,7 +1583,7 @@ export const drawSquare = (
   ctx: CanvasRenderingContext2D,
   pos: Coords,
   dim: Dimensions,
-  lineColor = "rgba(255,255,255,0.4)",
+  lineColor = 'rgba(255,255,255,0.4)',
   lineWidth = 1
 ) => {
   ctx.save();
@@ -1688,39 +1693,39 @@ const posToObjectsDelete = (
   }
 };
 
-const pointInBounds = (point: Pos, objPos: Pos, objDim: Dimensions) => {
-  return (
-    point.x >= objPos.x - Math.floor(objDim.dx / 2) &&
-    point.x < objPos.x + Math.ceil(objDim.dx / 2) &&
-    point.y >= objPos.y - Math.floor(objDim.dy / 2) &&
-    point.y < objPos.y + Math.ceil(objDim.dy / 2)
-  );
-};
+// const pointInBounds = (point: Pos, objPos: Pos, objDim: Dimensions) => {
+//   return (
+//     point.x >= objPos.x - Math.floor(objDim.dx / 2) &&
+//     point.x < objPos.x + Math.ceil(objDim.dx / 2) &&
+//     point.y >= objPos.y - Math.floor(objDim.dy / 2) &&
+//     point.y < objPos.y + Math.ceil(objDim.dy / 2)
+//   );
+// };
 
-const DEDUB_COLLISIONS = false;
+// const DEDUB_COLLISIONS = false;
 /**
  * @deprecated
  * @param mousePos Tile map position of point to check colliding e.g. (3, 4)
  * @param mapObjects
  */
-const getCollidingObjects = (
-  pos: Pos,
-  mapObjects: Map<MapObjectId, MapObject>
-) => {
-  if (DEDUB_COLLISIONS) {
-    console.log(`Find colliding objects with pos ${pos.x}, ${pos.y}`);
-  }
-  const collidingObjects = Array.from(mapObjects.entries())
-    .filter(
-      ([posStr, mapObject]) =>
-        mapObject.objectId !== null &&
-        pointInBounds(pos, mapObject.pos, mapObject.dimensions)
-    )
-    .map(([posStr, mapObject]) => mapObject.objectId)
-    .filter((id): id is string => id !== null);
+// const getCollidingObjects = (
+//   pos: Pos,
+//   mapObjects: Map<MapObjectId, MapObject>
+// ) => {
+//   if (DEDUB_COLLISIONS) {
+//     console.log(`Find colliding objects with pos ${pos.x}, ${pos.y}`);
+//   }
+//   const collidingObjects = Array.from(mapObjects.entries())
+//     .filter(
+//       ([posStr, mapObject]) =>
+//         mapObject.objectId !== null &&
+//         pointInBounds(pos, mapObject.pos, mapObject.dimensions)
+//     )
+//     .map(([posStr, mapObject]) => mapObject.objectId)
+//     .filter((id): id is string => id !== null);
 
-  if (DEDUB_COLLISIONS) {
-    console.log("Colliding objects found:", collidingObjects);
-  }
-  return new Set(collidingObjects);
-};
+//   if (DEDUB_COLLISIONS) {
+//     console.log('Colliding objects found:', collidingObjects);
+//   }
+//   return new Set(collidingObjects);
+// };

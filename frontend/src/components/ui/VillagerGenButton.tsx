@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@frontend/@/components/ui/dialog";
+} from '@frontend/@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -15,10 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
   SelectGroup,
-} from "@frontend/@/components/ui/select";
-import { Button } from "./button";
-import villagerCreationImg from "@frontend/img/villager-creation.png";
-import { IconReload } from "@tabler/icons-react";
+} from '@frontend/@/components/ui/select';
+import { Button } from './button';
+import villagerCreationImg from '@frontend/img/villager-creation.png';
+import { IconReload } from '@tabler/icons-react';
 
 export default function VillagerGenButton({
   onRequestCreateVillager,
@@ -29,11 +29,11 @@ export default function VillagerGenButton({
     outFit: string
   ) => void;
 }) {
-  const [eyeColor, setEyeColour] = useState("");
-  const [hairColor, setHairColour] = useState("");
-  const [outfit, setOutfit] = useState("");
+  const [eyeColor, setEyeColour] = useState('');
+  const [hairColor, setHairColour] = useState('');
+  const [outfit, setOutfit] = useState('');
 
-  const [isOpen, setIsOpen] = useState(true);
+  // const [isOpen, setIsOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   return (
@@ -159,10 +159,10 @@ export default function VillagerGenButton({
                   {isLoading ? (
                     <>
                       <IconReload className="mr-2 h-4 w-4 animate-spin" />
-                      {" Creating"}
+                      {' Creating'}
                     </>
                   ) : (
-                    "Create"
+                    'Create'
                   )}
                 </Button>
               </DialogFooter>

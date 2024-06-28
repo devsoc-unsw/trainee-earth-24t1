@@ -1,5 +1,6 @@
 # Logs
 .env
+.env.production
 logs
 *.log
 npm-debug.log*
@@ -37,3 +38,4 @@ typings/
 
 backend/output_test1.json
 backend/output_test2.json
+

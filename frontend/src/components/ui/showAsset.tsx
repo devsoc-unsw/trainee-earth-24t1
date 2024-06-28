@@ -1,5 +1,4 @@
-import { Button } from "./button";
-import "./showAsset.css";
+import './showAsset.css';
 
 interface ShowAssetProps {
   name: string;

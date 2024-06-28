@@ -59,20 +59,20 @@ export function transformObjectValues<T extends Record<string, any>, U>(
 /**
  * Alternative method to achieve the same result as transformObjectValues.
  */
-function transformObjectValuesCustom<T extends JSONCompatible<T>, U>(
-  obj: T,
-  transformFn: (value: T[keyof T]) => U
-): { [key in keyof T]: U } {
-  const result: { [key in keyof T]: U } = Object.create(null);
+// function transformObjectValuesCustom<T extends JSONCompatible<T>, U>(
+//   obj: T,
+//   transformFn: (value: T[keyof T]) => U
+// ): { [key in keyof T]: U } {
+//   const result: { [key in keyof T]: U } = Object.create(null);
 
-  for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      result[key] = transformFn(obj[key]);
-    }
-  }
+//   for (const key in obj) {
+//     if (obj.hasOwnProperty(key)) {
+//       result[key] = transformFn(obj[key]);
+//     }
+//   }
 
-  return result;
-}
+//   return result;
+// }
 
 /**
  * Used to turn a map into an object. The key type must be a string and the
