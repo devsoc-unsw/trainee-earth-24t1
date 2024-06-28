@@ -25,6 +25,6 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env ./src/index.ts",
     "build": "tsc",
-    "start": "node dist/src/index.js"
+    "start": "node --env-file=.env dist/src/index.js"
   }
 }

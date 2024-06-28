@@ -26,8 +26,8 @@ import {
   generateResourceItemAsset,
   // generateVillagerAssetV2
 } from '../asset-gen/generate-asset.js';
-import cosmeticPresetJSON from '../sample-data/gen-assets/cosmetic_assets/presets.json';
-import resourcePresetJSON from '../sample-data/gen-assets/resource_assets/presets.json';
+import cosmeticPresetJSON from '../sample-data/gen-assets/cosmetic_assets/presets.json' with { type: 'json' };
+import resourcePresetJSON from '../sample-data/gen-assets/resource_assets/presets.json' with { type: 'json' };
 import axios, { AxiosResponse } from 'axios';
 import { cropImage } from '../asset-gen/edit-image.js';
 import fs from 'fs';
