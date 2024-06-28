@@ -6,10 +6,13 @@ import {
   serializePosStr,
 } from '../types/simulationTypes.js';
 import createId from '../utils/createId.js';
+import { exit } from 'process';
+import express from 'express';
 
 const mongoURI: string = process.env.MONGODB_CONNECTION_STR;
+let client;
 
-const client = new MongoClient(mongoURI, {
+client = new MongoClient(mongoURI, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
@@ -20,6 +23,7 @@ const client = new MongoClient(mongoURI, {
   // if the _id field is not specified in the document.
   pkFactory: { createPk: () => createId() },
 });
+
 let db: Db;
 
 export async function run() {

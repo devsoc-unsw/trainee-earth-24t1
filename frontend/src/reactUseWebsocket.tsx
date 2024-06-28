@@ -1,8 +1,8 @@
-import { ClientMessageType } from "@backend/types/wsTypes";
-import { useEffect } from "react";
-import useWebSocket, { ReadyState } from "react-use-websocket";
+import { ClientMessageType } from '@backend/types/wsTypes';
+import { useEffect } from 'react';
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 
-const WS_URL = "ws://127.0.0.1:3000";
+const WS_URL = 'ws://backend.groveify.com';
 
 /**
  * @deprecated We are using plain WebSocket browser API. See WorldMap.tsx
@@ -14,10 +14,10 @@ const WSBox = () => {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
       onOpen: () => {
-        console.log("WebSocket connection established.");
+        console.log('WebSocket connection established.');
       },
       onClose: () => {
-        console.log("WebSocket connection closed.");
+        console.log('WebSocket connection closed.');
       },
     });
 
@@ -29,8 +29,8 @@ const WSBox = () => {
 
   useEffect(() => {
     if (readyState === ReadyState.OPEN) {
-      console.log("WebSocket connection is open. Send PING message.");
-      sendJsonMessage({ type: "PING" });
+      console.log('WebSocket connection is open. Send PING message.');
+      sendJsonMessage({ type: 'PING' });
     }
   }, [sendJsonMessage, readyState]);
 
