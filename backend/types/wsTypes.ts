@@ -1,12 +1,12 @@
-import { CustomError } from '@backend/utils/customError.ts';
+import { CustomError } from '../utils/customError.js';
 import { WebSocket } from 'ws';
-import { AssetJSON, AssetsJSON } from './assetTypes.ts';
+import { AssetJSON, AssetsJSON } from './assetTypes.js';
 import {
   EnviroObjectId,
   Pos,
   SimulationStateJSON,
   VillagerId,
-} from './simulationTypes.ts';
+} from './simulationTypes.js';
 
 /**
  * Maps clientIds (created by server) to WebSocket objects which represent a
@@ -219,7 +219,7 @@ export class InvalidWSRequestTypeError extends WSTypeError {
 }
 export class InvalidWSRequestSubTypeError extends WSTypeError {
   public constructor(
-    message: string = `Invalid WebSocketRequest type value. Does not have a valid ClientRequestType. Either add new ClientRequestType or get client to use an existing one. See ClientRequestType in rc/types/wsTypes.ts.`,
+    message: string = `Invalid WebSocketRequest type value. Does not have a valid ClientRequestType. Either add new ClientRequestType or get client to use an existing one. See ClientRequestType in rc/types/wsTypes.js.`,
     errMsgForClient: string = `Invalid WebSocketRequest type value. Please use a valid type such as "PING" or "PLAYER_VISIT". Don't forget - json only supports double quotes.`
   ) {
     super(message, errMsgForClient);
@@ -229,7 +229,7 @@ export class InvalidWSRequestSubTypeError extends WSTypeError {
 export class BadlyFormattedWSTypeError extends WSTypeError {
   public constructor(
     message?: string,
-    errMsgForClient: string = `Badly formatted WebSocketRequest subtype object. Please provide an object that aligns with one of the WebSocketRequest subtypes in src/types/wsTypes.ts`
+    errMsgForClient: string = `Badly formatted WebSocketRequest subtype object. Please provide an object that aligns with one of the WebSocketRequest subtypes in src/types/wsTypes.js`
   ) {
     if (!message) {
       message = 'No message provided in request.';

@@ -1,6 +1,6 @@
-import { ImageFileTypeType } from "@backend/types/imageFileTypes.ts";
+import { ImageFileTypeType } from '../../types/imageFileTypes.ts';
 
-declare module "openai" {
+declare module 'openai' {
   namespace OpenAI {
     namespace Images {
       interface Image {

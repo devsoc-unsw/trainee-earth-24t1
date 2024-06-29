@@ -1,23 +1,23 @@
-import express from "express";
+import express from 'express';
 import {
   Pos,
   Cell,
   SimulationState,
   WorldMap,
   serializePosStr,
-} from "../types/simulationTypes.ts";
-import { run as runDB } from "@backend/src/db.ts";
-import { WebSocketServer, WebSocket } from "ws";
-import { GameLoop } from "./gameloopFramework.js";
+} from '../types/simulationTypes.js';
+import { run as runDB } from './db.js';
+import { WebSocketServer, WebSocket } from 'ws';
+import { GameLoop } from './gameloopFramework.js';
 import {
   assets1 as ASSETS,
   simulationState1 as SIMULATION_STATE,
-} from "@backend/sample-data/simulation_state/simulation_state_1.ts";
-import { SimulationServer } from "./simulationServer.js";
+} from '../sample-data/simulation_state/simulation_state_1.js';
+import { SimulationServer } from './simulationServer.js';
 import {
   deserializeJSONToMap,
   serializeMapToJSON,
-} from "../utils/objectTyping.ts";
+} from '../utils/objectTyping.js';
 import {
   generateHouseAsset,
   generateVillagerAsset,
@@ -25,21 +25,21 @@ import {
   generateCosmeticObjectAsset,
   generateResourceItemAsset,
   // generateVillagerAssetV2
-} from "@backend/asset-gen/generate-asset.ts";
-import cosmeticPresetJSON from "@backend/sample-data/gen-assets/cosmetic_assets/presets.json";
-import resourcePresetJSON from "@backend/sample-data/gen-assets/resource_assets/presets.json";
-import axios, { AxiosResponse } from "axios";
-import { cropImage } from "@backend/asset-gen/edit-image.ts";
-import fs from "fs";
-import { storeImageIntoBunny } from "@backend/asset-gen/store-image.ts";
-import { Asset } from "@backend/types/assetTypes.ts";
+} from '../asset-gen/generate-asset.js';
+import cosmeticPresetJSON from '../sample-data/gen-assets/cosmetic_assets/presets.json' with { type: 'json' };
+import resourcePresetJSON from '../sample-data/gen-assets/resource_assets/presets.json' with { type: 'json' };
+import axios, { AxiosResponse } from 'axios';
+import { cropImage } from '../asset-gen/edit-image.js';
+import fs from 'fs';
+import { storeImageIntoBunny } from '../asset-gen/store-image.js';
+import { Asset } from '../types/assetTypes.js';
 import {
   ServerMessageType,
   SimStateAssetsServerMsg,
   WebsocketClients,
-} from "@backend/types/wsTypes.ts";
-import createId from "@backend/utils/createId.ts";
-import { CommunicationServer } from "./clientsServer.ts";
+} from '../types/wsTypes.js';
+import createId from '../utils/createId.js';
+import { CommunicationServer } from './clientsServer.js';
 
 const EXPRESS_PORT = 3000;
 
@@ -48,15 +48,15 @@ const app = express();
 /**
  * This is how a GET request is structured in Express.
  */
-app.get("/", (req, res) => {
-  res.send("haiii guys");
+app.get('/', (req, res) => {
+  res.send('haiii guys');
 });
 
 /**
  * This will retrieve the map from the database.
  * Right now, it just generates a placeholder map.
  */
-app.get("/map", (req, res) => {
+app.get('/map', (req, res) => {
   const map: WorldMap = new WorldMap();
   const origin: Pos = { x: 0, y: 0 };
   const originCell: Cell = new Cell(origin);
@@ -75,7 +75,7 @@ const server = app.listen(EXPRESS_PORT, () => {
 });
 
 // Create a new cosmetic environemnt object asset
-app.get("/gen/cosmetic-object", async (req, res) => {
+app.get('/gen/cosmetic-object', async (req, res) => {
   try {
     const asset = await generateCosmeticObjectAsset();
     res.send(
@@ -90,7 +90,7 @@ app.get("/gen/cosmetic-object", async (req, res) => {
 });
 
 // Create a new resource environemnt object asset
-app.get("/gen/production-object", async (req, res) => {
+app.get('/gen/production-object', async (req, res) => {
   try {
     const asset = await generateProductionObjectAsset();
     res.send(
@@ -105,7 +105,7 @@ app.get("/gen/production-object", async (req, res) => {
 });
 
 // Create a new house asset
-app.get("/gen/house", async (req, res) => {
+app.get('/gen/house', async (req, res) => {
   try {
     const asset = await generateHouseAsset();
     res.send(
@@ -120,9 +120,9 @@ app.get("/gen/house", async (req, res) => {
 });
 
 // Create a new villager asset
-app.get("/gen/villager", async (req, res) => {
+app.get('/gen/villager', async (req, res) => {
   try {
-    const {eye, hair, outfit} = req.query;
+    const { eye, hair, outfit } = req.query;
     const asset = await generateVillagerAsset(eye, hair, outfit);
     res.send(
       `<html><body><img src="${
@@ -149,7 +149,7 @@ app.get("/gen/villager", async (req, res) => {
 //   }
 // })
 
-app.get("/edit/cosmetic", async (req, res) => {
+app.get('/edit/cosmetic', async (req, res) => {
   try {
     const presets = cosmeticPresetJSON;
     for (const preset of presets) {
@@ -157,44 +157,44 @@ app.get("/edit/cosmetic", async (req, res) => {
       try {
         const response: AxiosResponse<ArrayBuffer> = await axios({
           url: preset.url,
-          method: "GET",
-          responseType: "arraybuffer",
+          method: 'GET',
+          responseType: 'arraybuffer',
         });
 
         // response.data will be an ArrayBuffer
         const arrayBuffer: ArrayBuffer = response.data;
 
-        console.log("Image fetched successfully as ArrayBuffer");
+        console.log('Image fetched successfully as ArrayBuffer');
         const imageData = await cropImage(arrayBuffer);
         console.log(imageData);
 
         const bufferView = new Uint8Array(imageData);
         const nodeBuffer = Buffer.from(bufferView);
 
-        fs.writeFile("temp/cropped_edges.png", nodeBuffer, (err) => {
+        fs.writeFile('temp/cropped_edges.png', nodeBuffer, (err) => {
           if (err) {
-            console.error("Error writing file:", err);
+            console.error('Error writing file:', err);
           } else {
-            console.log("File written successfully:", "temp/cropped_edges.png");
+            console.log('File written successfully:', 'temp/cropped_edges.png');
           }
         });
         // delete
         // deleteImageFromBunny(preset.url)
         // upload again
-        storeImageIntoBunny(nodeBuffer, preset.name, "/edges-cropped2.png");
+        storeImageIntoBunny(nodeBuffer, preset.name, '/edges-cropped2.png');
       } catch (error) {
-        console.error("Error fetching the image:", error);
+        console.error('Error fetching the image:', error);
         return undefined;
       }
     }
-    res.send("all gs");
+    res.send('all gs');
   } catch (err) {
     console.error(err);
     res.status(500).send(err);
   }
 });
 
-app.get("/edit/resource", async (req, res) => {
+app.get('/edit/resource', async (req, res) => {
   try {
     const presets = resourcePresetJSON;
     for (const preset of presets) {
@@ -202,37 +202,37 @@ app.get("/edit/resource", async (req, res) => {
       try {
         const response: AxiosResponse<ArrayBuffer> = await axios({
           url: preset.url,
-          method: "GET",
-          responseType: "arraybuffer",
+          method: 'GET',
+          responseType: 'arraybuffer',
         });
 
         // response.data will be an ArrayBuffer
         const arrayBuffer: ArrayBuffer = response.data;
 
-        console.log("Image fetched successfully as ArrayBuffer");
+        console.log('Image fetched successfully as ArrayBuffer');
         const imageData = await cropImage(arrayBuffer);
         console.log(imageData);
 
         const bufferView = new Uint8Array(imageData);
         const nodeBuffer = Buffer.from(bufferView);
 
-        fs.writeFile("temp/cropped_edges.png", nodeBuffer, (err) => {
+        fs.writeFile('temp/cropped_edges.png', nodeBuffer, (err) => {
           if (err) {
-            console.error("Error writing file:", err);
+            console.error('Error writing file:', err);
           } else {
-            console.log("File written successfully:", "temp/cropped_edges.png");
+            console.log('File written successfully:', 'temp/cropped_edges.png');
           }
         });
         // delete
         // deleteImageFromBunny(preset.url)
         // upload again
-        storeImageIntoBunny(nodeBuffer, preset.name, "/edges-cropped2.png");
+        storeImageIntoBunny(nodeBuffer, preset.name, '/edges-cropped2.png');
       } catch (error) {
-        console.error("Error fetching the image:", error);
+        console.error('Error fetching the image:', error);
         return undefined;
       }
     }
-    res.send("all gs");
+    res.send('all gs');
   } catch (err) {
     console.error(err);
     res.status(500).send(err);

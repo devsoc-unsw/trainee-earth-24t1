@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from 'axios';
 import {
   cropImage,
   // removeBackgroundStabilityAIViaFilename,
@@ -7,7 +7,7 @@ import {
   // removeImageBGViaURL,
   flopImage,
   removeBackgroundStableDiffusion,
-} from "@backend/asset-gen/edit-image.ts";
+} from './edit-image.js';
 import {
   generateCosmeticObjectImage,
   generateProductionObjectImage,
@@ -16,10 +16,10 @@ import {
   generateStableImage,
   generateResourceImage,
   // generateVillagerObjectImageV2,
-} from "@backend/asset-gen/generate-image.ts";
-import { storeImageIntoBunny } from "@backend/asset-gen/store-image.ts";
-import OpenAI from "openai";
-import { Asset, RemoteImage } from "@backend/types/assetTypes.ts";
+} from './generate-image.js';
+import { storeImageIntoBunny } from './store-image.js';
+import OpenAI from 'openai';
+import { Asset, RemoteImage } from '../types/assetTypes.js';
 
 export enum AssetType {
   COSMETIC_ENVIRONMENT_OBJ,
@@ -43,18 +43,18 @@ async function generateAsset(assetType: AssetType): Promise<Asset | null> {
       generatedImage = await generateVillagerImage();
       break;
     default:
-      console.error("Invalid asset type");
+      console.error('Invalid asset type');
       return null;
   }
 
   if (generatedImage == null || generatedImage.url == null) {
-    console.error("Failed to generate image");
+    console.error('Failed to generate image');
     return null;
   }
 
   const assetName = `${AssetType[assetType]}-${new Date().toISOString()}`;
   const newAsset = new Asset(
-    generatedImage.revised_prompt ?? "",
+    generatedImage.revised_prompt ?? '',
     assetName,
     generatedImage.fileType
   );
@@ -70,8 +70,8 @@ async function generateAsset(assetType: AssetType): Promise<Asset | null> {
   try {
     let res = await axios.request<ArrayBuffer>({
       url: generatedImage.url,
-      method: "GET",
-      responseType: "arraybuffer",
+      method: 'GET',
+      responseType: 'arraybuffer',
     });
     imageData = res.data;
   } catch (err) {
@@ -83,11 +83,11 @@ async function generateAsset(assetType: AssetType): Promise<Asset | null> {
   const originalImgName = `original.${newAsset.type}`;
   const originalImgUrl = await storeImageIntoBunny(
     imageData,
-    newAsset.name + "/",
+    newAsset.name + '/',
     originalImgName
   );
   if (originalImgUrl == null) {
-    console.error("Failed to store original image");
+    console.error('Failed to store original image');
   } else {
     console.log(`Stored original image: ${originalImgUrl}`);
     newAsset.addRemoteImage(new RemoteImage(originalImgName, originalImgUrl));
@@ -96,19 +96,19 @@ async function generateAsset(assetType: AssetType): Promise<Asset | null> {
   // === Remove background from image and store ===
   imageData = await removeBackgroundStableDiffusion(imageData);
   if (imageData == null) {
-    console.error("Failed to remove background from image using stability AI");
+    console.error('Failed to remove background from image using stability AI');
     return null;
   }
 
   const removeBGImgName = `stable-diffusion-removebg.${newAsset.type}`;
   const removeBGImgUrl = await storeImageIntoBunny(
     imageData,
-    newAsset.name + "/",
+    newAsset.name + '/',
     removeBGImgName
   );
 
   if (removeBGImgUrl == null) {
-    console.error("Failed to store image after removing background");
+    console.error('Failed to store image after removing background');
   } else {
     console.log(`Stored image after removing background: ${removeBGImgUrl}`);
     newAsset.addRemoteImage(new RemoteImage(removeBGImgName, removeBGImgUrl));
@@ -117,62 +117,66 @@ async function generateAsset(assetType: AssetType): Promise<Asset | null> {
   // === Crop image and store ===
   imageData = await cropImage(imageData);
   if (imageData == null) {
-    console.error("Failed to crop image");
+    console.error('Failed to crop image');
     return null;
   }
 
   // Cut edges from both sides
   imageData = await cutImage(imageData);
   if (imageData == null) {
-    console.error("Failed to cut image");
+    console.error('Failed to cut image');
     return null;
   }
 
   imageData = await flopImage(imageData);
   if (imageData == null) {
-    console.error("Failed to flop image");
+    console.error('Failed to flop image');
     return null;
   }
 
   imageData = await cutImage(imageData);
   if (imageData == null) {
-    console.error("Failed to cut image");
+    console.error('Failed to cut image');
     return null;
   }
 
   imageData = await flopImage(imageData);
   if (imageData == null) {
-    console.error("Failed to flop image");
+    console.error('Failed to flop image');
     return null;
   }
 
   imageData = await cropImage(imageData);
   if (imageData == null) {
-    console.error("Failed to crop image");
+    console.error('Failed to crop image');
     return null;
   }
 
   const croppedImgName = `edges-cropped.${newAsset.type}`;
   const croppedImgUrl = await storeImageIntoBunny(
     imageData,
-    newAsset.name + "/",
+    newAsset.name + '/',
     croppedImgName
   );
   if (croppedImgUrl == null) {
-    console.error("Failed to store image after cropping");
+    console.error('Failed to store image after cropping');
   } else {
     console.log(`Stored image after cropping: ${croppedImgUrl}`);
     newAsset.addRemoteImage(new RemoteImage(croppedImgName, croppedImgUrl));
   }
   // ===
-  
-  const remoteImages = newAsset.getRemoteImages()
-  const supposedDimensions = await estimateDimensions(remoteImages[remoteImages.length - 1].url)
-  const finalDimensions = supposedDimensions.split(' ')
-  newAsset.setDimensions({ dx: parseInt(finalDimensions[0], 10),
-    dy: parseInt(finalDimensions[0], 10) })
 
-  console.log(newAsset.getDimensions())
+  const remoteImages = newAsset.getRemoteImages();
+  const supposedDimensions = await estimateDimensions(
+    remoteImages[remoteImages.length - 1].url
+  );
+  const finalDimensions = supposedDimensions.split(' ');
+  newAsset.setDimensions({
+    dx: parseInt(finalDimensions[0], 10),
+    dy: parseInt(finalDimensions[0], 10),
+  });
+
+  console.log(newAsset.getDimensions());
 
   return newAsset;
 }
@@ -182,15 +186,15 @@ export async function generateHouseAsset(): Promise<Asset | null> {
   const generatedImage = await generateHouseImage();
 
   if (generatedImage == null || generatedImage.url == null) {
-    console.error("Failed to generate image");
+    console.error('Failed to generate image');
     return null;
   }
 
   const filename = `house-${new Date().toISOString()}`;
   const newAsset = new Asset(
-    generatedImage.revised_prompt ?? "",
+    generatedImage.revised_prompt ?? '',
     filename,
-    generatedImage.fileType,
+    generatedImage.fileType
   );
 
   let imageData: ArrayBuffer | null = null;
@@ -202,8 +206,8 @@ export async function generateHouseAsset(): Promise<Asset | null> {
   try {
     let res = await axios.request<ArrayBuffer>({
       url: generatedImage.url,
-      method: "GET",
-      responseType: "arraybuffer",
+      method: 'GET',
+      responseType: 'arraybuffer',
     });
     imageData = res.data;
   } catch (err) {
@@ -215,12 +219,12 @@ export async function generateHouseAsset(): Promise<Asset | null> {
   const originalImgName = `original.${newAsset.type}`;
   const originalImgUrl = await storeImageIntoBunny(
     imageData,
-    newAsset.name + "/",
+    newAsset.name + '/',
     originalImgName
   );
 
   if (originalImgUrl == null) {
-    console.error("Failed to store original image");
+    console.error('Failed to store original image');
   } else {
     console.log(`Stored original image: ${originalImgUrl}`);
     newAsset.addRemoteImage(new RemoteImage(originalImgName, originalImgUrl));
@@ -235,19 +239,19 @@ export async function generateHouseAsset(): Promise<Asset | null> {
 
   imageData = await removeBackgroundStableDiffusion(imageData);
   if (imageData == null) {
-    console.error("Failed to remove background from image using stability AI");
+    console.error('Failed to remove background from image using stability AI');
     return null;
   }
 
   const removeBGImgName = `stable-diffusion-removebg.${newAsset.type}`;
   const removeBGImgUrl = await storeImageIntoBunny(
     imageData,
-    newAsset.name + "/",
+    newAsset.name + '/',
     removeBGImgName
   );
 
   if (removeBGImgUrl == null) {
-    console.error("Failed to store image after removing background");
+    console.error('Failed to store image after removing background');
   } else {
     console.log(`Stored image after removing background: ${removeBGImgUrl}`);
     newAsset.addRemoteImage(new RemoteImage(removeBGImgName, removeBGImgUrl));
@@ -257,77 +261,86 @@ export async function generateHouseAsset(): Promise<Asset | null> {
 
   imageData = await cropImage(imageData);
   if (imageData == null) {
-    console.error("Failed to crop image");
+    console.error('Failed to crop image');
     return null;
   }
 
   imageData = await cutImage(imageData);
   if (imageData == null) {
-    console.error("Failed to cut image");
+    console.error('Failed to cut image');
     return null;
   }
 
   imageData = await flopImage(imageData);
   if (imageData == null) {
-    console.error("Failed to flop image");
+    console.error('Failed to flop image');
     return null;
   }
 
   imageData = await cutImage(imageData);
   if (imageData == null) {
-    console.error("Failed to cut image");
+    console.error('Failed to cut image');
     return null;
   }
 
   imageData = await flopImage(imageData);
   if (imageData == null) {
-    console.error("Failed to flop image");
+    console.error('Failed to flop image');
     return null;
   }
 
   imageData = await cropImage(imageData);
   if (imageData == null) {
-    console.error("Failed to crop image");
+    console.error('Failed to crop image');
     return null;
   }
 
   const croppedImgName = `edges-cropped.${newAsset.type}`;
   const croppedImgUrl = await storeImageIntoBunny(
     imageData,
-    newAsset.name + "/",
+    newAsset.name + '/',
     croppedImgName
   );
   if (croppedImgUrl == null) {
-    console.error("Failed to store image after cropping");
+    console.error('Failed to store image after cropping');
   } else {
     console.log(`Stored image after cropping: ${croppedImgUrl}`);
     newAsset.addRemoteImage(new RemoteImage(croppedImgName, croppedImgUrl));
   }
 
-  const remoteImages = newAsset.getRemoteImages()
-  const supposedDimensions = await estimateDimensions(remoteImages[remoteImages.length - 1].url)
-  const finalDimensions = supposedDimensions.split(' ')
-  newAsset.setDimensions({ dx: parseInt(finalDimensions[0], 10),
-    dy: parseInt(finalDimensions[0], 10) })
+  const remoteImages = newAsset.getRemoteImages();
+  const supposedDimensions = await estimateDimensions(
+    remoteImages[remoteImages.length - 1].url
+  );
+  const finalDimensions = supposedDimensions.split(' ');
+  newAsset.setDimensions({
+    dx: parseInt(finalDimensions[0], 10),
+    dy: parseInt(finalDimensions[0], 10),
+  });
 
-  console.log(newAsset.getDimensions())
+  console.log(newAsset.getDimensions());
   return newAsset;
 }
 
-export async function generateAssetVillagerImage(assetType: AssetType, eye, hair, outfit): Promise<Asset | null> {
+export async function generateAssetVillagerImage(
+  assetType: AssetType,
+  eye,
+  hair,
+  outfit
+): Promise<Asset | null> {
   const generatedImage = await generateStableImage(eye, hair, outfit);
 
   // make new asset class
   if (generatedImage == null) {
-    console.error("Failed to generate image");
+    console.error('Failed to generate image');
     return null;
   }
 
   const filename = `villager-${new Date().toISOString()}`;
   const newAsset = new Asset(
-    "villager new asset",
+    'villager new asset',
     filename,
-    "png",
+    'png',
     undefined,
     undefined,
     undefined,
@@ -339,41 +352,50 @@ export async function generateAssetVillagerImage(assetType: AssetType, eye, hair
   // remove background
   imageData = await removeBackgroundStableDiffusion(generatedImage);
   if (imageData == null) {
-    console.error("Failed to remove background from image using stability AI");
+    console.error('Failed to remove background from image using stability AI');
     return null;
   }
 
   // crop
   imageData = await cropImage(imageData);
   if (imageData == null) {
-    console.error("Failed to crop image");
+    console.error('Failed to crop image');
     return null;
   }
   // store
   const croppedImgName = `edges-cropped.${newAsset.type}`;
   const croppedImgUrl = await storeImageIntoBunny(
     imageData,
-    newAsset.name + "/",
+    newAsset.name + '/',
     croppedImgName
   );
   if (croppedImgUrl == null) {
-    console.error("Failed to store image after cropping");
+    console.error('Failed to store image after cropping');
   } else {
     console.log(`Stored image after cropping: ${croppedImgUrl}`);
     newAsset.addRemoteImage(new RemoteImage(croppedImgName, croppedImgUrl));
   }
   // send
-  return newAsset
+  return newAsset;
 }
 
 export async function generateResourceItemAsset() {
   const generatedImage = generateResourceImage();
 }
 
-export async function generateVillagerAsset(eye, hair, outfit): Promise<Asset | null> {
+export async function generateVillagerAsset(
+  eye,
+  hair,
+  outfit
+): Promise<Asset | null> {
   // TODO: Implement this in a specialised way rather than delegate to
   // generateAsset()
-  return await generateAssetVillagerImage(AssetType.VILLAGER, eye, hair, outfit);
+  return await generateAssetVillagerImage(
+    AssetType.VILLAGER,
+    eye,
+    hair,
+    outfit
+  );
 }
 
 export async function generateProductionObjectAsset(): Promise<Asset | null> {
@@ -392,25 +414,27 @@ async function estimateDimensions(imageURL: string) {
   // send it to chatgpt for opinion
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: 'gpt-4o',
       messages: [
         {
-          role: "user",
+          role: 'user',
           content: [
-            { type: "text", text: `pretend you are a game character within the game world standing before this object shown in the image. please accurately estimate the width and breadth of the entire plot of land, in meters. For reference, a house plot is typically 10 meters by 10 meters, a bench plot would be about 2 metres by 2 metres. Mention the measurement in the format "x y" where x and y are the width and breadth in metres respectively, nothing else.` },
             {
-              type: "image_url",
+              type: 'text',
+              text: `pretend you are a game character within the game world standing before this object shown in the image. please accurately estimate the width and breadth of the entire plot of land, in meters. For reference, a house plot is typically 10 meters by 10 meters, a bench plot would be about 2 metres by 2 metres. Mention the measurement in the format "x y" where x and y are the width and breadth in metres respectively, nothing else.`,
+            },
+            {
+              type: 'image_url',
               image_url: {
-                "url": imageURL,
+                url: imageURL,
               },
             },
           ],
         },
       ],
     });
-    return response.choices[0].message.content
+    return response.choices[0].message.content;
   } catch (err) {
-    console.error(err)
+    console.error(err);
   }
 }
-

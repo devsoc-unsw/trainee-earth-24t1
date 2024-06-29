@@ -88,7 +88,7 @@ const ACCEL = 0.016;
 const VEL_DAMPER = 0.94; // 0.9 means 90% of velocity is kept each frame
 
 // === Websocket constants ===
-const WS_URL = 'ws://127.0.0.1:3000';
+const WS_URL = 'ws://backend.groveify.com';
 const maxReconnectAttempts = -1; // -1 for infiinty
 
 const WorldMap = () => {

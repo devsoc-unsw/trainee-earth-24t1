@@ -1,10 +1,10 @@
-import createId from "@backend/utils/createId.ts";
-import { toIsoStringWithTimezone } from "@backend/utils/date.ts";
+import createId from '../utils/createId.js';
+import { toIsoStringWithTimezone } from '../utils/date.js';
 import {
   JSONCompatible,
   JSONObject,
   Serializable,
-} from "@backend/utils/objectTyping.ts";
+} from '../utils/objectTyping.js';
 
 /**
  * Number of tiles that the asset occupies physically on the map.
@@ -19,7 +19,7 @@ export type AssetId = string;
 export type AssetsJSON = { [key: AssetId]: AssetJSON };
 export type Assets = Map<AssetId, Asset>;
 
-// Note: Use serializeMapToJSON and deserializeJSONToMap from objectTyping.ts
+// Note: Use serializeMapToJSON and deserializeJSONToMap from objectTyping.js
 
 export interface AssetJSON extends JSONObject {
   _id: AssetId;

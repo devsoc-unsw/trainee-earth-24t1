@@ -19,15 +19,15 @@ import {
   isPingMsg,
   isPlayerVisitMsg,
   isVillagerReachedPathPointClientMsg,
-} from "@backend/types/wsTypes.ts";
-import createId from "@backend/utils/createId.ts";
+} from '../types/wsTypes.js';
+import createId from '../utils/createId.js';
 import {
   serializeMapToJSON,
   transformObjectValues,
-} from "@backend/utils/objectTyping.ts";
-import { Server } from "http";
-import { WebSocketServer, WebSocket } from "ws";
-import { Assets } from "@backend/types/assetTypes.ts";
+} from '../utils/objectTyping.js';
+import { Server } from 'http';
+import { WebSocketServer, WebSocket } from 'ws';
+import { Assets } from '../types/assetTypes.js';
 import {
   AttributeValue,
   Cells,
@@ -47,13 +47,13 @@ import {
   parsePosStr,
   resourceOrigin,
   serializePosStr,
-} from "@backend/types/simulationTypes.ts";
+} from '../types/simulationTypes.js';
 import {
   generateHouseAsset,
   generateVillagerAsset,
-} from "@backend/asset-gen/generate-asset.ts";
-import { simulationState1 } from "@backend/sample-data/simulation_state/simulation_state_1.ts";
-import { RANDOM_VILLAGER_NAMES } from "@backend/sample-data/random-villager-names.ts";
+} from '../asset-gen/generate-asset.js';
+import { simulationState1 } from '../sample-data/simulation_state/simulation_state_1.js';
+import { RANDOM_VILLAGER_NAMES } from '../sample-data/random-villager-names.js';
 interface IRange {
   minX: number;
   maxX: number;
@@ -90,7 +90,7 @@ export class CommunicationServer {
     /**
      * Handle a new client connecting to the WebSocket server.
      */
-    this.websocketServer.on("connection", (connection: WebSocket) => {
+    this.websocketServer.on('connection', (connection: WebSocket) => {
       const userId = createId();
       console.log(
         `\n======\nNew WS connection opened. Assigned userId ${userId}`
@@ -107,16 +107,16 @@ export class CommunicationServer {
       };
       connection.send(JSON.stringify(simStateAssetsServerMsg));
 
-      connection.on("error", console.error);
+      connection.on('error', console.error);
 
       /**
        * Executes when a message is received from the client.
        */
-      connection.on("message", (msg) => {
+      connection.on('message', (msg) => {
         // console.log(`Received ws message`);
 
         try {
-          const message = JSON.parse(msg.toString("utf-8"));
+          const message = JSON.parse(msg.toString('utf-8'));
           /**
            * Ensures the request provided by the client is in the format:
            * { "type": "something" }
@@ -136,7 +136,7 @@ export class CommunicationServer {
             case ClientMessageType.PING:
               console.log(`Handle wsreq as PING`);
               if (assertWSReqType<PingMsg>(message, isPingMsg)) {
-                connection.send(JSON.stringify({ type: "PONG" }));
+                connection.send(JSON.stringify({ type: 'PONG' }));
               }
               break;
             case ClientMessageType.PLAYER_VISIT:
@@ -202,7 +202,7 @@ export class CommunicationServer {
               ) {
                 this.handleCreateVillagerClientMsg(connection, message);
               } else {
-                throw Error("Invalid message type");
+                throw Error('Invalid message type');
               }
               break;
             case ClientMessageType.VILLAGER_REACHED_PATH_POINT:
@@ -228,7 +228,7 @@ export class CommunicationServer {
         } catch (e) {
           console.error(e);
           let clientErrorMsg = e.message;
-          if (e.name === "InvalidWSRequestTypeError") {
+          if (e.name === 'InvalidWSRequestTypeError') {
             // tidies up the error message to explain more clearly why
             // a message may have failed because the JSON couldn't parse
             clientErrorMsg = `invalid message; please ensure it's in the format { "type": "PING" }. don't forget - json only supports double quotes`;
@@ -250,7 +250,7 @@ export class CommunicationServer {
       /**
        * Executes when a client closes.
        */
-      connection.on("close", () => {
+      connection.on('close', () => {
         console.log(`\n=======\nWS connection to ${userId} closed`);
         handleDisconnect(userId, this.clientConnections);
       });
@@ -258,7 +258,7 @@ export class CommunicationServer {
   }
 
   broadcastSimStateAssets(simulationState: SimulationState, assets: Assets) {
-    console.log("Broadcasting simstate and assets to all clients");
+    console.log('Broadcasting simstate and assets to all clients');
     const simStateAssetsServerMsg: SimStateAssetsServerMsg = {
       type: ServerMessageType.SIM_STATE_ASSETS,
       simulationState: simulationState.serialize(),
@@ -322,7 +322,7 @@ export class CommunicationServer {
 
     this.simulationState.attributes.forEach((attribute, attributeId) => {
       let baseValue = Math.ceil(Math.random() * (maxAttribute - 0));
-      if (attributeId == "Speed" || attributeId == "Strength") {
+      if (attributeId == 'Speed' || attributeId == 'Strength') {
         baseValue = Math.ceil(Math.random() * (maxAttribute - 7) + 7);
       }
       const instance = new AttributeValue(baseValue);
