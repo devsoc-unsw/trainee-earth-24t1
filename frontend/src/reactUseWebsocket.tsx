@@ -2,7 +2,7 @@ import { ClientMessageType } from '@backend/types/wsTypes';
 import { useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
-const WS_URL = 'ws://backend.groveify.com';
+const WS_URL = 'wss://backend.groveify.com';
 
 /**
  * @deprecated We are using plain WebSocket browser API. See WorldMap.tsx
