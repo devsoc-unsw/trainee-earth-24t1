@@ -1,4 +1,4 @@
-<h1 align="center" style="font-size:30px; font-weight:bold;">
+<h1 align="center">
   <img src="https://github.com/devsoc-unsw/trainee-earth-24t1/assets/100419289/e870edb2-6be9-42af-9f88-977b5842af35" height="50px">
   Groveify
 </h1>
