@@ -138,7 +138,7 @@ const WorldMap = () => {
   //   )
   // );
 
-  const simStateRef = useRef<SimulationState>();
+  const simStateRef = useRef<SimulationState | null>(null);
 
   const tileMapRange = useRef<IRange>({
     minX: -20,
@@ -155,7 +155,7 @@ const WorldMap = () => {
 
   // const images = useRef<HTMLImageElement[]>(getTileImages());
   // Images for house, cosmetics, productions, villagers
-  const assetsRef = useRef<Assets>();
+  const assetsRef = useRef<Assets | null>(null);
 
   // Special objects: coin, energy, grass tile, etc.
   // const specialObjects = useRef<Map<string, SpecialObject>>(new Map());
@@ -1284,7 +1284,7 @@ const WorldMap = () => {
           <ShowAsset
             name={message.villagerAsset.name}
             text={'Meet your new villager!'}
-            styles="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+            styles='left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
             img={message.villagerAsset.remoteImages.at(-1)?.url ?? ''}
             dismiss={() => setDisplayNewAsset(<></>)}
           />
@@ -1380,9 +1380,9 @@ const WorldMap = () => {
         setDisplayNewAsset(
           <ShowAsset
             name={`${amount} ${resourceName}`}
-            text="You earned some resources!"
+            text='You earned some resources!'
             img={img}
-            styles="left-[100px] bottom-[100px]"
+            styles='left-[100px] bottom-[100px]'
             dismiss={() => setDisplayNewAsset(<></>)}
           />
         );

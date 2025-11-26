@@ -1,22 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "useDefineForClassFields": true,
-    "lib": [
-      "ES2020",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@frontend/*": [
-        "./*"
-      ],
-      "@backend/*": [
-        "../backend/*"
-      ],
+      "@frontend/*": ["./*"],
+      "@backend/*": ["../backend/*"]
     },
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -29,12 +21,12 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "./src",
     "../backend/sample-data/**/*",
     "../backend/types/**/*",
-    "../backend/utils/**/*",
-  ],
+    "../backend/utils/**/*"
+  ]
 }
