@@ -31,6 +31,9 @@ export default function GithubWidget({
 
   const [userName, setUserName] = useState(() => {
     const savedUsername = localStorage.getItem('GitHubUsername');
+    if (savedUsername === '' || savedUsername === undefined) {
+      localStorage.setItem('GitHubUsername', 'lachlanshoesmith');
+    }
     return savedUsername ? JSON.parse(savedUsername) : 'lachlanshoesmith';
   });
 
