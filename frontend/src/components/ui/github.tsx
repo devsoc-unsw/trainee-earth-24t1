@@ -52,7 +52,7 @@ export default function GithubWidget({
           <HoverCard>
             <HoverCardTrigger className='flex items-center justify-center'>
               <GitHubCalendar
-                username={userName}
+                username={userName ? userName : 'lachlanshoesmith'}
                 colorScheme='light'
                 blockSize={9}
                 fontSize={13.5}
