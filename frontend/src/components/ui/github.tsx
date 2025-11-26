@@ -1,9 +1,9 @@
-import GitHubCalendar from "react-github-calendar";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "./hover-card";
-import { Input } from "./input";
-import { useEffect, useState } from "react";
-import { useDraggable } from "@dnd-kit/core";
-import { IconDotsVertical } from "@tabler/icons-react";
+import { GitHubCalendar } from 'react-github-calendar';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
+import { Input } from './input';
+import { useEffect, useState } from 'react';
+import { useDraggable } from '@dnd-kit/core';
+import { IconDotsVertical } from '@tabler/icons-react';
 
 export default function GithubWidget({
   draggableId,
@@ -30,51 +30,51 @@ export default function GithubWidget({
       };
 
   const [userName, setUserName] = useState(() => {
-    const savedUsername = localStorage.getItem("GitHubUsername");
-    return savedUsername ? JSON.parse(savedUsername) : "";
+    const savedUsername = localStorage.getItem('GitHubUsername');
+    return savedUsername ? JSON.parse(savedUsername) : 'lachlanshoesmith';
   });
 
   useEffect(() => {
-    localStorage.setItem("GitHubUsername", JSON.stringify(userName));
+    localStorage.setItem('GitHubUsername', JSON.stringify(userName));
   }, [userName]);
 
   return (
-    <div className="relative left-1/2 top-1/2 w-[49vw]">
+    <div className='relative left-1/2 top-1/2 w-[49vw]'>
       <div
         style={style}
         ref={setNodeRef}
         className={`absolute bg-white rounded-2xl h-44 w-[445px] flex items-center justify-center content-center`}
       >
-        <div className="overflow-hidden w-11/12 p-4">
+        <div className='overflow-hidden w-11/12 p-4'>
           <HoverCard>
-            <HoverCardTrigger className="flex items-center justify-center">
+            <HoverCardTrigger className='flex items-center justify-center'>
               <GitHubCalendar
                 username={userName}
-                colorScheme="light"
+                colorScheme='light'
                 blockSize={9}
                 fontSize={13.5}
-                errorMessage="Hover over widget to set GitHub Username."
+                errorMessage='Hover over widget to set GitHub Username.'
               />
             </HoverCardTrigger>
-            <HoverCardContent className="w-64 rounded-2xl">
+            <HoverCardContent className='w-64 rounded-2xl'>
               <div>
-                <p className="text-sm">Enter your GitHub Username</p>
+                <p className='text-sm'>Enter your GitHub Username</p>
                 <Input
-                  type="text"
+                  type='text'
                   value={userName}
                   onChange={(ev) => setUserName(ev.target.value)}
-                  placeholder="Username"
-                  className="bg-white text-black h-7 mt-2"
+                  placeholder='Username'
+                  className='bg-white text-black h-7 mt-2'
                 />
               </div>
             </HoverCardContent>
           </HoverCard>
         </div>
-        <div className="flex-col items-center justify-center">
+        <div className='flex-col items-center justify-center'>
           <button
             {...listeners}
             {...attributes}
-            className="flex justify-center items-center text-2xl w-full opacity-60"
+            className='flex justify-center items-center text-2xl w-full opacity-60'
           >
             <IconDotsVertical />
           </button>
