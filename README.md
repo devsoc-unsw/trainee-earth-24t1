@@ -7,18 +7,22 @@
 
 Welcome to Groveify! This repository contains the source code and documentation for Groveify, a project made for DevSoc Training Program. Groveify provides users with an interactive and visually appealing way to engage with productivity through an AI-Powered isometric map that grows as you do tasks.
 
+> ⚠️ Groveify is not affiliated with any cryptocurrency, NFT, or similar. Be careful to avoid scams. Groveify and its developers do not have an associated Twitter account.
+
 ## Features
 
 ### Isometric Map
-  Visually appealing interactive isometric map to motivate your work.
-  
+
+Visually appealing interactive isometric map to motivate your work.
+
 ![image](https://github.com/devsoc-unsw/trainee-earth-24t1/assets/100419289/1033f2db-1062-4d0c-a46f-71e721945c2f)
 
 ### Interactive Widgets
-  User-friendly draggable widgets for productivity.
-  
-  **Examples**
-  
+
+User-friendly draggable widgets for productivity.
+
+**Examples**
+
   <table>
     <tr>
       <td>To-Do List</td>
@@ -35,7 +39,6 @@ Welcome to Groveify! This repository contains the source code and documentation 
       <td><img src="https://github.com/devsoc-unsw/trainee-earth-24t1/assets/100419289/9e166ca1-b683-4842-bbcf-c1ba7208b48e" ></td>
     </tr>
    </table>
-
 
 ## Technologies Used
 
