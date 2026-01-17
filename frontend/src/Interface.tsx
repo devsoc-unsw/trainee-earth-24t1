@@ -149,28 +149,33 @@ export default function Interface({
   return (
     <>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[700px] h-[450px] bg-white rounded-2xl fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <DialogHeader className="">
-            <DialogTitle className="text-5xl flex justify-center items-center">
-              <img className="logo-gif h-[90px] mr-2" src={logo} alt="Logo" />
-              <div className="text-5xl font-bold">
+        <DialogContent className='sm:max-w-[700px] h-[450px] bg-white rounded-2xl fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'>
+          <DialogHeader className=''>
+            <DialogTitle className='text-5xl flex justify-center items-center'>
+              <img className='logo-gif h-[90px] mr-2' src={logo} alt='Logo' />
+              <div className='text-4xl font-bold'>
                 Welcome to Groveify!
-                <p className="text-lg">
+                <p className='text-lg'>
                   Lovingly brought to you by: Dylan, Catelyn, Sarah, Gordon and
                   Lachlan ♡
                 </p>
+                <p className='text-lg text-red-400'>
+                  Groveify is not affiliated with any cryptocurrency, NFT, or
+                  similar. Be careful to avoid scams. Groveify and its
+                  developers do not have an associated Twitter account.
+                </p>
               </div>
             </DialogTitle>
-            <DialogDescription className="flex text-2xl h-full p-4 items-center justify-around">
-              <div className="font-medium pr-6 h-full w-full">
-                <div className="font-bold text-3xl">Controls:</div>
-                <div className="flex justify-evenly items-center text-2xl font-medium">
+            <DialogDescription className='flex text-xl h-full p-4 items-center justify-around'>
+              <div className='font-medium pr-6 h-full w-full text-center'>
+                <div className='font-bold text-2xl'>Controls:</div>
+                <div className='flex justify-evenly items-center text-xl font-medium'>
                   Use
                   <div>
-                    <div className="flex justify-center">
+                    <div className='flex justify-center'>
                       <IconArrowUp />
                     </div>
-                    <div className="flex justify-center">
+                    <div className='flex justify-center'>
                       <IconArrowLeft />
                       <IconArrowDown />
                       <IconArrowRight />
@@ -181,27 +186,27 @@ export default function Interface({
                     <IconMouse size={35} />
                   </div>
                 </div>
-                to move move the map.
-                <div className="font-medium flex justify-evenly items-center pt-6">
+                to move the map.
+                <div className='font-medium flex justify-evenly items-center pt-2'>
                   Click and move your
                   <div>
                     <IconMouse size={35} />
                   </div>
                 </div>
-                <div className="font-medium flex-col justify-center items-center">
-                  <p className="font-medium flex justify-center">
+                <div className='font-medium flex-col justify-center items-center'>
+                  <p className='font-medium flex justify-center'>
                     to move placeables on
                   </p>
-                  <p className="font-medium flex justify-center">
+                  <p className='font-medium flex justify-center'>
                     the interactive island.
                   </p>
                 </div>
               </div>
 
-              <Separator orientation="vertical" className="w-[2px]" />
-              <div className="font-medium pl-6 h-full w-full">
-                <div className="font-bold text-3xl">Widgets:</div>
-                <div className="flex justify-evenly items-center text-2xl font-medium">
+              <Separator orientation='vertical' className='w-[2px]' />
+              <div className='font-medium pl-6 h-full w-full'>
+                <div className='font-bold text-2xl'>Widgets:</div>
+                <div className='flex justify-evenly items-center text-xl font-medium'>
                   Use
                   <div>
                     <IconMouse size={35} />
@@ -209,20 +214,20 @@ export default function Interface({
                   to drag the
                   <IconDots />
                 </div>
-                <div className="flex justify-center items-center font-medium text-2xl">
+                <div className='flex justify-center items-center font-medium text-xl'>
                   on the widgets to move
                 </div>
-                <div className="flex justify-center items-center font-medium text-2xl">
+                <div className='flex justify-center items-center font-medium text-xl'>
                   them around.
                 </div>
-                <div className="font-medium flex justify-evenly items-center pt-6">
+                <div className='font-medium flex justify-evenly items-center pt-2'>
                   You can also sign in with
                 </div>
-                <div className="font-medium flex-col justify-center items-center">
-                  <p className="font-medium flex justify-center">
+                <div className='font-medium flex-col justify-center items-center'>
+                  <p className='font-medium flex justify-center'>
                     the button at the top
                   </p>
-                  <p className="font-medium flex justify-center">
+                  <p className='font-medium flex justify-center'>
                     right of the screen.
                   </p>
                 </div>
@@ -233,28 +238,28 @@ export default function Interface({
       </Dialog>
 
       <Dialog>
-        <header className="header">
+        <header className='header'>
           <Navbar>
             <DialogTrigger asChild>
-              <Button variant="outline" className="bg-white">
+              <Button variant='outline' className='bg-white'>
                 Open Inventory
               </Button>
             </DialogTrigger>
           </Navbar>
         </header>
         <DialogContent className="sm:max-w-[1000px] h-[450px] border-zinc-900 bg-[url('https://img.freepik.com/free-vector/gradient-black-background-with-wavy-lines_23-2149151738.jpg?t=st=1717068845~exp=1717072445~hmac=30a1204deb840c5d47051110f36b534cd6c67d21cf97fa5dca8b06eeb13d5bb3&w=996')] rounded-2xl fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <DialogHeader className="">
-            <DialogTitle className="text-4xl text-white">Inventory</DialogTitle>
-            <DialogDescription className="text-xl text-white">
+          <DialogHeader className=''>
+            <DialogTitle className='text-4xl text-white'>Inventory</DialogTitle>
+            <DialogDescription className='text-xl text-white'>
               Check out your resources and inventory items.
             </DialogDescription>
-            <div className="grid gap-4 py-4 h-[330px]">
+            <div className='grid gap-4 py-4 h-[330px]'>
               {inventoryComponent}
             </div>
           </DialogHeader>
         </DialogContent>
       </Dialog>
-      <div className="fixed left-16 top-1/2 animate-bounce">
+      <div className='fixed left-16 top-1/2 animate-bounce'>
         <VillagerGenButton
           onRequestCreateVillager={onRequestCreateVillager}
         ></VillagerGenButton>
